@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import { INITIAL_EXPENSES, MONTHLY_INFO, CATEGORIES, type Expense, type ExpenseMap } from "./data";
 import SummaryCards from "./components/SummaryCards";
 import LedgerCalendar from "./components/LedgerCalendar";
+import WeeklyLogView from "./components/WeeklyLogView";
+import AllLogView from "./components/AllLogView";
 import DayDetailModal from "./components/DayDetailModal";
 import AddExpenseModal from "./components/AddExpenseModal";
 
@@ -24,6 +26,7 @@ export default function DemoPage() {
   const [currentMonth, setCurrentMonth] = useState(MONTHLY_INFO.month);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [addModalDate, setAddModalDate] = useState<string | null>(null);
+  const [view, setView] = useState<"calendar" | "weekly" | "all">("calendar");
 
   const monthPrefix = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
 
@@ -142,16 +145,48 @@ export default function DemoPage() {
             )}
           </aside>
 
-          {/* ── Calendar ── */}
+          {/* ── Main content ── */}
           <div className="flex-1 min-w-0">
-            <LedgerCalendar
-              year={currentYear}
-              month={currentMonth}
-              expenses={monthExpenses}
-              onDayClick={setSelectedDate}
-              onPrev={handlePrevMonth}
-              onNext={handleNextMonth}
-            />
+            {/* View toggle */}
+            <div className="flex items-center gap-1 mb-4 bg-gray-100 p-1 rounded-xl w-fit">
+              {(["calendar", "weekly", "all"] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    view === v
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {v === "calendar" ? "달력" : v === "weekly" ? "주차별" : "전체 로그"}
+                </button>
+              ))}
+            </div>
+
+            {view === "calendar" && (
+              <LedgerCalendar
+                year={currentYear}
+                month={currentMonth}
+                expenses={monthExpenses}
+                onDayClick={setSelectedDate}
+                onPrev={handlePrevMonth}
+                onNext={handleNextMonth}
+              />
+            )}
+            {view === "weekly" && (
+              <WeeklyLogView
+                monthExpenses={monthExpenses}
+                month={currentMonth}
+                onDayClick={setSelectedDate}
+              />
+            )}
+            {view === "all" && (
+              <AllLogView
+                allExpenses={expenses}
+                onDayClick={setSelectedDate}
+              />
+            )}
           </div>
 
         </div>
