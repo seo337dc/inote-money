@@ -179,6 +179,7 @@ export default function DemoPage() {
                 monthExpenses={monthExpenses}
                 month={currentMonth}
                 onDayClick={setSelectedDate}
+                onAddExpense={handleAddExpense}
               />
             )}
             {view === "all" && (

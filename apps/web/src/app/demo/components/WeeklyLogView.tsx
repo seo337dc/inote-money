@@ -1,17 +1,23 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { TriangleAlert, ChevronLeft, ChevronRight } from "lucide-react";
-import { type ExpenseMap, type Expense } from "../data";
+import { TriangleAlert, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { type ExpenseMap, type Expense, CATEGORIES } from "../data";
 
 type Props = {
   monthExpenses: ExpenseMap;
   month: number;
   onDayClick: (date: string) => void;
+  onAddExpense: (date: string, expense: Omit<Expense, "id">) => void;
 };
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
+
+function getTodayKey() {
+  const t = new Date();
+  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+}
 
 function parseDateLabel(dateStr: string) {
   const [y, m, d] = dateStr.split("-").map(Number);
@@ -24,6 +30,185 @@ function getWeekLabel(dateStr: string, month: number) {
   return `${month}월 ${Math.ceil(day / 7)}주차`;
 }
 
+// ── 오늘 카드 (인라인 입력 + 누적 리스트) ─────────────────────
+function TodayCard({
+  date,
+  expenses,
+  onAdd,
+}: {
+  date: string;
+  expenses: Expense[];
+  onAdd: (expense: Omit<Expense, "id">) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [place, setPlace] = useState("");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState<string>(CATEGORIES[0]);
+  const [isWaste, setIsWaste] = useState(false);
+
+  const isValid = Number(amount) > 0;
+  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const waste = expenses.filter((e) => e.isWaste).reduce((sum, e) => sum + e.amount, 0);
+
+  const handleAdd = () => {
+    if (!isValid) return;
+    onAdd({ place: place.trim() || "-", amount: Number(amount), category, isWaste });
+    // 폼 초기화 (열린 상태 유지)
+    setAmount("");
+    setPlace("");
+    setCategory(CATEGORIES[0]);
+    setIsWaste(false);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 shadow-sm overflow-hidden">
+      {/* 날짜 헤더 */}
+      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-bold text-gray-700">{parseDateLabel(date)}</h3>
+          <span className="text-[10px] bg-green-100 text-green-600 font-semibold px-2 py-0.5 rounded-full">오늘</span>
+        </div>
+        {expanded && (
+          <button
+            onClick={() => setExpanded(false)}
+            className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      {!expanded ? (
+        /* 접힌 상태 */
+        <button
+          onClick={() => setExpanded(true)}
+          className="w-full px-4 py-8 flex flex-col items-center gap-2 hover:bg-gray-50 transition-colors"
+        >
+          <Plus size={22} className="text-gray-300" />
+          <span className="text-sm text-gray-400">
+            {expenses.length > 0
+              ? `${expenses.length}건 입력됨 · 탭하여 추가`
+              : "오늘 지출 내역이 없습니다. 탭하여 추가하세요"}
+          </span>
+        </button>
+      ) : (
+        <div>
+          {/* 입력 폼 */}
+          <div className="px-4 pt-4 pb-3 flex flex-col gap-3 border-b border-gray-100">
+            {/* 금액 + 사용처 + 낭비 */}
+            <div className="flex gap-2 items-center">
+              <div className="relative w-36 shrink-0">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                  autoFocus
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-8 text-right text-base font-bold text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
+                />
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">
+                  원
+                </span>
+              </div>
+              <input
+                type="text"
+                placeholder="사용처 (선택)"
+                value={place}
+                onChange={(e) => setPlace(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setIsWaste((v) => !v)}
+                className="flex items-center gap-1.5 shrink-0"
+              >
+                <span className={`relative w-10 h-5 rounded-full transition-colors ${isWaste ? "bg-orange-400" : "bg-gray-200"}`}>
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isWaste ? "translate-x-5" : "translate-x-0"}`} />
+                </span>
+                <span className={`text-xs font-medium ${isWaste ? "text-orange-500" : "text-gray-400"}`}>낭비</span>
+              </button>
+            </div>
+
+            {/* 카테고리 + 추가/닫기 버튼 */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-1.5">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setCategory(cat)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
+                      category === cat
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={handleAdd}
+                disabled={!isValid}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-colors ${
+                  isValid
+                    ? "bg-green-500 text-white hover:bg-green-600"
+                    : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                }`}
+              >
+                추가
+              </button>
+            </div>
+          </div>
+
+          {/* 누적 리스트 */}
+          {expenses.length > 0 && (
+            <>
+              <ul className="divide-y divide-gray-50">
+                {expenses.map((expense) => (
+                  <li key={expense.id} className="flex items-center gap-2 px-4 py-3">
+                    <span className={`text-sm font-semibold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
+                      {fmt(expense.amount)}
+                    </span>
+                    {expense.isWaste && (
+                      <TriangleAlert size={13} className="text-orange-400 shrink-0" />
+                    )}
+                    <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
+                      {expense.place !== "-" ? `${expense.place} ` : ""}
+                      <span className="text-gray-400">({expense.category})</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* 푸터: 건수 + 총액 */}
+              <div className="px-4 py-2.5 bg-gray-50 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-gray-800">{fmt(total)}</span>
+                  {waste > 0 && (
+                    <span className="text-xs text-orange-500 font-medium">낭비 {fmt(waste)}</span>
+                  )}
+                  <span className="text-xs text-gray-400">{expenses.length}건</span>
+                </div>
+                <button
+                  onClick={() => setExpanded(false)}
+                  className="px-4 py-1.5 rounded-lg text-xs font-bold bg-green-500 text-white hover:bg-green-600 transition-colors"
+                >
+                  저장
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── 일반 날짜 카드 ─────────────────────────────────────────────
 function DayCard({
   date,
   items,
@@ -45,40 +230,42 @@ function DayCard({
         {items.map((expense) => (
           <li
             key={expense.id}
-            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
             onClick={() => onDayClick(date)}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              {expense.isWaste ? (
-                <TriangleAlert size={13} className="text-orange-400 shrink-0" />
-              ) : (
-                <span className="w-3.5 shrink-0" />
-              )}
-              <span className={`text-sm truncate ${expense.isWaste ? "text-orange-600" : "text-gray-800"}`}>
-                {expense.place}
-              </span>
-            </div>
-            <span className={`text-sm font-semibold shrink-0 ml-3 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
+            <span className={`text-sm font-semibold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
               {fmt(expense.amount)}
+            </span>
+            {expense.isWaste && (
+              <TriangleAlert size={13} className="text-orange-400 shrink-0" />
+            )}
+            <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
+              {expense.place !== "-" ? `${expense.place} ` : ""}
+              <span className="text-gray-400">({expense.category})</span>
             </span>
           </li>
         ))}
       </ul>
       <div className="px-4 py-2.5 bg-gray-50 flex items-center justify-between">
-        <span className="text-xs text-gray-400">{items.length}건</span>
         <div className="flex items-center gap-3">
+          <span className="text-sm font-bold text-gray-800">{fmt(total)}</span>
           {waste > 0 && (
             <span className="text-xs text-orange-500 font-medium">낭비 {fmt(waste)}</span>
           )}
-          <span className="text-sm font-bold text-gray-800">{fmt(total)}</span>
         </div>
+        <span className="text-xs text-gray-400">{items.length}건</span>
       </div>
     </div>
   );
 }
 
-export default function WeeklyLogView({ monthExpenses, month, onDayClick }: Props) {
-  // 주차별 그룹핑 — 오름차순 (1주차 → 마지막 주차)
+// ── 메인 컴포넌트 ──────────────────────────────────────────────
+export default function WeeklyLogView({ monthExpenses, month, onDayClick, onAddExpense }: Props) {
+  const todayKey = getTodayKey();
+  const todayMonth = new Date().getMonth() + 1;
+  const todayWeekNum = Math.ceil(new Date().getDate() / 7);
+  const todayWeekLabel = `${todayMonth}월 ${todayWeekNum}주차`;
+
   const weeklyGroups = useMemo(() => {
     const dates = Object.keys(monthExpenses).sort((a, b) => b.localeCompare(a));
     const grouped = new Map<string, string[]>();
@@ -87,18 +274,26 @@ export default function WeeklyLogView({ monthExpenses, month, onDayClick }: Prop
       if (!grouped.has(label)) grouped.set(label, []);
       grouped.get(label)!.push(date);
     }
-    // 오름차순으로 변환 (index 기준 이동을 위해)
-    return Array.from(grouped.entries()).reverse();
-  }, [monthExpenses, month]);
+    if (month === todayMonth && !grouped.has(todayWeekLabel)) {
+      grouped.set(todayWeekLabel, []);
+    }
+    return Array.from(grouped.entries()).sort(([a], [b]) => {
+      const wA = parseInt(a.match(/(\d+)주차/)?.[1] ?? "0");
+      const wB = parseInt(b.match(/(\d+)주차/)?.[1] ?? "0");
+      return wA - wB;
+    });
+  }, [monthExpenses, month, todayWeekLabel, todayMonth]);
 
-  // 기본값: 가장 최근 주차
-  const [activeIndex, setActiveIndex] = useState(() => weeklyGroups.length - 1);
+  const defaultIndex = useMemo(() => {
+    const idx = weeklyGroups.findIndex(([label]) => label === todayWeekLabel);
+    return idx >= 0 ? idx : weeklyGroups.length - 1;
+  }, [weeklyGroups, todayWeekLabel]);
 
+  const [activeIndex, setActiveIndex] = useState(defaultIndex);
   const safeIndex = Math.min(Math.max(activeIndex, 0), weeklyGroups.length - 1);
   const [weekLabel, dates] = weeklyGroups[safeIndex] ?? ["", []];
 
-  const canGoPrev = safeIndex > 0;
-  const canGoNext = safeIndex < weeklyGroups.length - 1;
+  const isCurrentWeek = weekLabel === todayWeekLabel && month === todayMonth;
 
   if (weeklyGroups.length === 0) {
     return (
@@ -114,35 +309,44 @@ export default function WeeklyLogView({ monthExpenses, month, onDayClick }: Prop
       <div className="flex items-center justify-center gap-2 mb-4">
         <button
           onClick={() => setActiveIndex((i) => i - 1)}
-          disabled={!canGoPrev}
+          disabled={safeIndex === 0}
           className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          aria-label="이전 주차"
         >
           <ChevronLeft size={18} />
         </button>
-
         <span className="text-sm font-bold text-gray-700">{weekLabel}</span>
-
         <button
           onClick={() => setActiveIndex((i) => i + 1)}
-          disabled={!canGoNext}
+          disabled={safeIndex === weeklyGroups.length - 1}
           className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          aria-label="다음 주차"
         >
           <ChevronRight size={18} />
         </button>
       </div>
 
-      {/* 해당 주차 날짜 목록 */}
+      {/* 카드 목록 */}
       <div className="flex flex-col gap-3">
-        {dates.map((date) => (
-          <DayCard
-            key={date}
-            date={date}
-            items={monthExpenses[date] ?? []}
-            onDayClick={onDayClick}
+        {/* 오늘 카드 — 현재 주차에만 표시 */}
+        {isCurrentWeek && (
+          <TodayCard
+            date={todayKey}
+            expenses={monthExpenses[todayKey] ?? []}
+            onAdd={(expense) => onAddExpense(todayKey, expense)}
           />
-        ))}
+        )}
+
+        {/* 나머지 날짜 카드 (오늘 제외, 최신순) */}
+        {dates
+          .filter((d) => d !== todayKey)
+          .sort((a, b) => b.localeCompare(a))
+          .map((date) => (
+            <DayCard
+              key={date}
+              date={date}
+              items={monthExpenses[date] ?? []}
+              onDayClick={onDayClick}
+            />
+          ))}
       </div>
     </div>
   );
