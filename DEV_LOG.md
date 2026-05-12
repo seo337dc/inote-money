@@ -191,6 +191,45 @@ src/app/demo/
 - "저장 (N)" 클릭 → 모든 pending 항목 onAdd 호출 후 폼 닫힘
 - 폼 닫기(✕) 클릭 → pending 항목 전체 버림 (저장 없이 취소)
 
+#### ✅ 전체 CRUD 완성 — 수정 / 삭제 / pending 항목 편집
+
+**수정 (Edit)**
+- 각 지출 항목 hover 시 수정(✏️) 버튼 노출
+- 클릭 시 해당 행이 인라인 `InlineEditForm`으로 전환 (파란 테두리)
+- 저장 시 해당 항목만 업데이트, 취소 시 원상 복귀
+- 적용 범위: DayDetailModal / WeeklyLogView DayCard / AllLogView DayCard
+
+**삭제 (Delete)**
+- hover 시 삭제(🗑) 버튼 노출 → 즉시 제거
+- 적용 범위: 위 세 곳 동일
+
+**pending 항목 편집/삭제**
+- "미저장" 라벨 영역 hover 시 편집(✏️) / 제거(✕) 버튼 노출
+- 편집: 해당 pending 행이 `InlineEditForm`으로 전환 (저장된 항목과 동일 UX)
+- 제거: pendingItems 배열에서 즉시 제거 (부모 state에는 영향 없음)
+
+**hover 레이아웃 안정화**
+- 기존 `hidden group-hover:flex` → 버튼 등장 시 행 높이/너비 변화 문제
+- 수정: `opacity-0/opacity-100` + `absolute` 포지셔닝 + 고정 너비 컨테이너로 레이아웃 고정
+
+**중복 key 버그 수정**
+- pending 항목 여러 개 일괄 저장 시 `Date.now()` 동일 → React key 중복 에러
+- 수정: `useRef` 카운터 추가 → `id = \`${Date.now()}-${counter}\`` 형태로 고유성 보장
+
+#### ✅ DayDetailModal UX 개선
+
+- "지출 추가" 토글 버튼 제거 → 입력 폼 항상 표시
+- 하단 버튼: "닫기" (모달 닫기) + "저장 (N)" (pending 일괄 저장 후 닫기)
+- 저장 시 `onClose()` 자동 호출
+
+#### ✅ 낭비 입력 방식 변경 — 스위치 → 칩 버튼
+
+- 기존: 슬라이드 토글 스위치
+- 변경: 카테고리 칩과 동일한 pill 버튼 스타일
+  - 비활성: 회색 배경 (`bg-gray-100 text-gray-400`)
+  - 활성: 주황 배경 + 테두리 (`bg-orange-100 text-orange-500 ring-1 ring-orange-300`)
+- 적용 범위: DayDetailModal / WeeklyLogView / AllLogView 전체
+
 ---
 
 ## UI 인사이트 / 기획 메모
