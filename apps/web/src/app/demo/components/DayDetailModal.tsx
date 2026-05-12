@@ -20,13 +20,13 @@ function parseDate(dateStr: string) {
   return `${m}월 ${d}일`;
 }
 
-// ── 인라인 수정 폼 ──────────────────────────────────────────────
+// ── 인라인 수정 폼 (저장된 항목 & 미저장 항목 공용) ────────────
 function InlineEditForm({
   expense,
   onSave,
   onCancel,
 }: {
-  expense: Expense;
+  expense: Omit<Expense, "id">;
   onSave: (updated: Omit<Expense, "id">) => void;
   onCancel: () => void;
 }) {
@@ -186,15 +186,9 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
     if (editingPendingIndex === index) resetForm();
   };
 
-  // 미저장 항목 수정 — 리스트에 유지, 폼에 pre-fill, 버튼 "수정"으로 변경
+  // 미저장 항목 수정 — 행 자체를 인라인 폼으로 전환
   const handleEditPending = (index: number) => {
-    const item = pendingItems[index];
     setEditingPendingIndex(index);
-    setAmount(String(item.amount));
-    setPlace(item.place === "-" ? "" : item.place);
-    setCategory(item.category);
-    setIsWaste(item.isWaste);
-    setFormOpen(true);
   };
 
   return (
@@ -278,47 +272,51 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
               )}
 
               {/* 저장 대기 항목 */}
-              {pendingItems.map((expense, i) => (
-                <li
-                  key={`pending-${i}`}
-                  className={`flex items-center gap-2 py-3.5 group ${
-                    editingPendingIndex === i
-                      ? "bg-blue-50/40 border-l-2 border-blue-400 pl-2"
-                      : "bg-green-50/60"
-                  }`}
-                >
-                  <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
-                    {fmt(expense.amount)}
-                  </span>
-                  {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
-                      {expense.place !== "-" ? expense.place : ""}
+              {pendingItems.map((expense, i) =>
+                editingPendingIndex === i ? (
+                  <InlineEditForm
+                    key={`pending-edit-${i}`}
+                    expense={expense}
+                    onSave={(updated) => {
+                      setPendingItems((prev) => prev.map((item, idx) => idx === i ? updated : item));
+                      setEditingPendingIndex(null);
+                    }}
+                    onCancel={() => setEditingPendingIndex(null)}
+                  />
+                ) : (
+                  <li key={`pending-${i}`} className="flex items-center gap-2 py-3.5 bg-green-50/60 group">
+                    <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
+                      {fmt(expense.amount)}
                     </span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
-                      {expense.category}
-                    </span>
-                  </div>
-                  {/* opacity 전환으로 레이아웃 고정 */}
-                  <div className="relative shrink-0 flex items-center justify-end w-[52px]">
-                    <span className="text-[10px] text-green-500 font-medium transition-opacity group-hover:opacity-0">미저장</span>
-                    <div className="absolute right-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => handleEditPending(i)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        onClick={() => handleRemovePending(i)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
-                      >
-                        <X size={13} />
-                      </button>
+                    {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                      <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
+                        {expense.place !== "-" ? expense.place : ""}
+                      </span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
+                        {expense.category}
+                      </span>
                     </div>
-                  </div>
-                </li>
-              ))}
+                    <div className="relative shrink-0 flex items-center justify-end w-[52px]">
+                      <span className="text-[10px] text-green-500 font-medium transition-opacity group-hover:opacity-0">미저장</span>
+                      <div className="absolute right-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleEditPending(i)}
+                          className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          onClick={() => handleRemovePending(i)}
+                          className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                        >
+                          <X size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                )
+              )}
             </ul>
           )}
         </div>
@@ -382,7 +380,7 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                   isValid ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
                 }`}
               >
-                {editingPendingIndex !== null ? "수정" : "추가"}
+                추가
               </button>
             </div>
           </div>
