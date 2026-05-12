@@ -178,14 +178,13 @@ export default function DemoPage() {
               <WeeklyLogView
                 monthExpenses={monthExpenses}
                 month={currentMonth}
-                onDayClick={setSelectedDate}
                 onAddExpense={handleAddExpense}
               />
             )}
             {view === "all" && (
               <AllLogView
                 allExpenses={expenses}
-                onDayClick={setSelectedDate}
+                onAddExpense={handleAddExpense}
               />
             )}
           </div>

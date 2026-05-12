@@ -2,7 +2,7 @@
 
 import { TriangleAlert, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { type Expense } from "../data";
+import { type Expense, CATEGORY_BADGE } from "../data";
 
 type Props = {
   date: string;
@@ -18,16 +18,6 @@ function parseDate(dateStr: string) {
   return `${m}월 ${d}일`;
 }
 
-const CATEGORY_BADGE: Record<string, string> = {
-  식비: "bg-green-100 text-green-700",
-  카페: "bg-amber-100 text-amber-700",
-  교통: "bg-blue-100 text-blue-700",
-  쇼핑: "bg-purple-100 text-purple-700",
-  의료: "bg-red-100 text-red-700",
-  문화: "bg-pink-100 text-pink-700",
-  구독: "bg-indigo-100 text-indigo-700",
-  기타: "bg-gray-100 text-gray-600",
-};
 
 export default function DayDetailModal({ date, expenses, onClose, onAddClick }: Props) {
   const total = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -79,34 +69,33 @@ export default function DayDetailModal({ date, expenses, onClose, onAddClick }: 
           ) : (
             <ul className="divide-y divide-gray-50">
               {expenses.map((expense) => (
-                <li key={expense.id} className="flex items-center justify-between py-3.5">
-                  <div className="flex items-start gap-2.5 min-w-0">
-                    {expense.isWaste ? (
-                      <TriangleAlert
-                        size={14}
-                        className="text-orange-400 shrink-0 mt-0.5"
-                      />
-                    ) : (
-                      <span className="w-3.5 shrink-0" />
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">
-                        {expense.place}
-                      </p>
-                      <span
-                        className={`inline-block text-[10px] px-1.5 py-0.5 rounded-full font-medium mt-0.5 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}
-                      >
-                        {expense.category}
-                      </span>
-                    </div>
-                  </div>
-                  <p
-                    className={`text-sm font-bold shrink-0 ml-3 ${
+                <li key={expense.id} className="flex items-center gap-2 py-3.5">
+                  <span
+                    className={`text-sm font-bold shrink-0 ${
                       expense.isWaste ? "text-orange-500" : "text-gray-900"
                     }`}
                   >
                     {fmt(expense.amount)}
-                  </p>
+                  </span>
+                  {expense.isWaste && (
+                    <TriangleAlert size={13} className="text-orange-400 shrink-0" />
+                  )}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                      className={`text-sm truncate ${
+                        expense.isWaste ? "text-orange-500" : "text-gray-600"
+                      }`}
+                    >
+                      {expense.place !== "-" ? expense.place : ""}
+                    </span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${
+                        CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {expense.category}
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>

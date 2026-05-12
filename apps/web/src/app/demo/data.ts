@@ -21,6 +21,17 @@ export const CATEGORIES = [
 
 export type Category = (typeof CATEGORIES)[number];
 
+export const CATEGORY_BADGE: Record<string, string> = {
+  식비: "bg-green-100 text-green-700",
+  카페: "bg-amber-100 text-amber-700",
+  교통: "bg-blue-100 text-blue-700",
+  쇼핑: "bg-purple-100 text-purple-700",
+  의료: "bg-red-100 text-red-700",
+  문화: "bg-pink-100 text-pink-700",
+  구독: "bg-indigo-100 text-indigo-700",
+  기타: "bg-gray-100 text-gray-600",
+};
+
 export const MONTHLY_INFO = {
   year: 2026,
   month: 5,
