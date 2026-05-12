@@ -81,6 +81,13 @@ export default function DemoPage() {
     }));
   };
 
+  const handleEditExpense = (date: string, id: string, expense: Omit<Expense, "id">) => {
+    setExpenses((prev) => ({
+      ...prev,
+      [date]: (prev[date] ?? []).map((e) => e.id === id ? { ...expense, id } : e),
+    }));
+  };
+
   const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
 
   return (
@@ -186,6 +193,7 @@ export default function DemoPage() {
                 month={currentMonth}
                 onAddExpense={handleAddExpense}
                 onDeleteExpense={handleDeleteExpense}
+                onEditExpense={handleEditExpense}
               />
             )}
             {view === "all" && (
@@ -193,6 +201,7 @@ export default function DemoPage() {
                 allExpenses={expenses}
                 onAddExpense={handleAddExpense}
                 onDeleteExpense={handleDeleteExpense}
+                onEditExpense={handleEditExpense}
               />
             )}
           </div>
@@ -207,6 +216,7 @@ export default function DemoPage() {
           onClose={() => setSelectedDate(null)}
           onAdd={(expense) => handleAddExpense(selectedDate, expense)}
           onDelete={(id) => handleDeleteExpense(selectedDate, id)}
+          onEdit={(id, expense) => handleEditExpense(selectedDate, id, expense)}
         />
       )}
     </div>

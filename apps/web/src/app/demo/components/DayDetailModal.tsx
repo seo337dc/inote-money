@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TriangleAlert, Plus, X, ChevronUp, Trash2 } from "lucide-react";
+import { TriangleAlert, Plus, X, ChevronUp, Trash2, Pencil, Check } from "lucide-react";
 import { type Expense, CATEGORY_BADGE, CATEGORIES } from "../data";
 
 type Props = {
@@ -10,6 +10,7 @@ type Props = {
   onClose: () => void;
   onAdd: (expense: Omit<Expense, "id">) => void;
   onDelete: (id: string) => void;
+  onEdit: (id: string, expense: Omit<Expense, "id">) => void;
 };
 
 const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
@@ -19,8 +20,98 @@ function parseDate(dateStr: string) {
   return `${m}월 ${d}일`;
 }
 
-export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelete }: Props) {
+// ── 인라인 수정 폼 ──────────────────────────────────────────────
+function InlineEditForm({
+  expense,
+  onSave,
+  onCancel,
+}: {
+  expense: Expense;
+  onSave: (updated: Omit<Expense, "id">) => void;
+  onCancel: () => void;
+}) {
+  const [amount, setAmount] = useState(String(expense.amount));
+  const [place, setPlace] = useState(expense.place === "-" ? "" : expense.place);
+  const [category, setCategory] = useState(expense.category);
+  const [isWaste, setIsWaste] = useState(expense.isWaste);
+
+  const isValid = Number(amount) > 0;
+
+  const handleSave = () => {
+    if (!isValid) return;
+    onSave({ place: place.trim() || "-", amount: Number(amount), category, isWaste });
+  };
+
+  return (
+    <li className="py-3 flex flex-col gap-2 bg-blue-50/40 border-l-2 border-blue-400 px-2">
+      <div className="flex gap-2 items-center">
+        <div className="relative w-32 shrink-0">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onCancel(); }}
+            autoFocus
+            className="w-full border border-blue-200 rounded-xl px-3 py-2 pr-7 text-right text-sm font-bold text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+          />
+          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span>
+        </div>
+        <input
+          type="text"
+          placeholder="사용처 (선택)"
+          value={place}
+          onChange={(e) => setPlace(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onCancel(); }}
+          className="flex-1 border border-blue-200 rounded-xl px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+        />
+        <button type="button" onClick={() => setIsWaste((v) => !v)} className="flex items-center gap-1 shrink-0">
+          <span className={`relative w-9 h-5 rounded-full transition-colors ${isWaste ? "bg-orange-400" : "bg-gray-200"}`}>
+            <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isWaste ? "translate-x-4" : "translate-x-0"}`} />
+          </span>
+          <span className={`text-xs font-medium ${isWaste ? "text-orange-500" : "text-gray-400"}`}>낭비</span>
+        </button>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-1">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setCategory(cat)}
+              className={`px-2 py-0.5 rounded-full text-xs font-semibold transition-colors ${
+                category === cat ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1.5 shrink-0">
+          <button
+            onClick={onCancel}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors flex items-center gap-1"
+          >
+            <X size={11} /> 취소
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!isValid}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
+              isValid ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
+            }`}
+          >
+            <Check size={11} /> 저장
+          </button>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelete, onEdit }: Props) {
   const [formOpen, setFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingItems, setPendingItems] = useState<Omit<Expense, "id">[]>([]);
   const [amount, setAmount] = useState("");
   const [place, setPlace] = useState("");
@@ -59,8 +150,14 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
       setPendingItems([]);
       setFormOpen(false);
     } else {
+      setEditingId(null);
       setFormOpen(true);
     }
+  };
+
+  const handleStartEdit = (id: string) => {
+    setEditingId(id);
+    setFormOpen(false);
   };
 
   return (
@@ -103,28 +200,45 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
           ) : (
             <ul className="divide-y divide-gray-50">
               {/* 저장된 항목 */}
-              {expenses.map((expense) => (
-                <li key={expense.id} className="flex items-center gap-2 py-3.5 group">
-                  <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
-                    {fmt(expense.amount)}
-                  </span>
-                  {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
-                      {expense.place !== "-" ? expense.place : ""}
+              {expenses.map((expense) =>
+                editingId === expense.id ? (
+                  <InlineEditForm
+                    key={expense.id}
+                    expense={expense}
+                    onSave={(updated) => { onEdit(expense.id, updated); setEditingId(null); }}
+                    onCancel={() => setEditingId(null)}
+                  />
+                ) : (
+                  <li key={expense.id} className="flex items-center gap-2 py-3.5 group">
+                    <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
+                      {fmt(expense.amount)}
                     </span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
-                      {expense.category}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => onDelete(expense.id)}
-                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </li>
-              ))}
+                    {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                      <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
+                        {expense.place !== "-" ? expense.place : ""}
+                      </span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
+                        {expense.category}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      <button
+                        onClick={() => handleStartEdit(expense.id)}
+                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        onClick={() => onDelete(expense.id)}
+                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </li>
+                )
+              )}
 
               {/* 저장 대기 항목 */}
               {pendingItems.map((expense, i) => (
