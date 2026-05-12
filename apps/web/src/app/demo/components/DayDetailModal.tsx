@@ -44,7 +44,7 @@ function InlineEditForm({
 
   return (
     <li className="py-3 flex flex-col gap-2.5 bg-blue-50/50 border-l-2 border-blue-400 px-3 rounded-r-xl">
-      {/* 카테고리 + 낭비 */}
+      {/* 카테고리 */}
       <div className="flex flex-wrap items-center gap-1.5">
         {CATEGORIES.map((cat) => (
           <button
@@ -58,17 +58,8 @@ function InlineEditForm({
             {cat}
           </button>
         ))}
-        <button
-          type="button"
-          onClick={() => setIsWaste((v) => !v)}
-          className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${
-            isWaste ? "bg-orange-100 text-orange-500 ring-1 ring-orange-300" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-          }`}
-        >
-          낭비
-        </button>
       </div>
-      {/* 금액 + 사용처 */}
+      {/* 금액 + 사용처 + 취소/저장 */}
       <div className="flex gap-2 items-center">
         <div className="relative w-32 shrink-0">
           <input
@@ -108,6 +99,21 @@ function InlineEditForm({
           </button>
         </div>
       </div>
+      {/* 낭비 체크박스 */}
+      <button
+        type="button"
+        onClick={() => setIsWaste((v) => !v)}
+        className="flex items-center gap-1.5 w-fit"
+      >
+        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
+          isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 bg-white"
+        }`}>
+          {isWaste && <Check size={9} className="text-white" strokeWidth={3} />}
+        </span>
+        <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400"}`}>
+          낭비
+        </span>
+      </button>
     </li>
   );
 }
@@ -292,7 +298,7 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
 
         {/* 입력 폼 */}
         <div className="border-t border-gray-100 px-5 pt-4 pb-3 flex flex-col gap-3 shrink-0 bg-gray-50/50">
-          {/* 카테고리 + 낭비 한 줄 */}
+          {/* 카테고리 */}
           <div className="flex flex-wrap items-center gap-1.5">
             {CATEGORIES.map((cat) => (
               <button
@@ -306,17 +312,6 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                 {cat}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() => setIsWaste((v) => !v)}
-              className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${
-                isWaste
-                  ? "bg-orange-100 text-orange-500 ring-1 ring-orange-300"
-                  : "bg-white text-gray-400 hover:bg-gray-100 border border-gray-200"
-              }`}
-            >
-              낭비
-            </button>
           </div>
 
           {/* 금액 + 사용처 한 줄 */}
@@ -342,6 +337,22 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
               className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors"
             />
           </div>
+
+          {/* 낭비 체크박스 */}
+          <button
+            type="button"
+            onClick={() => setIsWaste((v) => !v)}
+            className="flex items-center gap-1.5 w-fit"
+          >
+            <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
+              isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 bg-white"
+            }`}>
+              {isWaste && <Check size={9} className="text-white" strokeWidth={3} />}
+            </span>
+            <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400"}`}>
+              낭비
+            </span>
+          </button>
 
           {/* 추가하기 버튼 — 독립 행, 풀 width */}
           <button
