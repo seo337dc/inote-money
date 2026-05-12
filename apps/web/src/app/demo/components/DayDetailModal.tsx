@@ -112,6 +112,7 @@ function InlineEditForm({
 export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelete, onEdit }: Props) {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingPendingIndex, setEditingPendingIndex] = useState<number | null>(null);
   const [pendingItems, setPendingItems] = useState<Omit<Expense, "id">[]>([]);
   const [amount, setAmount] = useState("");
   const [place, setPlace] = useState("");
@@ -127,28 +128,46 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
   const total = savedTotal + pendingTotal;
   const waste = savedWaste + pendingWaste;
 
-  const handleAddPending = () => {
-    if (!isValid) return;
-    setPendingItems((prev) => [
-      ...prev,
-      { place: place.trim() || "-", amount: Number(amount), category, isWaste },
-    ]);
+  const resetForm = () => {
     setAmount("");
     setPlace("");
     setCategory(CATEGORIES[0]);
     setIsWaste(false);
+    setEditingPendingIndex(null);
+  };
+
+  const handleAddPending = () => {
+    if (!isValid) return;
+    if (editingPendingIndex !== null) {
+      // 기존 pending 항목 제자리 수정
+      setPendingItems((prev) =>
+        prev.map((item, i) =>
+          i === editingPendingIndex
+            ? { place: place.trim() || "-", amount: Number(amount), category, isWaste }
+            : item
+        )
+      );
+    } else {
+      setPendingItems((prev) => [
+        ...prev,
+        { place: place.trim() || "-", amount: Number(amount), category, isWaste },
+      ]);
+    }
+    resetForm();
   };
 
   const handleSave = () => {
     pendingItems.forEach((item) => onAdd(item));
     setPendingItems([]);
     setFormOpen(false);
+    resetForm();
   };
 
   const handleToggleForm = () => {
     if (formOpen) {
       setPendingItems([]);
       setFormOpen(false);
+      resetForm();
     } else {
       setEditingId(null);
       setFormOpen(true);
@@ -158,17 +177,19 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
   const handleStartEdit = (id: string) => {
     setEditingId(id);
     setFormOpen(false);
+    resetForm();
   };
 
   // 미저장 항목 제거
   const handleRemovePending = (index: number) => {
     setPendingItems((prev) => prev.filter((_, i) => i !== index));
+    if (editingPendingIndex === index) resetForm();
   };
 
-  // 미저장 항목 수정 (폼으로 되돌리기)
+  // 미저장 항목 수정 — 리스트에 유지, 폼에 pre-fill, 버튼 "수정"으로 변경
   const handleEditPending = (index: number) => {
     const item = pendingItems[index];
-    setPendingItems((prev) => prev.filter((_, i) => i !== index));
+    setEditingPendingIndex(index);
     setAmount(String(item.amount));
     setPlace(item.place === "-" ? "" : item.place);
     setCategory(item.category);
@@ -258,7 +279,14 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
 
               {/* 저장 대기 항목 */}
               {pendingItems.map((expense, i) => (
-                <li key={`pending-${i}`} className="flex items-center gap-2 py-3.5 bg-green-50/60 group">
+                <li
+                  key={`pending-${i}`}
+                  className={`flex items-center gap-2 py-3.5 group ${
+                    editingPendingIndex === i
+                      ? "bg-blue-50/40 border-l-2 border-blue-400 pl-2"
+                      : "bg-green-50/60"
+                  }`}
+                >
                   <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
                     {fmt(expense.amount)}
                   </span>
@@ -271,20 +299,23 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                       {expense.category}
                     </span>
                   </div>
-                  <div className="flex items-center gap-0.5 shrink-0">
-                    <span className="text-[10px] text-green-500 font-medium group-hover:hidden">미저장</span>
-                    <button
-                      onClick={() => handleEditPending(i)}
-                      className="hidden group-hover:flex w-7 h-7 items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
-                    >
-                      <Pencil size={13} />
-                    </button>
-                    <button
-                      onClick={() => handleRemovePending(i)}
-                      className="hidden group-hover:flex w-7 h-7 items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
-                    >
-                      <X size={13} />
-                    </button>
+                  {/* opacity 전환으로 레이아웃 고정 */}
+                  <div className="relative shrink-0 flex items-center justify-end w-[52px]">
+                    <span className="text-[10px] text-green-500 font-medium transition-opacity group-hover:opacity-0">미저장</span>
+                    <div className="absolute right-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => handleEditPending(i)}
+                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        onClick={() => handleRemovePending(i)}
+                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
                   </div>
                 </li>
               ))}
@@ -351,7 +382,7 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                   isValid ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
                 }`}
               >
-                추가
+                {editingPendingIndex !== null ? "수정" : "추가"}
               </button>
             </div>
           </div>

@@ -138,6 +138,7 @@ function DayCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingPendingIndex, setEditingPendingIndex] = useState<number | null>(null);
   const [pendingItems, setPendingItems] = useState<Omit<Expense, "id">[]>([]);
   const [place, setPlace] = useState("");
   const [amount, setAmount] = useState("");
@@ -153,16 +154,31 @@ function DayCard({
   const waste = savedWaste + pendingWaste;
   const totalCount = items.length + pendingItems.length;
 
-  const handleAddPending = () => {
-    if (!isValid) return;
-    setPendingItems((prev) => [
-      ...prev,
-      { place: place.trim() || "-", amount: Number(amount), category, isWaste },
-    ]);
+  const resetForm = () => {
     setAmount("");
     setPlace("");
     setCategory(CATEGORIES[0]);
     setIsWaste(false);
+    setEditingPendingIndex(null);
+  };
+
+  const handleAddPending = () => {
+    if (!isValid) return;
+    if (editingPendingIndex !== null) {
+      setPendingItems((prev) =>
+        prev.map((item, i) =>
+          i === editingPendingIndex
+            ? { place: place.trim() || "-", amount: Number(amount), category, isWaste }
+            : item
+        )
+      );
+    } else {
+      setPendingItems((prev) => [
+        ...prev,
+        { place: place.trim() || "-", amount: Number(amount), category, isWaste },
+      ]);
+    }
+    resetForm();
   };
 
   const handleSave = (e: React.MouseEvent) => {
@@ -170,6 +186,7 @@ function DayCard({
     pendingItems.forEach((item) => onAdd(item));
     setPendingItems([]);
     setExpanded(false);
+    resetForm();
   };
 
   const handleOpen = () => {
@@ -181,6 +198,7 @@ function DayCard({
     setPendingItems([]);
     setEditingId(null);
     setExpanded(false);
+    resetForm();
   };
 
   const handleStartEdit = (e: React.MouseEvent, id: string) => {
@@ -192,12 +210,13 @@ function DayCard({
   const handleRemovePending = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
     setPendingItems((prev) => prev.filter((_, i) => i !== index));
+    if (editingPendingIndex === index) resetForm();
   };
 
   const handleEditPending = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
     const item = pendingItems[index];
-    setPendingItems((prev) => prev.filter((_, i) => i !== index));
+    setEditingPendingIndex(index);
     setAmount(String(item.amount));
     setPlace(item.place === "-" ? "" : item.place);
     setCategory(item.category);
@@ -278,7 +297,14 @@ function DayCard({
       {pendingItems.length > 0 && (
         <ul className="divide-y divide-green-50 bg-green-50/40">
           {pendingItems.map((expense, i) => (
-            <li key={`pending-${i}`} className="flex items-center gap-2 px-4 py-3 group">
+            <li
+              key={`pending-${i}`}
+              className={`flex items-center gap-2 px-4 py-3 group ${
+                editingPendingIndex === i
+                  ? "bg-blue-50/40 border-l-2 border-blue-400"
+                  : ""
+              }`}
+            >
               <span className={`text-sm font-semibold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
                 {fmt(expense.amount)}
               </span>
@@ -291,20 +317,22 @@ function DayCard({
                   {expense.category}
                 </span>
               </div>
-              <div className="flex items-center gap-0.5 shrink-0">
-                <span className="text-[10px] text-green-500 font-medium group-hover:hidden">미저장</span>
-                <button
-                  onClick={(e) => handleEditPending(e, i)}
-                  className="hidden group-hover:flex w-6 h-6 items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
-                >
-                  <Pencil size={12} />
-                </button>
-                <button
-                  onClick={(e) => handleRemovePending(e, i)}
-                  className="hidden group-hover:flex w-6 h-6 items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
-                >
-                  <X size={12} />
-                </button>
+              <div className="relative shrink-0 flex items-center justify-end w-[48px]">
+                <span className="text-[10px] text-green-500 font-medium transition-opacity group-hover:opacity-0">미저장</span>
+                <div className="absolute right-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => handleEditPending(e, i)}
+                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
+                  >
+                    <Pencil size={12} />
+                  </button>
+                  <button
+                    onClick={(e) => handleRemovePending(e, i)}
+                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
               </div>
             </li>
           ))}
@@ -375,7 +403,7 @@ function DayCard({
                 isValid ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
               }`}
             >
-              추가
+              {editingPendingIndex !== null ? "수정" : "추가"}
             </button>
           </div>
         </div>
