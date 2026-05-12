@@ -49,7 +49,23 @@ function InlineEditForm({
   };
 
   return (
-    <li className="px-4 py-3 flex flex-col gap-2 bg-blue-50/40 border-l-2 border-blue-400">
+    <li className="px-4 py-3 flex flex-col gap-2.5 bg-blue-50/40 border-l-2 border-blue-400">
+      {/* 카테고리 */}
+      <div className="flex flex-wrap gap-1">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            type="button"
+            onClick={() => setCategory(cat)}
+            className={`px-2 py-0.5 rounded-full text-xs font-semibold transition-colors ${
+              category === cat ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+      {/* 금액 + 사용처 + 취소/저장 */}
       <div className="flex gap-2 items-center">
         <div className="relative w-32 shrink-0">
           <input
@@ -71,49 +87,39 @@ function InlineEditForm({
           onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onCancel(); }}
           className="flex-1 border border-blue-200 rounded-xl px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
         />
-        <button
-          type="button"
-          onClick={() => setIsWaste((v) => !v)}
-          className={`shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
-            isWaste ? "bg-orange-100 text-orange-500 ring-1 ring-orange-300" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-          }`}
-        >
-          낭비
-        </button>
-      </div>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-1">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setCategory(cat)}
-              className={`px-2 py-0.5 rounded-full text-xs font-semibold transition-colors ${
-                category === cat ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
         <div className="flex gap-1.5 shrink-0">
           <button
             onClick={onCancel}
-            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors flex items-center gap-1"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors"
           >
-            <X size={11} /> 취소
+            <X size={14} />
           </button>
           <button
             onClick={handleSave}
             disabled={!isValid}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
+            className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
               isValid ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
             }`}
           >
-            <Check size={11} /> 저장
+            <Check size={14} />
           </button>
         </div>
       </div>
+      {/* 낭비 체크박스 */}
+      <button
+        type="button"
+        onClick={() => setIsWaste((v) => !v)}
+        className="flex items-center gap-1.5 w-fit"
+      >
+        <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
+          isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 bg-white"
+        }`}>
+          {isWaste && <Check size={9} className="text-white" strokeWidth={3} />}
+        </span>
+        <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400"}`}>
+          낭비
+        </span>
+      </button>
     </li>
   );
 }
@@ -348,7 +354,23 @@ function DayCard({
 
       {/* 추가 입력 폼 */}
       {expanded && (
-        <div className="px-4 pt-4 pb-3 flex flex-col gap-3 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
+        <div className="px-4 pt-4 pb-3 flex flex-col gap-3 border-t border-gray-100 bg-gray-50/50" onClick={(e) => e.stopPropagation()}>
+          {/* 카테고리 */}
+          <div className="flex flex-wrap gap-1.5">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setCategory(cat)}
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
+                  category === cat ? "bg-green-500 text-white" : "bg-white text-gray-500 hover:bg-gray-100 border border-gray-200"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          {/* 금액 + 사용처 */}
           <div className="flex gap-2 items-center">
             <div className="relative w-36 shrink-0">
               <input
@@ -359,7 +381,7 @@ function DayCard({
                 onChange={(e) => setAmount(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
                 autoFocus={editingId === null}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-8 text-right text-base font-bold text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-8 text-right text-base font-bold text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors"
               />
               <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span>
             </div>
@@ -369,40 +391,35 @@ function DayCard({
               value={place}
               onChange={(e) => setPlace(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
-              className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
+              className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors"
             />
-            <button type="button" onClick={() => setIsWaste((v) => !v)} className="flex items-center gap-1.5 shrink-0">
-              <span className={`relative w-10 h-5 rounded-full transition-colors ${isWaste ? "bg-orange-400" : "bg-gray-200"}`}>
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isWaste ? "translate-x-5" : "translate-x-0"}`} />
-              </span>
-              <span className={`text-xs font-medium ${isWaste ? "text-orange-500" : "text-gray-400"}`}>낭비</span>
-            </button>
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex flex-wrap gap-1.5">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setCategory(cat)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
-                    category === cat ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={handleAddPending}
-              disabled={!isValid}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-colors ${
-                isValid ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
-              }`}
-            >
-              추가
-            </button>
-          </div>
+          {/* 낭비 체크박스 */}
+          <button
+            type="button"
+            onClick={() => setIsWaste((v) => !v)}
+            className="flex items-center gap-1.5 w-fit"
+          >
+            <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
+              isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 bg-white"
+            }`}>
+              {isWaste && <Check size={9} className="text-white" strokeWidth={3} />}
+            </span>
+            <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400"}`}>
+              낭비
+            </span>
+          </button>
+          {/* 추가하기 버튼 */}
+          <button
+            onClick={handleAddPending}
+            disabled={!isValid}
+            className={`w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-colors ${
+              isValid ? "bg-green-500 text-white hover:bg-green-600 active:bg-green-700" : "bg-gray-100 text-gray-300 cursor-not-allowed"
+            }`}
+          >
+            <Plus size={15} />
+            추가하기
+          </button>
         </div>
       )}
 
