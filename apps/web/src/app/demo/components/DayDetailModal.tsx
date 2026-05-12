@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TriangleAlert, Plus, X, ChevronUp, Trash2, Pencil, Check } from "lucide-react";
+import { TriangleAlert, X, Trash2, Pencil, Check } from "lucide-react";
 import { type Expense, CATEGORY_BADGE, CATEGORIES } from "../data";
 
 type Props = {
@@ -110,7 +110,6 @@ function InlineEditForm({
 }
 
 export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelete, onEdit }: Props) {
-  const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingPendingIndex, setEditingPendingIndex] = useState<number | null>(null);
   const [pendingItems, setPendingItems] = useState<Omit<Expense, "id">[]>([]);
@@ -138,55 +137,25 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
 
   const handleAddPending = () => {
     if (!isValid) return;
-    if (editingPendingIndex !== null) {
-      // 기존 pending 항목 제자리 수정
-      setPendingItems((prev) =>
-        prev.map((item, i) =>
-          i === editingPendingIndex
-            ? { place: place.trim() || "-", amount: Number(amount), category, isWaste }
-            : item
-        )
-      );
-    } else {
-      setPendingItems((prev) => [
-        ...prev,
-        { place: place.trim() || "-", amount: Number(amount), category, isWaste },
-      ]);
-    }
+    setPendingItems((prev) => [
+      ...prev,
+      { place: place.trim() || "-", amount: Number(amount), category, isWaste },
+    ]);
     resetForm();
   };
 
   const handleSave = () => {
     pendingItems.forEach((item) => onAdd(item));
     setPendingItems([]);
-    setFormOpen(false);
     resetForm();
+    onClose();
   };
 
-  const handleToggleForm = () => {
-    if (formOpen) {
-      setPendingItems([]);
-      setFormOpen(false);
-      resetForm();
-    } else {
-      setEditingId(null);
-      setFormOpen(true);
-    }
-  };
-
-  const handleStartEdit = (id: string) => {
-    setEditingId(id);
-    setFormOpen(false);
-    resetForm();
-  };
-
-  // 미저장 항목 제거
   const handleRemovePending = (index: number) => {
     setPendingItems((prev) => prev.filter((_, i) => i !== index));
     if (editingPendingIndex === index) resetForm();
   };
 
-  // 미저장 항목 수정 — 행 자체를 인라인 폼으로 전환
   const handleEditPending = (index: number) => {
     setEditingPendingIndex(index);
   };
@@ -195,7 +164,7 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative z-10 w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col h-[82vh] sm:h-[600px]">
+      <div className="relative z-10 w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col h-[82vh] sm:h-[620px]">
         {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <span className="w-10 h-1 rounded-full bg-gray-200" />
@@ -255,7 +224,7 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                     </div>
                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                       <button
-                        onClick={() => handleStartEdit(expense.id)}
+                        onClick={() => setEditingId(expense.id)}
                         className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
                       >
                         <Pencil size={13} />
@@ -321,82 +290,74 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
           )}
         </div>
 
-        {/* 인라인 입력 폼 */}
-        {formOpen && (
-          <div className="border-t border-gray-100 px-5 pt-4 pb-3 flex flex-col gap-3 shrink-0">
-            <div className="flex gap-2 items-center">
-              <div className="relative w-32 shrink-0">
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
-                  autoFocus
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-7 text-right text-base font-bold text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
-                />
-                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span>
-              </div>
+        {/* 항상 열려있는 입력 폼 */}
+        <div className="border-t border-gray-100 px-5 pt-4 pb-3 flex flex-col gap-3 shrink-0">
+          <div className="flex gap-2 items-center">
+            <div className="relative w-32 shrink-0">
               <input
-                type="text"
-                placeholder="사용처 (선택)"
-                value={place}
-                onChange={(e) => setPlace(e.target.value)}
+                type="number"
+                inputMode="numeric"
+                placeholder="0"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
-                className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-7 text-right text-base font-bold text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
               />
-              <button
-                type="button"
-                onClick={() => setIsWaste((v) => !v)}
-                className="flex items-center gap-1.5 shrink-0"
-              >
-                <span className={`relative w-10 h-5 rounded-full transition-colors ${isWaste ? "bg-orange-400" : "bg-gray-200"}`}>
-                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isWaste ? "translate-x-5" : "translate-x-0"}`} />
-                </span>
-                <span className={`text-xs font-medium ${isWaste ? "text-orange-500" : "text-gray-400"}`}>낭비</span>
-              </button>
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span>
             </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex flex-wrap gap-1.5">
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setCategory(cat)}
-                    className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
-                      category === cat ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={handleAddPending}
-                disabled={!isValid}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-colors ${
-                  isValid ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
-                }`}
-              >
-                추가
-              </button>
-            </div>
+            <input
+              type="text"
+              placeholder="사용처 (선택)"
+              value={place}
+              onChange={(e) => setPlace(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
+              className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => setIsWaste((v) => !v)}
+              className="flex items-center gap-1.5 shrink-0"
+            >
+              <span className={`relative w-10 h-5 rounded-full transition-colors ${isWaste ? "bg-orange-400" : "bg-gray-200"}`}>
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isWaste ? "translate-x-5" : "translate-x-0"}`} />
+              </span>
+              <span className={`text-xs font-medium ${isWaste ? "text-orange-500" : "text-gray-400"}`}>낭비</span>
+            </button>
           </div>
-        )}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap gap-1.5">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCategory(cat)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
+                    category === cat ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleAddPending}
+              disabled={!isValid}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-colors ${
+                isValid ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
+              }`}
+            >
+              추가
+            </button>
+          </div>
+        </div>
 
-        {/* 하단 버튼 */}
+        {/* 하단 버튼: 닫기 + 저장 */}
         <div className="px-5 py-4 border-t border-gray-100 flex gap-2 shrink-0">
           <button
-            onClick={handleToggleForm}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-              formOpen
-                ? "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                : "bg-green-500 text-white hover:bg-green-600"
-            }`}
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
           >
-            {formOpen ? <><ChevronUp size={16} /> 닫기</> : <><Plus size={16} /> 지출 추가</>}
+            닫기
           </button>
           {pendingItems.length > 0 && (
             <button
