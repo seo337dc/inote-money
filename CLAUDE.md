@@ -139,9 +139,58 @@ inote-money/
 
 ---
 
+## 모바일 / 데스크탑 UI 분리 전략
+
+기능이 많아질수록 모바일과 데스크탑 UI 차이가 크기 때문에 **처음부터 분리 구조로 관리.**
+
+### 분리 기준
+
+- 브레이크포인트: `lg` (1024px) 기준 — 미만 모바일, 이상 데스크탑/태블릿
+- `m.` 서브도메인 방식 사용 안 함 (레거시, SEO 불리, 유지비용 2배)
+- `window` 훅 기반 분기 사용 안 함 (SSR 깜빡임 문제)
+
+### 분리 방식 — CSS 숨기기
+
+```tsx
+// page.tsx
+<>
+  <div className="hidden lg:block">
+    <DemoDesktop {...sharedProps} />
+  </div>
+  <div className="block lg:hidden">
+    <DemoMobile {...sharedProps} />
+  </div>
+</>
+```
+
+- `page.tsx`: 상태·핸들러만 관리, UI 없음
+- `desktop/`: 웹/태블릿 전용 컴포넌트
+- `mobile/`: 모바일 전용 컴포넌트 (하단 탭 네비게이션 포함)
+- 공통 로직은 `page.tsx`에서 props로 내려주기
+
+### 폴더 구조 컨벤션
+
+```
+src/app/demo/
+├── page.tsx                  ← 상태/핸들러만
+├── data.ts
+└── components/
+    ├── desktop/              ← 웹/태블릿 전용
+    │   ├── DemoDesktop.tsx
+    │   └── ...
+    └── mobile/               ← 모바일 전용
+        ├── DemoMobile.tsx
+        ├── BottomTabNav.tsx
+        └── ...
+```
+
+새 화면 추가 시 `desktop/`, `mobile/` 양쪽에 동일하게 추가.
+
+---
+
 ## 현재 단계
 
-`/demo` 가계부 구현 완료 — 대시보드 기획 진행 예정
+`/demo` 가계부 웹/태블릿 UI 완성 — 모바일 뷰 개발 예정
 
 ---
 

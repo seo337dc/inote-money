@@ -311,6 +311,10 @@ src/app/demo/
 - [ ] `/demo` 가계부 모바일 뷰 — 달력 / 주차별 / 전체 로그 (모바일 전용 레이아웃)
 - [ ] 하단 탭 네비게이션 (모바일 전용)
 
+> **모바일/데스크탑 분리 전략 확정** (2026-05-12)
+> CSS 숨기기 방식 (`hidden lg:block` / `block lg:hidden`) + 컴포넌트 분리.
+> 상세 내용은 `CLAUDE.md` → "모바일 / 데스크탑 UI 분리 전략" 섹션 참고.
+
 ### BE
 - [ ] NestJS 프로젝트 생성 (`backend/`)
 - [ ] DB 스키마 설계 (Prisma + PostgreSQL)
