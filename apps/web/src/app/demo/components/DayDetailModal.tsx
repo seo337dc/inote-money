@@ -65,11 +65,14 @@ function InlineEditForm({
           onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onCancel(); }}
           className="flex-1 border border-blue-200 rounded-xl px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
         />
-        <button type="button" onClick={() => setIsWaste((v) => !v)} className="flex items-center gap-1 shrink-0">
-          <span className={`relative w-9 h-5 rounded-full transition-colors ${isWaste ? "bg-orange-400" : "bg-gray-200"}`}>
-            <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isWaste ? "translate-x-4" : "translate-x-0"}`} />
-          </span>
-          <span className={`text-xs font-medium ${isWaste ? "text-orange-500" : "text-gray-400"}`}>낭비</span>
+        <button
+          type="button"
+          onClick={() => setIsWaste((v) => !v)}
+          className={`shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
+            isWaste ? "bg-orange-100 text-orange-500 ring-1 ring-orange-300" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+          }`}
+        >
+          낭비
         </button>
       </div>
       <div className="flex items-center justify-between gap-2">
@@ -316,12 +319,11 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
             <button
               type="button"
               onClick={() => setIsWaste((v) => !v)}
-              className="flex items-center gap-1.5 shrink-0"
+              className={`shrink-0 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                isWaste ? "bg-orange-100 text-orange-500 ring-1 ring-orange-300" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+              }`}
             >
-              <span className={`relative w-10 h-5 rounded-full transition-colors ${isWaste ? "bg-orange-400" : "bg-gray-200"}`}>
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isWaste ? "translate-x-5" : "translate-x-0"}`} />
-              </span>
-              <span className={`text-xs font-medium ${isWaste ? "text-orange-500" : "text-gray-400"}`}>낭비</span>
+              낭비
             </button>
           </div>
           <div className="flex items-center justify-between gap-2">
