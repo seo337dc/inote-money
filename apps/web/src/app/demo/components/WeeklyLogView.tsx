@@ -189,6 +189,22 @@ function DayCard({
     if (!expanded) setExpanded(true);
   };
 
+  const handleRemovePending = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    setPendingItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditPending = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    const item = pendingItems[index];
+    setPendingItems((prev) => prev.filter((_, i) => i !== index));
+    setAmount(String(item.amount));
+    setPlace(item.place === "-" ? "" : item.place);
+    setCategory(item.category);
+    setIsWaste(item.isWaste);
+    setExpanded(true);
+  };
+
   return (
     <div
       className={`bg-white rounded-2xl shadow-sm overflow-hidden transition-colors ${
@@ -262,7 +278,7 @@ function DayCard({
       {pendingItems.length > 0 && (
         <ul className="divide-y divide-green-50 bg-green-50/40">
           {pendingItems.map((expense, i) => (
-            <li key={`pending-${i}`} className="flex items-center gap-2 px-4 py-3">
+            <li key={`pending-${i}`} className="flex items-center gap-2 px-4 py-3 group">
               <span className={`text-sm font-semibold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
                 {fmt(expense.amount)}
               </span>
@@ -275,7 +291,21 @@ function DayCard({
                   {expense.category}
                 </span>
               </div>
-              <span className="ml-auto text-[10px] text-green-500 font-medium shrink-0">미저장</span>
+              <div className="flex items-center gap-0.5 shrink-0">
+                <span className="text-[10px] text-green-500 font-medium group-hover:hidden">미저장</span>
+                <button
+                  onClick={(e) => handleEditPending(e, i)}
+                  className="hidden group-hover:flex w-6 h-6 items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
+                >
+                  <Pencil size={12} />
+                </button>
+                <button
+                  onClick={(e) => handleRemovePending(e, i)}
+                  className="hidden group-hover:flex w-6 h-6 items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                >
+                  <X size={12} />
+                </button>
+              </div>
             </li>
           ))}
         </ul>

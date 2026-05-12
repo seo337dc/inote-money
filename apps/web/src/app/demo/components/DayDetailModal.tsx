@@ -160,6 +160,22 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
     setFormOpen(false);
   };
 
+  // 미저장 항목 제거
+  const handleRemovePending = (index: number) => {
+    setPendingItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // 미저장 항목 수정 (폼으로 되돌리기)
+  const handleEditPending = (index: number) => {
+    const item = pendingItems[index];
+    setPendingItems((prev) => prev.filter((_, i) => i !== index));
+    setAmount(String(item.amount));
+    setPlace(item.place === "-" ? "" : item.place);
+    setCategory(item.category);
+    setIsWaste(item.isWaste);
+    setFormOpen(true);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
@@ -242,12 +258,12 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
 
               {/* 저장 대기 항목 */}
               {pendingItems.map((expense, i) => (
-                <li key={`pending-${i}`} className="flex items-center gap-2 py-3.5 bg-green-50/60">
+                <li key={`pending-${i}`} className="flex items-center gap-2 py-3.5 bg-green-50/60 group">
                   <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
                     {fmt(expense.amount)}
                   </span>
                   {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
-                  <div className="flex items-center gap-1.5 min-w-0">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
                     <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
                       {expense.place !== "-" ? expense.place : ""}
                     </span>
@@ -255,7 +271,21 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                       {expense.category}
                     </span>
                   </div>
-                  <span className="ml-auto text-[10px] text-green-500 font-medium shrink-0">미저장</span>
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <span className="text-[10px] text-green-500 font-medium group-hover:hidden">미저장</span>
+                    <button
+                      onClick={() => handleEditPending(i)}
+                      className="hidden group-hover:flex w-7 h-7 items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      onClick={() => handleRemovePending(i)}
+                      className="hidden group-hover:flex w-7 h-7 items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
