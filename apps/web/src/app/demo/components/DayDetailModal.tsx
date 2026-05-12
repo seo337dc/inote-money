@@ -1,14 +1,14 @@
 "use client";
 
-import { TriangleAlert, Plus, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { type Expense, CATEGORY_BADGE } from "../data";
+import { useState } from "react";
+import { TriangleAlert, Plus, X, ChevronUp } from "lucide-react";
+import { type Expense, CATEGORY_BADGE, CATEGORIES } from "../data";
 
 type Props = {
   date: string;
   expenses: Expense[];
   onClose: () => void;
-  onAddClick: () => void;
+  onAdd: (expense: Omit<Expense, "id">) => void;
 };
 
 const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
@@ -18,40 +18,73 @@ function parseDate(dateStr: string) {
   return `${m}월 ${d}일`;
 }
 
+export default function DayDetailModal({ date, expenses, onClose, onAdd }: Props) {
+  const [formOpen, setFormOpen] = useState(false);
+  const [pendingItems, setPendingItems] = useState<Omit<Expense, "id">[]>([]);
+  const [amount, setAmount] = useState("");
+  const [place, setPlace] = useState("");
+  const [category, setCategory] = useState<string>(CATEGORIES[0]);
+  const [isWaste, setIsWaste] = useState(false);
 
-export default function DayDetailModal({ date, expenses, onClose, onAddClick }: Props) {
-  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const waste = expenses.filter((e) => e.isWaste).reduce((sum, e) => sum + e.amount, 0);
+  const isValid = Number(amount) > 0;
+
+  const savedTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const savedWaste = expenses.filter((e) => e.isWaste).reduce((sum, e) => sum + e.amount, 0);
+  const pendingTotal = pendingItems.reduce((sum, e) => sum + e.amount, 0);
+  const pendingWaste = pendingItems.filter((e) => e.isWaste).reduce((sum, e) => sum + e.amount, 0);
+  const total = savedTotal + pendingTotal;
+  const waste = savedWaste + pendingWaste;
+
+  const handleAddPending = () => {
+    if (!isValid) return;
+    setPendingItems((prev) => [
+      ...prev,
+      { place: place.trim() || "-", amount: Number(amount), category, isWaste },
+    ]);
+    setAmount("");
+    setPlace("");
+    setCategory(CATEGORIES[0]);
+    setIsWaste(false);
+  };
+
+  const handleSave = () => {
+    pendingItems.forEach((item) => onAdd(item));
+    setPendingItems([]);
+    setFormOpen(false);
+  };
+
+  const handleToggleForm = () => {
+    if (formOpen) {
+      setPendingItems([]);
+      setFormOpen(false);
+    } else {
+      setFormOpen(true);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Sheet / Modal */}
-      <div className="relative z-10 w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[85vh]">
+      <div className="relative z-10 w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col h-[82vh] sm:h-[600px]">
         {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <span className="w-10 h-1 rounded-full bg-gray-200" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 shrink-0">
           <h2 className="text-lg font-bold text-gray-900">{parseDate(date)}</h2>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
-            aria-label="닫기"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Summary cards */}
-        <div className="grid grid-cols-2 gap-3 px-5 pt-4 pb-3">
+        <div className="grid grid-cols-2 gap-3 px-5 pt-4 pb-3 shrink-0">
           <div className="bg-gray-50 rounded-xl p-3.5">
             <p className="text-xs text-gray-400 font-medium mb-1">총 지출</p>
             <p className="text-lg font-bold text-gray-900">{fmt(total)}</p>
@@ -62,52 +95,137 @@ export default function DayDetailModal({ date, expenses, onClose, onAddClick }: 
           </div>
         </div>
 
-        {/* Expense list */}
-        <div className="flex-1 overflow-y-auto px-5">
-          {expenses.length === 0 ? (
+        {/* Expense list — scrollable */}
+        <div className="flex-1 overflow-y-auto px-5 min-h-0">
+          {expenses.length === 0 && pendingItems.length === 0 ? (
             <p className="text-center text-gray-400 text-sm py-10">지출 내역이 없습니다</p>
           ) : (
             <ul className="divide-y divide-gray-50">
+              {/* 저장된 항목 */}
               {expenses.map((expense) => (
                 <li key={expense.id} className="flex items-center gap-2 py-3.5">
-                  <span
-                    className={`text-sm font-bold shrink-0 ${
-                      expense.isWaste ? "text-orange-500" : "text-gray-900"
-                    }`}
-                  >
+                  <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
                     {fmt(expense.amount)}
                   </span>
-                  {expense.isWaste && (
-                    <TriangleAlert size={13} className="text-orange-400 shrink-0" />
-                  )}
+                  {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <span
-                      className={`text-sm truncate ${
-                        expense.isWaste ? "text-orange-500" : "text-gray-600"
-                      }`}
-                    >
+                    <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
                       {expense.place !== "-" ? expense.place : ""}
                     </span>
-                    <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${
-                        CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"
-                      }`}
-                    >
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
                       {expense.category}
                     </span>
                   </div>
+                </li>
+              ))}
+
+              {/* 저장 대기 항목 */}
+              {pendingItems.map((expense, i) => (
+                <li key={`pending-${i}`} className="flex items-center gap-2 py-3.5 bg-green-50/60">
+                  <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
+                    {fmt(expense.amount)}
+                  </span>
+                  {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
+                      {expense.place !== "-" ? expense.place : ""}
+                    </span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
+                      {expense.category}
+                    </span>
+                  </div>
+                  <span className="ml-auto text-[10px] text-green-500 font-medium shrink-0">미저장</span>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        {/* Add button */}
-        <div className="px-5 py-4 border-t border-gray-100">
-          <Button onClick={onAddClick} size="lg" className="w-full gap-2">
-            <Plus size={16} />
-            지출 추가
-          </Button>
+        {/* 인라인 입력 폼 */}
+        {formOpen && (
+          <div className="border-t border-gray-100 px-5 pt-4 pb-3 flex flex-col gap-3 shrink-0">
+            <div className="flex gap-2 items-center">
+              <div className="relative w-32 shrink-0">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
+                  autoFocus
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-7 text-right text-base font-bold text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
+                />
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span>
+              </div>
+              <input
+                type="text"
+                placeholder="사용처 (선택)"
+                value={place}
+                onChange={(e) => setPlace(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setIsWaste((v) => !v)}
+                className="flex items-center gap-1.5 shrink-0"
+              >
+                <span className={`relative w-10 h-5 rounded-full transition-colors ${isWaste ? "bg-orange-400" : "bg-gray-200"}`}>
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isWaste ? "translate-x-5" : "translate-x-0"}`} />
+                </span>
+                <span className={`text-xs font-medium ${isWaste ? "text-orange-500" : "text-gray-400"}`}>낭비</span>
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-1.5">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setCategory(cat)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
+                      category === cat ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={handleAddPending}
+                disabled={!isValid}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-colors ${
+                  isValid ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                }`}
+              >
+                추가
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 하단 버튼 */}
+        <div className="px-5 py-4 border-t border-gray-100 flex gap-2 shrink-0">
+          <button
+            onClick={handleToggleForm}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+              formOpen
+                ? "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                : "bg-green-500 text-white hover:bg-green-600"
+            }`}
+          >
+            {formOpen ? <><ChevronUp size={16} /> 닫기</> : <><Plus size={16} /> 지출 추가</>}
+          </button>
+          {pendingItems.length > 0 && (
+            <button
+              onClick={handleSave}
+              className="px-6 py-2.5 rounded-xl text-sm font-bold bg-green-500 text-white hover:bg-green-600 transition-colors"
+            >
+              저장 ({pendingItems.length})
+            </button>
+          )}
         </div>
       </div>
     </div>

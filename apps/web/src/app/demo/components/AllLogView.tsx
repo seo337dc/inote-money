@@ -36,27 +36,44 @@ function DayCard({
   onAdd: (expense: Omit<Expense, "id">) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [pendingItems, setPendingItems] = useState<Omit<Expense, "id">[]>([]);
   const [place, setPlace] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<string>(CATEGORIES[0]);
   const [isWaste, setIsWaste] = useState(false);
 
   const isValid = Number(amount) > 0;
-  const total = items.reduce((sum, e) => sum + e.amount, 0);
-  const waste = items.filter((e) => e.isWaste).reduce((sum, e) => sum + e.amount, 0);
+  const savedTotal = items.reduce((sum, e) => sum + e.amount, 0);
+  const savedWaste = items.filter((e) => e.isWaste).reduce((sum, e) => sum + e.amount, 0);
+  const pendingTotal = pendingItems.reduce((sum, e) => sum + e.amount, 0);
+  const pendingWaste = pendingItems.filter((e) => e.isWaste).reduce((sum, e) => sum + e.amount, 0);
+  const total = savedTotal + pendingTotal;
+  const waste = savedWaste + pendingWaste;
+  const totalCount = items.length + pendingItems.length;
 
-  const handleAdd = () => {
+  const handleAddPending = () => {
     if (!isValid) return;
-    onAdd({ place: place.trim() || "-", amount: Number(amount), category, isWaste });
+    setPendingItems((prev) => [
+      ...prev,
+      { place: place.trim() || "-", amount: Number(amount), category, isWaste },
+    ]);
     setAmount("");
     setPlace("");
     setCategory(CATEGORIES[0]);
     setIsWaste(false);
   };
 
+  const handleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    pendingItems.forEach((item) => onAdd(item));
+    setPendingItems([]);
+    setExpanded(false);
+  };
+
   const handleOpen = () => setExpanded(true);
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setPendingItems([]);
     setExpanded(false);
   };
 
@@ -125,8 +142,31 @@ function DayCard({
         </ul>
       )}
 
+      {/* 저장 대기 아이템 */}
+      {pendingItems.length > 0 && (
+        <ul className="divide-y divide-green-50 bg-green-50/40">
+          {pendingItems.map((expense, i) => (
+            <li key={`pending-${i}`} className="flex items-center gap-2 px-4 py-3">
+              <span className={`text-sm font-semibold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
+                {fmt(expense.amount)}
+              </span>
+              {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
+                  {expense.place !== "-" ? expense.place : ""}
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
+                  {expense.category}
+                </span>
+              </div>
+              <span className="ml-auto text-[10px] text-green-500 font-medium shrink-0">미저장</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
       {/* 빈 상태 */}
-      {!expanded && items.length === 0 && (
+      {!expanded && items.length === 0 && pendingItems.length === 0 && (
         <div className="px-4 py-8 flex flex-col items-center gap-2">
           <Plus size={22} className="text-gray-300" />
           <span className="text-sm text-gray-400">
@@ -149,7 +189,7 @@ function DayCard({
                 placeholder="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
                 autoFocus
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-8 text-right text-base font-bold text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
               />
@@ -162,7 +202,7 @@ function DayCard({
               placeholder="사용처 (선택)"
               value={place}
               onChange={(e) => setPlace(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
               className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white transition-colors"
             />
             <button
@@ -209,7 +249,7 @@ function DayCard({
               ))}
             </div>
             <button
-              onClick={handleAdd}
+              onClick={handleAddPending}
               disabled={!isValid}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-colors ${
                 isValid
@@ -224,7 +264,7 @@ function DayCard({
       )}
 
       {/* 푸터 */}
-      {items.length > 0 && (
+      {(items.length > 0 || pendingItems.length > 0) && (
         <div
           className="px-4 py-2.5 bg-gray-50 flex items-center justify-between"
           onClick={(e) => e.stopPropagation()}
@@ -234,14 +274,14 @@ function DayCard({
             {waste > 0 && (
               <span className="text-xs text-orange-500 font-medium">낭비 {fmt(waste)}</span>
             )}
-            <span className="text-xs text-gray-400">{items.length}건</span>
+            <span className="text-xs text-gray-400">{totalCount}건</span>
           </div>
-          {expanded && (
+          {expanded && pendingItems.length > 0 && (
             <button
-              onClick={handleClose}
+              onClick={handleSave}
               className="px-4 py-1.5 rounded-lg text-xs font-bold bg-green-500 text-white hover:bg-green-600 transition-colors"
             >
-              저장
+              저장 ({pendingItems.length})
             </button>
           )}
         </div>

@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { INITIAL_EXPENSES, MONTHLY_INFO, CATEGORIES, type Expense, type ExpenseMap } from "./data";
+import { INITIAL_EXPENSES, MONTHLY_INFO, type Expense, type ExpenseMap } from "./data";
 import SummaryCards from "./components/SummaryCards";
 import LedgerCalendar from "./components/LedgerCalendar";
 import WeeklyLogView from "./components/WeeklyLogView";
 import AllLogView from "./components/AllLogView";
 import DayDetailModal from "./components/DayDetailModal";
-import AddExpenseModal from "./components/AddExpenseModal";
 
 const CATEGORY_COLORS: Record<string, string> = {
   식비: "bg-green-400",
@@ -25,7 +24,6 @@ export default function DemoPage() {
   const [currentYear, setCurrentYear] = useState(MONTHLY_INFO.year);
   const [currentMonth, setCurrentMonth] = useState(MONTHLY_INFO.month);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [addModalDate, setAddModalDate] = useState<string | null>(null);
   const [view, setView] = useState<"calendar" | "weekly" | "all">("calendar");
 
   const monthPrefix = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
@@ -72,7 +70,6 @@ export default function DemoPage() {
       ...prev,
       [date]: [...(prev[date] ?? []), { ...expense, id }],
     }));
-    setAddModalDate(null);
   };
 
   const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
@@ -197,15 +194,7 @@ export default function DemoPage() {
           date={selectedDate}
           expenses={expenses[selectedDate] ?? []}
           onClose={() => setSelectedDate(null)}
-          onAddClick={() => setAddModalDate(selectedDate)}
-        />
-      )}
-
-      {addModalDate && (
-        <AddExpenseModal
-          date={addModalDate}
-          onClose={() => setAddModalDate(null)}
-          onSave={(expense) => handleAddExpense(addModalDate, expense)}
+          onAdd={(expense) => handleAddExpense(selectedDate, expense)}
         />
       )}
     </div>

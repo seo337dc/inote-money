@@ -173,6 +173,24 @@ src/app/demo/
   - 식비 초록 / 카페 황색 / 교통 파랑 / 쇼핑 보라 / 의료 빨강 / 문화 핑크 / 구독 인디고 / 기타 회색
 - 달력 모달 아이템도 금액 → 사용처 → 뱃지 순서로 통일
 
+#### ✅ 지출 입력 UX — pending 패턴 적용 (전체 통일)
+
+**변경 사유**
+- 기존: "추가" 클릭 시 즉시 부모 state에 저장됨 → UX 어색
+- 개선: "추가"는 로컬 pendingItems에만 누적, "저장 (N)" 클릭 시 일괄 반영
+
+**적용 범위**
+- `WeeklyLogView.tsx` DayCard — pending 패턴 적용
+- `AllLogView.tsx` DayCard — pending 패턴 적용
+- `DayDetailModal.tsx` — pending 패턴 적용 + 모달 고정 높이(`h-[82vh] sm:h-[600px]`) + 리스트 스크롤
+
+**UX 동작**
+- "추가" 클릭 → pendingItems 배열에 추가, 폼 초기화 후 열린 상태 유지 (연속 입력 가능)
+- 미저장 항목은 `bg-green-50/40` 배경 + "미저장" 라벨로 구분 표시
+- 총액/낭비/건수 푸터는 saved + pending 합산하여 실시간 표시
+- "저장 (N)" 클릭 → 모든 pending 항목 onAdd 호출 후 폼 닫힘
+- 폼 닫기(✕) 클릭 → pending 항목 전체 버림 (저장 없이 취소)
+
 ---
 
 ## UI 인사이트 / 기획 메모
