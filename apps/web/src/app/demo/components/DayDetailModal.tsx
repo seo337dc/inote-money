@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TriangleAlert, Plus, X, ChevronUp } from "lucide-react";
+import { TriangleAlert, Plus, X, ChevronUp, Trash2 } from "lucide-react";
 import { type Expense, CATEGORY_BADGE, CATEGORIES } from "../data";
 
 type Props = {
@@ -9,6 +9,7 @@ type Props = {
   expenses: Expense[];
   onClose: () => void;
   onAdd: (expense: Omit<Expense, "id">) => void;
+  onDelete: (id: string) => void;
 };
 
 const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
@@ -18,7 +19,7 @@ function parseDate(dateStr: string) {
   return `${m}월 ${d}일`;
 }
 
-export default function DayDetailModal({ date, expenses, onClose, onAdd }: Props) {
+export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelete }: Props) {
   const [formOpen, setFormOpen] = useState(false);
   const [pendingItems, setPendingItems] = useState<Omit<Expense, "id">[]>([]);
   const [amount, setAmount] = useState("");
@@ -103,12 +104,12 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd }: Props
             <ul className="divide-y divide-gray-50">
               {/* 저장된 항목 */}
               {expenses.map((expense) => (
-                <li key={expense.id} className="flex items-center gap-2 py-3.5">
+                <li key={expense.id} className="flex items-center gap-2 py-3.5 group">
                   <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
                     {fmt(expense.amount)}
                   </span>
                   {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
-                  <div className="flex items-center gap-1.5 min-w-0">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
                     <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
                       {expense.place !== "-" ? expense.place : ""}
                     </span>
@@ -116,6 +117,12 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd }: Props
                       {expense.category}
                     </span>
                   </div>
+                  <button
+                    onClick={() => onDelete(expense.id)}
+                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                  >
+                    <Trash2 size={13} />
+                  </button>
                 </li>
               ))}
 

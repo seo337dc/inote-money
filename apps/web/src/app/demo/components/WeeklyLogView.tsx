@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { TriangleAlert, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { TriangleAlert, ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { type ExpenseMap, type Expense, CATEGORIES, CATEGORY_BADGE } from "../data";
 
 type Props = {
   monthExpenses: ExpenseMap;
   month: number;
   onAddExpense: (date: string, expense: Omit<Expense, "id">) => void;
+  onDeleteExpense: (date: string, id: string) => void;
 };
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -35,11 +36,13 @@ function DayCard({
   items,
   isToday = false,
   onAdd,
+  onDelete,
 }: {
   date: string;
   items: Expense[];
   isToday?: boolean;
   onAdd: (expense: Omit<Expense, "id">) => void;
+  onDelete: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [pendingItems, setPendingItems] = useState<Omit<Expense, "id">[]>([]);
@@ -116,7 +119,7 @@ function DayCard({
       {items.length > 0 && (
         <ul className="divide-y divide-gray-50">
           {items.map((expense) => (
-            <li key={expense.id} className="flex items-center gap-2 px-4 py-3">
+            <li key={expense.id} className="flex items-center gap-2 px-4 py-3 group">
               <span
                 className={`text-sm font-semibold shrink-0 ${
                   expense.isWaste ? "text-orange-500" : "text-gray-900"
@@ -127,7 +130,7 @@ function DayCard({
               {expense.isWaste && (
                 <TriangleAlert size={13} className="text-orange-400 shrink-0" />
               )}
-              <div className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0 flex-1">
                 <span
                   className={`text-sm truncate ${
                     expense.isWaste ? "text-orange-500" : "text-gray-600"
@@ -143,6 +146,12 @@ function DayCard({
                   {expense.category}
                 </span>
               </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(expense.id); }}
+                className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+              >
+                <Trash2 size={13} />
+              </button>
             </li>
           ))}
         </ul>
@@ -265,7 +274,7 @@ function DayCard({
 }
 
 // ── 메인 컴포넌트 ──────────────────────────────────────────────
-export default function WeeklyLogView({ monthExpenses, month, onAddExpense }: Props) {
+export default function WeeklyLogView({ monthExpenses, month, onAddExpense, onDeleteExpense }: Props) {
   const todayKey = getTodayKey();
   const todayMonth = new Date().getMonth() + 1;
   const todayWeekNum = Math.ceil(new Date().getDate() / 7);
@@ -338,6 +347,7 @@ export default function WeeklyLogView({ monthExpenses, month, onAddExpense }: Pr
             items={monthExpenses[todayKey] ?? []}
             isToday
             onAdd={(expense) => onAddExpense(todayKey, expense)}
+            onDelete={(id) => onDeleteExpense(todayKey, id)}
           />
         )}
 
@@ -351,6 +361,7 @@ export default function WeeklyLogView({ monthExpenses, month, onAddExpense }: Pr
               date={date}
               items={monthExpenses[date] ?? []}
               onAdd={(expense) => onAddExpense(date, expense)}
+              onDelete={(id) => onDeleteExpense(date, id)}
             />
           ))}
       </div>

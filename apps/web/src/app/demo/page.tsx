@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { INITIAL_EXPENSES, MONTHLY_INFO, type Expense, type ExpenseMap } from "./data";
 import SummaryCards from "./components/SummaryCards";
 import LedgerCalendar from "./components/LedgerCalendar";
@@ -64,11 +64,20 @@ export default function DemoPage() {
     setSelectedDate(null);
   };
 
+  const expenseCounter = useRef(0);
   const handleAddExpense = (date: string, expense: Omit<Expense, "id">) => {
-    const id = `${Date.now()}`;
+    expenseCounter.current += 1;
+    const id = `${Date.now()}-${expenseCounter.current}`;
     setExpenses((prev) => ({
       ...prev,
       [date]: [...(prev[date] ?? []), { ...expense, id }],
+    }));
+  };
+
+  const handleDeleteExpense = (date: string, id: string) => {
+    setExpenses((prev) => ({
+      ...prev,
+      [date]: (prev[date] ?? []).filter((e) => e.id !== id),
     }));
   };
 
@@ -176,12 +185,14 @@ export default function DemoPage() {
                 monthExpenses={monthExpenses}
                 month={currentMonth}
                 onAddExpense={handleAddExpense}
+                onDeleteExpense={handleDeleteExpense}
               />
             )}
             {view === "all" && (
               <AllLogView
                 allExpenses={expenses}
                 onAddExpense={handleAddExpense}
+                onDeleteExpense={handleDeleteExpense}
               />
             )}
           </div>
@@ -195,6 +206,7 @@ export default function DemoPage() {
           expenses={expenses[selectedDate] ?? []}
           onClose={() => setSelectedDate(null)}
           onAdd={(expense) => handleAddExpense(selectedDate, expense)}
+          onDelete={(id) => handleDeleteExpense(selectedDate, id)}
         />
       )}
     </div>
