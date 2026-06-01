@@ -18,6 +18,9 @@ function newItem(): ListItem {
   return { id: `${Date.now()}-${Math.random()}`, name: "", amount: "" };
 }
 
+const INPUT_BASE = "flex-1 bg-transparent text-sm text-gray-900 dark:text-white outline-none placeholder:text-gray-300 dark:placeholder:text-gray-600 min-w-0";
+const INPUT_WRAP = "flex items-center bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-green-200 dark:focus-within:ring-green-800 focus-within:border-transparent transition-all";
+
 function NumberField({
   label,
   hint,
@@ -31,17 +34,17 @@ function NumberField({
 }) {
   return (
     <div>
-      <label className="text-xs font-semibold text-gray-600 block mb-1">{label}</label>
-      {hint && <p className="text-[11px] text-gray-400 mb-1.5">{hint}</p>}
-      <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 px-3 py-2.5 focus-within:ring-2 focus-within:ring-green-200 focus-within:border-transparent transition-all">
+      <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 block mb-1">{label}</label>
+      {hint && <p className="text-[11px] text-gray-400 dark:text-gray-500 mb-1.5">{hint}</p>}
+      <div className={INPUT_WRAP}>
         <input
           type="number"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="0"
-          className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-300 min-w-0"
+          className={INPUT_BASE}
         />
-        <span className="text-xs text-gray-400 ml-1 shrink-0">원</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500 ml-1 shrink-0">원</span>
       </div>
     </div>
   );
@@ -72,11 +75,11 @@ function DynamicList({
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-gray-600">{title}</p>
+        <p className="text-xs font-semibold text-gray-600 dark:text-gray-300">{title}</p>
         {items.length > 0 && (
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-gray-400 dark:text-gray-500">
             합계{" "}
-            <span className="font-semibold text-gray-600">
+            <span className="font-semibold text-gray-600 dark:text-gray-200">
               {total.toLocaleString("ko-KR")}원
             </span>
           </p>
@@ -91,22 +94,22 @@ function DynamicList({
               value={item.name}
               onChange={(e) => update(item.id, "name", e.target.value)}
               placeholder={namePlaceholder}
-              className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-green-200 focus:border-transparent transition-all placeholder:text-gray-300 min-w-0"
+              className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 focus:border-transparent transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600 min-w-0"
             />
-            <div className="flex items-center bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-green-200 focus-within:border-transparent transition-all w-36 shrink-0">
+            <div className={`${INPUT_WRAP} w-36 shrink-0`}>
               <input
                 type="number"
                 value={item.amount}
                 onChange={(e) => update(item.id, "amount", e.target.value)}
                 placeholder="0"
-                className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-300 min-w-0"
+                className={INPUT_BASE}
               />
-              <span className="text-xs text-gray-400 ml-1 shrink-0">원</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 ml-1 shrink-0">원</span>
             </div>
             <button
               type="button"
               onClick={() => remove(item.id)}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400 transition-colors shrink-0"
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-gray-600 hover:text-red-400 transition-colors shrink-0"
             >
               <X size={14} />
             </button>
@@ -116,7 +119,7 @@ function DynamicList({
         <button
           type="button"
           onClick={add}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-gray-200 hover:border-green-300 hover:bg-green-50 text-gray-400 hover:text-green-600 text-xs font-medium transition-colors w-fit"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 text-xs font-medium transition-colors w-fit"
         >
           <Plus size={13} />
           {addLabel}
@@ -158,14 +161,8 @@ export default function SetupPage() {
       monthlyIncome: Number(form.monthlyIncome) || 0,
       dailyLimit: Number(form.dailyLimit) || 0,
       monthlyGoal: Number(form.monthlyGoal) || 0,
-      savings: form.savings.map((item) => ({
-        ...item,
-        amount: Number(item.amount) || 0,
-      })),
-      fixedExpenses: form.fixedExpenses.map((item) => ({
-        ...item,
-        amount: Number(item.amount) || 0,
-      })),
+      savings: form.savings.map((item) => ({ ...item, amount: Number(item.amount) || 0 })),
+      fixedExpenses: form.fixedExpenses.map((item) => ({ ...item, amount: Number(item.amount) || 0 })),
     };
     localStorage.setItem("inote-settings", JSON.stringify(settings));
     router.back();
@@ -177,39 +174,24 @@ export default function SetupPage() {
       <div className="flex items-center gap-2 mb-6">
         <button
           onClick={() => router.back()}
-          className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors"
+          className="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 transition-colors"
         >
           <ChevronLeft size={18} />
         </button>
-        <h1 className="text-lg font-bold text-gray-900">내 정보 설정</h1>
+        <h1 className="text-lg font-bold text-gray-900 dark:text-white">내 정보 설정</h1>
       </div>
 
       <div className="flex flex-col gap-4">
         {/* 기본 정보 */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-5">
-          <p className="text-xs font-semibold text-gray-400">기본 정보</p>
-          <NumberField
-            label="월급 (매달 수입)"
-            hint="세후 실수령액 기준"
-            value={form.monthlyIncome}
-            onChange={set("monthlyIncome")}
-          />
-          <NumberField
-            label="일일 지출 한도"
-            hint="하루에 최대 얼마까지 쓸지 설정"
-            value={form.dailyLimit}
-            onChange={set("dailyLimit")}
-          />
-          <NumberField
-            label="월 저축 목표"
-            hint="이번 달 얼마를 모을 것인지"
-            value={form.monthlyGoal}
-            onChange={set("monthlyGoal")}
-          />
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 flex flex-col gap-5">
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500">기본 정보</p>
+          <NumberField label="월급 (매달 수입)" hint="세후 실수령액 기준" value={form.monthlyIncome} onChange={set("monthlyIncome")} />
+          <NumberField label="일일 지출 한도" hint="하루에 최대 얼마까지 쓸지 설정" value={form.dailyLimit} onChange={set("dailyLimit")} />
+          <NumberField label="월 저축 목표" hint="이번 달 얼마를 모을 것인지" value={form.monthlyGoal} onChange={set("monthlyGoal")} />
         </div>
 
         {/* 적금 목록 */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
           <DynamicList
             title="적금"
             items={form.savings}
@@ -220,7 +202,7 @@ export default function SetupPage() {
         </div>
 
         {/* 고정 지출 목록 */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
           <DynamicList
             title="고정 지출"
             items={form.fixedExpenses}

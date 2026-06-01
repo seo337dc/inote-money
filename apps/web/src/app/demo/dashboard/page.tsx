@@ -14,10 +14,7 @@ type Settings = {
   fixedExpenses: ListItem[];
 };
 
-type Review = {
-  stars: number;
-  text: string;
-};
+type Review = { stars: number; text: string };
 
 function getWeekMonday(offset: number): Date {
   const now = new Date();
@@ -56,7 +53,7 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
           onMouseLeave={() => onChange && setHover(0)}
           className={`text-2xl transition-colors leading-none ${
             onChange ? "cursor-pointer" : "cursor-default"
-          } ${s <= (hover || value) ? "text-yellow-400" : "text-gray-200"}`}
+          } ${s <= (hover || value) ? "text-yellow-400" : "text-gray-200 dark:text-gray-600"}`}
         >
           ★
         </button>
@@ -64,6 +61,13 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
     </div>
   );
 }
+
+const NAV_BTN = "w-7 h-7 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-colors disabled:opacity-30";
+const CARD = "bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5";
+const SUBCARD_GRAY = "bg-gray-50 dark:bg-gray-700/60 rounded-xl p-3";
+const SUBCARD_ORANGE = "bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3";
+const LABEL = "text-[11px] text-gray-400 dark:text-gray-500";
+const TEXTAREA = "w-full text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 resize-none outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 placeholder:text-gray-300 dark:placeholder:text-gray-600";
 
 export default function DashboardPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -119,16 +123,16 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 lg:px-8 pt-6 pb-8">
-      <h1 className="text-lg font-bold text-gray-900 mb-5">자산 관리</h1>
+      <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-5">자산 관리</h1>
 
-      {/* Settings card */}
+      {/* 내 정보 카드 */}
       {settings ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+        <div className={`${CARD} mb-6`}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-semibold text-gray-400">내 정보</p>
+            <p className={`text-xs font-semibold ${LABEL}`}>내 정보</p>
             <Link
               href="/demo/dashboard/setup"
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-green-600 transition-colors"
+              className="flex items-center gap-1 text-xs text-gray-400 hover:text-green-600 dark:text-gray-500 dark:hover:text-green-400 transition-colors"
             >
               <Pencil size={11} />
               수정
@@ -137,34 +141,27 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { label: "월급", value: settings.monthlyIncome },
-              {
-                label: `적금 (${settings.savings.length}개)`,
-                value: settings.savings.reduce((s, i) => s + i.amount, 0),
-              },
-              {
-                label: `고정 지출 (${settings.fixedExpenses.length}개)`,
-                value: settings.fixedExpenses.reduce((s, i) => s + i.amount, 0),
-              },
+              { label: `적금 (${settings.savings.length}개)`, value: settings.savings.reduce((s, i) => s + i.amount, 0) },
+              { label: `고정 지출 (${settings.fixedExpenses.length}개)`, value: settings.fixedExpenses.reduce((s, i) => s + i.amount, 0) },
               { label: "일일 한도", value: settings.dailyLimit },
             ].map(({ label, value }) => (
               <div key={label}>
-                <p className="text-[11px] text-gray-400 mb-0.5">{label}</p>
-                <p className="text-sm font-bold text-gray-900">{fmt(value)}</p>
+                <p className={`text-[11px] mb-0.5 ${LABEL}`}>{label}</p>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">{fmt(value)}</p>
               </div>
             ))}
           </div>
 
-          {/* 상세 내용 */}
           {infoExpanded && (settings.savings.length > 0 || settings.fixedExpenses.length > 0) && (
-            <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-1 lg:grid-cols-2 gap-5">
               {settings.savings.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-semibold text-gray-400 mb-2">적금 목록</p>
+                  <p className={`text-[11px] font-semibold mb-2 ${LABEL}`}>적금 목록</p>
                   <ul className="flex flex-col gap-1.5">
                     {settings.savings.map((item) => (
                       <li key={item.id} className="flex items-center justify-between">
-                        <span className="text-xs text-gray-600">{item.name || "이름 없음"}</span>
-                        <span className="text-xs font-semibold text-gray-800">{fmt(item.amount)}</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-300">{item.name || "이름 없음"}</span>
+                        <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{fmt(item.amount)}</span>
                       </li>
                     ))}
                   </ul>
@@ -172,12 +169,12 @@ export default function DashboardPage() {
               )}
               {settings.fixedExpenses.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-semibold text-gray-400 mb-2">고정 지출 목록</p>
+                  <p className={`text-[11px] font-semibold mb-2 ${LABEL}`}>고정 지출 목록</p>
                   <ul className="flex flex-col gap-1.5">
                     {settings.fixedExpenses.map((item) => (
                       <li key={item.id} className="flex items-center justify-between">
-                        <span className="text-xs text-gray-600">{item.name || "이름 없음"}</span>
-                        <span className="text-xs font-semibold text-gray-800">{fmt(item.amount)}</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-300">{item.name || "이름 없음"}</span>
+                        <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{fmt(item.amount)}</span>
                       </li>
                     ))}
                   </ul>
@@ -186,21 +183,16 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* 상세보기 / 접기 토글 */}
           <button
             onClick={() => setInfoExpanded((v) => !v)}
-            className="mt-3 flex items-center gap-1 text-[11px] text-gray-400 hover:text-green-600 transition-colors mx-auto"
+            className="mt-3 flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 transition-colors mx-auto"
           >
-            {infoExpanded ? (
-              <>접기 <ChevronUp size={12} /></>
-            ) : (
-              <>상세보기 <ChevronDown size={12} /></>
-            )}
+            {infoExpanded ? <>접기 <ChevronUp size={12} /></> : <>상세보기 <ChevronDown size={12} /></>}
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 mb-6 flex flex-col items-center gap-4">
-          <p className="text-sm text-gray-400">아직 설정된 정보가 없어요</p>
+        <div className={`${CARD} mb-6 flex flex-col items-center gap-4 py-10`}>
+          <p className="text-sm text-gray-400 dark:text-gray-500">아직 설정된 정보가 없어요</p>
           <Link
             href="/demo/dashboard/setup"
             className="flex items-center gap-1.5 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-colors"
@@ -211,175 +203,133 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Weekly + Monthly */}
+      {/* 주간 + 월간 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-        {/* Weekly review */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+        {/* 주간 리뷰 */}
+        <div className={`${CARD} flex flex-col gap-4`}>
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setWeekOffset((o) => o - 1)}
-              className="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"
-            >
+            <button onClick={() => setWeekOffset((o) => o - 1)} className={NAV_BTN}>
               <ChevronLeft size={16} />
             </button>
             <div className="text-center">
-              <p className="text-xs font-bold text-gray-900">주간 리뷰</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{weekLabel}</p>
+              <p className="text-xs font-bold text-gray-900 dark:text-white">주간 리뷰</p>
+              <p className={`text-[11px] mt-0.5 ${LABEL}`}>{weekLabel}</p>
             </div>
-            <button
-              onClick={() => setWeekOffset((o) => Math.min(o + 1, 0))}
-              disabled={weekOffset === 0}
-              className="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors disabled:opacity-30"
-            >
+            <button onClick={() => setWeekOffset((o) => Math.min(o + 1, 0))} disabled={weekOffset === 0} className={NAV_BTN}>
               <ChevronRight size={16} />
             </button>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-50 rounded-xl p-3">
-              <p className="text-[11px] text-gray-400 mb-1">이번 주 지출</p>
-              <p className="text-base font-bold text-gray-900">0원</p>
-              <p className="text-[10px] text-gray-300 mt-1">가계부 연결 예정</p>
+            <div className={SUBCARD_GRAY}>
+              <p className={`text-[11px] mb-1 ${LABEL}`}>이번 주 지출</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">0원</p>
+              <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-1">가계부 연결 예정</p>
             </div>
-            <div className="bg-orange-50 rounded-xl p-3">
-              <p className="text-[11px] text-gray-400 mb-1">낭비 금액</p>
-              <p className="text-base font-bold text-orange-500">0원</p>
-              {settings && (
-                <p className="text-[10px] text-gray-400 mt-1">
-                  일 한도 {fmt(settings.dailyLimit)}
-                </p>
-              )}
+            <div className={SUBCARD_ORANGE}>
+              <p className={`text-[11px] mb-1 ${LABEL}`}>낭비 금액</p>
+              <p className="text-base font-bold text-orange-500 dark:text-orange-400">0원</p>
+              {settings && <p className={`text-[10px] mt-1 ${LABEL}`}>일 한도 {fmt(settings.dailyLimit)}</p>}
             </div>
           </div>
 
-          {/* Last week comparison */}
           <div>
-            <p className="text-[11px] text-gray-400 mb-2">지난주 비교</p>
+            <p className={`text-[11px] mb-2 ${LABEL}`}>지난주 비교</p>
             <div className="flex flex-col gap-2">
-              {[
-                { label: "이번 주", value: 0, color: "bg-green-400" },
-                { label: "지난 주", value: 0, color: "bg-gray-200" },
-              ].map(({ label, value, color }) => (
+              {[{ label: "이번 주", color: "bg-green-400" }, { label: "지난 주", color: "bg-gray-200 dark:bg-gray-600" }].map(({ label, color }) => (
                 <div key={label} className="flex items-center gap-2">
-                  <span className="text-[11px] text-gray-400 w-14 shrink-0">{label}</span>
-                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <span className={`text-[11px] w-14 shrink-0 ${LABEL}`}>{label}</span>
+                  <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div className={`h-full rounded-full ${color}`} style={{ width: "0%" }} />
                   </div>
-                  <span className="text-[11px] text-gray-400 w-14 text-right shrink-0">{fmt(value)}</span>
+                  <span className={`text-[11px] w-14 text-right shrink-0 ${LABEL}`}>0원</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <p className="text-[11px] text-gray-400 mb-2">이번 주 평가</p>
-            <StarRating
-              value={weekDraft.stars}
-              onChange={(v) => setWeekDraft((d) => ({ ...d, stars: v }))}
-            />
+            <p className={`text-[11px] mb-2 ${LABEL}`}>이번 주 평가</p>
+            <StarRating value={weekDraft.stars} onChange={(v) => setWeekDraft((d) => ({ ...d, stars: v }))} />
           </div>
 
           <div>
-            <p className="text-[11px] text-gray-400 mb-1.5">리뷰</p>
+            <p className={`text-[11px] mb-1.5 ${LABEL}`}>리뷰</p>
             <textarea
               value={weekDraft.text}
               onChange={(e) => setWeekDraft((d) => ({ ...d, text: e.target.value }))}
               placeholder="이번 주 소비를 되돌아보세요..."
               rows={5}
-              className="w-full text-sm text-gray-700 bg-gray-50 rounded-xl px-3 py-2.5 resize-none outline-none focus:ring-2 focus:ring-green-200 placeholder:text-gray-300"
+              className={TEXTAREA}
             />
           </div>
 
-          <button
-            onClick={saveWeekReview}
-            className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-colors mt-auto"
-          >
+          <button onClick={saveWeekReview} className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-colors mt-auto">
             저장
           </button>
         </div>
 
-        {/* Monthly summary */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+        {/* 월간 요약 */}
+        <div className={`${CARD} flex flex-col gap-4`}>
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setMonthOffset((o) => o - 1)}
-              className="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"
-            >
+            <button onClick={() => setMonthOffset((o) => o - 1)} className={NAV_BTN}>
               <ChevronLeft size={16} />
             </button>
             <div className="text-center">
-              <p className="text-xs font-bold text-gray-900">월간 요약</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{monthLabel}</p>
+              <p className="text-xs font-bold text-gray-900 dark:text-white">월간 요약</p>
+              <p className={`text-[11px] mt-0.5 ${LABEL}`}>{monthLabel}</p>
             </div>
-            <button
-              onClick={() => setMonthOffset((o) => Math.min(o + 1, 0))}
-              disabled={monthOffset === 0}
-              className="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors disabled:opacity-30"
-            >
+            <button onClick={() => setMonthOffset((o) => Math.min(o + 1, 0))} disabled={monthOffset === 0} className={NAV_BTN}>
               <ChevronRight size={16} />
             </button>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-50 rounded-xl p-3">
-              <p className="text-[11px] text-gray-400 mb-1">총 지출</p>
-              <p className="text-base font-bold text-gray-900">0원</p>
-              <p className="text-[10px] text-gray-300 mt-1">가계부 연결 예정</p>
+            <div className={SUBCARD_GRAY}>
+              <p className={`text-[11px] mb-1 ${LABEL}`}>총 지출</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">0원</p>
+              <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-1">가계부 연결 예정</p>
             </div>
-            <div className="bg-orange-50 rounded-xl p-3">
-              <p className="text-[11px] text-gray-400 mb-1">낭비 금액</p>
-              <p className="text-base font-bold text-orange-500">0원</p>
-              {settings && (
-                <p className="text-[10px] text-gray-400 mt-1">
-                  저축 목표 {fmt(settings.monthlyGoal)}
-                </p>
-              )}
+            <div className={SUBCARD_ORANGE}>
+              <p className={`text-[11px] mb-1 ${LABEL}`}>낭비 금액</p>
+              <p className="text-base font-bold text-orange-500 dark:text-orange-400">0원</p>
+              {settings && <p className={`text-[10px] mt-1 ${LABEL}`}>저축 목표 {fmt(settings.monthlyGoal)}</p>}
             </div>
           </div>
 
-          {/* Last month comparison */}
           <div>
-            <p className="text-[11px] text-gray-400 mb-2">지난달 비교</p>
+            <p className={`text-[11px] mb-2 ${LABEL}`}>지난달 비교</p>
             <div className="flex flex-col gap-2">
-              {[
-                { label: "이번 달", value: 0, color: "bg-green-400" },
-                { label: "지난 달", value: 0, color: "bg-gray-200" },
-              ].map(({ label, value, color }) => (
+              {[{ label: "이번 달", color: "bg-green-400" }, { label: "지난 달", color: "bg-gray-200 dark:bg-gray-600" }].map(({ label, color }) => (
                 <div key={label} className="flex items-center gap-2">
-                  <span className="text-[11px] text-gray-400 w-14 shrink-0">{label}</span>
-                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <span className={`text-[11px] w-14 shrink-0 ${LABEL}`}>{label}</span>
+                  <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div className={`h-full rounded-full ${color}`} style={{ width: "0%" }} />
                   </div>
-                  <span className="text-[11px] text-gray-400 w-14 text-right shrink-0">{fmt(value)}</span>
+                  <span className={`text-[11px] w-14 text-right shrink-0 ${LABEL}`}>0원</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <p className="text-[11px] text-gray-400 mb-2">이번 달 평가</p>
-            <StarRating
-              value={monthDraft.stars}
-              onChange={(v) => setMonthDraft((d) => ({ ...d, stars: v }))}
-            />
+            <p className={`text-[11px] mb-2 ${LABEL}`}>이번 달 평가</p>
+            <StarRating value={monthDraft.stars} onChange={(v) => setMonthDraft((d) => ({ ...d, stars: v }))} />
           </div>
 
           <div>
-            <p className="text-[11px] text-gray-400 mb-1.5">리뷰</p>
+            <p className={`text-[11px] mb-1.5 ${LABEL}`}>리뷰</p>
             <textarea
               value={monthDraft.text}
               onChange={(e) => setMonthDraft((d) => ({ ...d, text: e.target.value }))}
               placeholder="이번 달 소비를 되돌아보세요..."
               rows={5}
-              className="w-full text-sm text-gray-700 bg-gray-50 rounded-xl px-3 py-2.5 resize-none outline-none focus:ring-2 focus:ring-green-200 placeholder:text-gray-300"
+              className={TEXTAREA}
             />
           </div>
 
-          <button
-            onClick={saveMonthReview}
-            className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-colors"
-          >
+          <button onClick={saveMonthReview} className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-colors">
             저장
           </button>
         </div>

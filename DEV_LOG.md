@@ -350,6 +350,35 @@ src/app/demo/
 
 ---
 
+### 2026-06-01 (세션 3)
+
+#### ✅ 다크 모드 시스템 구축
+
+**배경**
+- 설정 메뉴 추가, 앱 전체 다크/라이트 모드 토글 필요
+
+**구현 방식**
+- `demo/dark-mode.tsx` — `DarkModeProvider` + `useDarkMode` 훅 (React Context)
+- 루트 레이아웃 div에 `isDark && "dark"` 클래스 조건부 적용
+- Tailwind `dark:` 변형 클래스로 컴포넌트 개별 스타일링
+- localStorage(`inote-dark`) 영구 보관
+
+**설정 페이지 (`/demo/settings`)**
+- 프로필 편집: 이름 / 직업·직책 / 한 줄 소개, 저장 시 localStorage(`inote-profile`) 보관
+- "저장됨 ✓" 2초 피드백 상태
+- 다크 모드 토글 스위치 (Sun/Moon 아이콘 + 슬라이드 버튼)
+- 데스크탑 사이드바 하단 고정 / 모바일 탭바 6번째 항목
+
+**다크 모드 적용 범위 (이번 세션)**
+- `demo/layout.tsx` — 사이드바 + 하단 탭바 + 메인 래퍼
+- `demo/dashboard/page.tsx` — 모든 카드, 입력 필드, 버튼
+- `demo/dashboard/setup/page.tsx` — 기본 정보 / 적금 / 고정 지출 카드, 동적 리스트
+
+**미적용 (다음 세션으로 이월)**
+- `demo/account-book` — 가계부 뷰 및 모달 컴포넌트 전체
+
+---
+
 ## UI 인사이트 / 기획 메모
 
 ### 리스트·테이블 뷰 필요 (2026-05-08)
@@ -392,6 +421,7 @@ src/app/demo/
 - [x] `/demo` 지출 추가 UX — 데스크탑 "+ 오늘 추가" 버튼 + 모바일 FAB
 - [x] `/demo` 프로젝트 구조 개편 — 메뉴 기반 멀티 섹션 구조로 전환
 - [x] `/demo` 자산 관리 대시보드 구현
+- [x] `/demo` 설정 페이지 + 다크 모드 시스템 구축
 - [ ] `/demo` 대시보드 가계부 연동
 - [ ] `/demo` 수입/지출 관리 화면 구현
 - [ ] `/demo` 투자 기록 화면 구현
