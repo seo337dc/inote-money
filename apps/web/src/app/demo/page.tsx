@@ -92,10 +92,10 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 pt-6 pb-16">
+      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto lg:px-8 2xl:px-12 pt-6 pb-16">
 
         {/* Header */}
-        <header className="flex items-center gap-2 mb-6">
+        <header className="flex items-center gap-2 mb-6 px-4 lg:px-0">
           <span className="text-xl font-bold text-green-600">💰</span>
           <h1 className="text-xl font-bold text-gray-900">가계부</h1>
           <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
@@ -104,10 +104,10 @@ export default function DemoPage() {
         </header>
 
         {/* Desktop: sidebar + calendar / Mobile: stacked */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
+        <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
 
           {/* ── Sidebar ── */}
-          <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-4">
+          <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-4 px-4 lg:px-0">
 
             {/* 요약 카드: mobile 2x2, desktop 1열 */}
             <SummaryCards
@@ -160,24 +160,38 @@ export default function DemoPage() {
 
           {/* ── Main content ── */}
           <div className="flex-1 min-w-0">
-            {/* View toggle */}
-            <div className="flex items-center gap-1 mb-4 bg-gray-100 p-1 rounded-xl w-fit">
-              {(["calendar", "weekly", "all"] as const).map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    view === v
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  {v === "calendar" ? "달력" : v === "weekly" ? "주차별" : "전체 로그"}
-                </button>
-              ))}
+            {/* View toggle + 오늘 추가 */}
+            <div className="flex items-center justify-between mb-4 mx-4 lg:mx-0">
+              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl w-fit">
+                {(["calendar", "weekly", "all"] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      view === v
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    {v === "calendar" ? "달력" : v === "weekly" ? "주차별" : "전체 로그"}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  const today = new Date();
+                  const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+                  setSelectedDate(key);
+                }}
+                className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-colors"
+              >
+                <span className="text-base leading-none">+</span>
+                오늘 추가
+              </button>
             </div>
 
             {view === "calendar" && (
+              <div className="px-3 lg:px-0">
               <LedgerCalendar
                 year={currentYear}
                 month={currentMonth}
@@ -186,28 +200,46 @@ export default function DemoPage() {
                 onPrev={handlePrevMonth}
                 onNext={handleNextMonth}
               />
+              </div>
             )}
             {view === "weekly" && (
-              <WeeklyLogView
-                monthExpenses={monthExpenses}
-                month={currentMonth}
-                onAddExpense={handleAddExpense}
-                onDeleteExpense={handleDeleteExpense}
-                onEditExpense={handleEditExpense}
-              />
+              <div className="px-4 lg:px-0">
+                <WeeklyLogView
+                  monthExpenses={monthExpenses}
+                  month={currentMonth}
+                  onAddExpense={handleAddExpense}
+                  onDeleteExpense={handleDeleteExpense}
+                  onEditExpense={handleEditExpense}
+                />
+              </div>
             )}
             {view === "all" && (
-              <AllLogView
-                allExpenses={expenses}
-                onAddExpense={handleAddExpense}
-                onDeleteExpense={handleDeleteExpense}
-                onEditExpense={handleEditExpense}
-              />
+              <div className="px-4 lg:px-0">
+                <AllLogView
+                  allExpenses={expenses}
+                  onAddExpense={handleAddExpense}
+                  onDeleteExpense={handleDeleteExpense}
+                  onEditExpense={handleEditExpense}
+                />
+              </div>
             )}
           </div>
 
         </div>
       </div>
+
+      {/* Mobile FAB */}
+      <button
+        onClick={() => {
+          const today = new Date();
+          const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          setSelectedDate(key);
+        }}
+        className="lg:hidden fixed bottom-6 right-5 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center text-3xl leading-none transition-colors active:scale-95"
+        aria-label="오늘 지출 추가"
+      >
+        +
+      </button>
 
       {selectedDate && (
         <DayDetailModal

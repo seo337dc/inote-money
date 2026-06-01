@@ -37,7 +37,7 @@ export default function LedgerCalendar({ year, month, expenses, onDayClick, onPr
   while (cells.length % 7 !== 0) cells.push(null);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white lg:rounded-2xl lg:shadow-sm border-y lg:border border-gray-100 overflow-hidden">
       {/* Month navigation */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <button
