@@ -43,7 +43,7 @@ function InlineEditForm({
   };
 
   return (
-    <li className="py-3 flex flex-col gap-2.5 bg-blue-50/50 border-l-2 border-blue-400 px-3 rounded-r-xl">
+    <li className="py-3 flex flex-col gap-2.5 bg-blue-50/50 dark:bg-blue-900/20 border-l-2 border-blue-400 px-3 rounded-r-xl">
       {/* 카테고리 */}
       <div className="flex flex-wrap items-center gap-1.5">
         {CATEGORIES.map((cat) => (
@@ -52,7 +52,9 @@ function InlineEditForm({
             type="button"
             onClick={() => setCategory(cat)}
             className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
-              category === cat ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              category === cat
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500"
             }`}
           >
             {cat}
@@ -69,9 +71,9 @@ function InlineEditForm({
             onChange={(e) => setAmount(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onCancel(); }}
             autoFocus
-            className="w-full border border-blue-200 rounded-xl px-3 py-2 pr-7 text-right text-sm font-bold text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+            className="w-full border border-blue-200 dark:border-blue-700 rounded-xl px-3 py-2 pr-7 text-right text-sm font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
           />
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span>
+          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xs pointer-events-none">원</span>
         </div>
         <input
           type="text"
@@ -79,12 +81,12 @@ function InlineEditForm({
           value={place}
           onChange={(e) => setPlace(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onCancel(); }}
-          className="flex-1 border border-blue-200 rounded-xl px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+          className="flex-1 border border-blue-200 dark:border-blue-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors placeholder:text-gray-300 dark:placeholder:text-gray-600"
         />
         <div className="flex gap-1.5 shrink-0">
           <button
             onClick={onCancel}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
           >
             <X size={14} />
           </button>
@@ -92,7 +94,7 @@ function InlineEditForm({
             onClick={handleSave}
             disabled={!isValid}
             className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-              isValid ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
+              isValid ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-100 dark:bg-gray-600 text-gray-300 dark:text-gray-500 cursor-not-allowed"
             }`}
           >
             <Check size={14} />
@@ -106,11 +108,11 @@ function InlineEditForm({
         className="flex items-center gap-1.5 w-fit"
       >
         <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
-          isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 bg-white"
+          isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-700"
         }`}>
           {isWaste && <Check size={9} className="text-white" strokeWidth={3} />}
         </span>
-        <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400"}`}>
+        <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400 dark:text-gray-500"}`}>
           낭비
         </span>
       </button>
@@ -169,18 +171,18 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative z-10 w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col h-[88vh] sm:h-[640px]">
+      <div className="relative z-10 w-full sm:max-w-md bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col h-[88vh] sm:h-[640px]">
         {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <span className="w-10 h-1 rounded-full bg-gray-200" />
+          <span className="w-10 h-1 rounded-full bg-gray-200 dark:bg-gray-600" />
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 shrink-0">
-          <h2 className="text-lg font-bold text-gray-900">{parseDate(date)}</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">{parseDate(date)}</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 transition-colors"
           >
             <X size={18} />
           </button>
@@ -188,22 +190,22 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 gap-3 px-5 pb-4 shrink-0">
-          <div className="bg-gray-50 rounded-xl p-3.5">
-            <p className="text-xs text-gray-400 font-medium mb-1">총 지출</p>
-            <p className="text-lg font-bold text-gray-900">{fmt(total)}</p>
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3.5">
+            <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mb-1">총 지출</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-white">{fmt(total)}</p>
           </div>
-          <div className="bg-orange-50 rounded-xl p-3.5">
+          <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3.5">
             <p className="text-xs text-orange-400 font-medium mb-1">낭비 금액</p>
             <p className="text-lg font-bold text-orange-500">{fmt(waste)}</p>
           </div>
         </div>
 
         {/* Expense list — scrollable */}
-        <div className="flex-1 overflow-y-auto min-h-0 border-t border-gray-100">
+        <div className="flex-1 overflow-y-auto min-h-0 border-t border-gray-100 dark:border-gray-700">
           {expenses.length === 0 && pendingItems.length === 0 ? (
-            <p className="text-center text-gray-400 text-sm py-10">지출 내역이 없습니다</p>
+            <p className="text-center text-gray-400 dark:text-gray-500 text-sm py-10">지출 내역이 없습니다</p>
           ) : (
-            <ul className="divide-y divide-gray-50 px-5">
+            <ul className="divide-y divide-gray-50 dark:divide-gray-700 px-5">
               {/* 저장된 항목 */}
               {expenses.map((expense) =>
                 editingId === expense.id ? (
@@ -215,12 +217,12 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                   />
                 ) : (
                   <li key={expense.id} className="flex items-center gap-2 py-3.5 group">
-                    <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
+                    <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900 dark:text-white"}`}>
                       {fmt(expense.amount)}
                     </span>
                     {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
                     <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                      <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
+                      <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600 dark:text-gray-300"}`}>
                         {expense.place !== "-" ? expense.place : ""}
                       </span>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
@@ -231,13 +233,13 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                     <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => setEditingId(expense.id)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
+                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-300 dark:text-gray-600 hover:text-blue-400"
                       >
                         <Pencil size={13} />
                       </button>
                       <button
                         onClick={() => onDelete(expense.id)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-300 dark:text-gray-600 hover:text-red-400"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -259,13 +261,13 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                     onCancel={() => setEditingPendingIndex(null)}
                   />
                 ) : (
-                  <li key={`pending-${i}`} className="flex items-center gap-2 py-3.5 bg-green-50/60 group">
-                    <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
+                  <li key={`pending-${i}`} className="flex items-center gap-2 py-3.5 bg-green-50/60 dark:bg-green-900/10 group">
+                    <span className={`text-sm font-bold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900 dark:text-white"}`}>
                       {fmt(expense.amount)}
                     </span>
                     {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
                     <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                      <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
+                      <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600 dark:text-gray-300"}`}>
                         {expense.place !== "-" ? expense.place : ""}
                       </span>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
@@ -277,13 +279,13 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                       <div className="absolute right-0 flex items-center gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 sm:transition-opacity hidden sm:flex">
                         <button
                           onClick={() => setEditingPendingIndex(i)}
-                          className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
+                          className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-300 dark:text-gray-600 hover:text-blue-400"
                         >
                           <Pencil size={13} />
                         </button>
                         <button
                           onClick={() => handleRemovePending(i)}
-                          className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                          className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-300 dark:text-gray-600 hover:text-red-400"
                         >
                           <X size={13} />
                         </button>
@@ -297,7 +299,7 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
         </div>
 
         {/* 입력 폼 */}
-        <div className="border-t border-gray-100 px-5 pt-4 pb-3 flex flex-col gap-3 shrink-0 bg-gray-50/50">
+        <div className="border-t border-gray-100 dark:border-gray-700 px-5 pt-4 pb-3 flex flex-col gap-3 shrink-0 bg-gray-50/50 dark:bg-gray-700/30">
           {/* 카테고리 */}
           <div className="flex flex-wrap items-center gap-1.5">
             {CATEGORIES.map((cat) => (
@@ -306,7 +308,9 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                 type="button"
                 onClick={() => setCategory(cat)}
                 className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
-                  category === cat ? "bg-green-500 text-white" : "bg-white text-gray-500 hover:bg-gray-100 border border-gray-200"
+                  category === cat
+                    ? "bg-green-500 text-white"
+                    : "bg-white dark:bg-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500 border border-gray-200 dark:border-gray-500"
                 }`}
               >
                 {cat}
@@ -324,9 +328,9 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-7 text-right text-base font-bold text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors"
+                className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 pr-7 text-right text-base font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors placeholder:text-gray-300 dark:placeholder:text-gray-600"
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span>
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xs pointer-events-none">원</span>
             </div>
             <input
               type="text"
@@ -334,7 +338,7 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
               value={place}
               onChange={(e) => setPlace(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors"
+              className="flex-1 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors placeholder:text-gray-300 dark:placeholder:text-gray-600"
             />
           </div>
 
@@ -345,11 +349,11 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
             className="flex items-center gap-1.5 w-fit"
           >
             <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
-              isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 bg-white"
+              isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-700"
             }`}>
               {isWaste && <Check size={9} className="text-white" strokeWidth={3} />}
             </span>
-            <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400"}`}>
+            <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400 dark:text-gray-500"}`}>
               낭비
             </span>
           </button>
@@ -361,7 +365,7 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
             className={`w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-colors ${
               isValid
                 ? "bg-green-500 text-white hover:bg-green-600 active:bg-green-700"
-                : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                : "bg-gray-100 dark:bg-gray-600 text-gray-300 dark:text-gray-500 cursor-not-allowed"
             }`}
           >
             <Plus size={15} />
@@ -370,10 +374,10 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
         </div>
 
         {/* 하단 버튼 */}
-        <div className="px-5 py-4 border-t border-gray-100 flex gap-2 shrink-0">
+        <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-700 flex gap-2 shrink-0">
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-xl text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            className="flex-1 py-3 rounded-xl text-sm font-bold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             닫기
           </button>

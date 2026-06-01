@@ -37,22 +37,22 @@ export default function LedgerCalendar({ year, month, expenses, onDayClick, onPr
   while (cells.length % 7 !== 0) cells.push(null);
 
   return (
-    <div className="bg-white lg:rounded-2xl lg:shadow-sm border-y lg:border border-gray-100 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 lg:rounded-2xl lg:shadow-sm border-y lg:border border-gray-100 dark:border-gray-700 overflow-hidden">
       {/* Month navigation */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
         <button
           onClick={onPrev}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors text-lg"
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors text-lg"
           aria-label="이전 달"
         >
           ‹
         </button>
-        <h2 className="text-base font-bold text-gray-900">
+        <h2 className="text-base font-bold text-gray-900 dark:text-white">
           {year}년 {month}월
         </h2>
         <button
           onClick={onNext}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors text-lg"
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors text-lg"
           aria-label="다음 달"
         >
           ›
@@ -60,13 +60,13 @@ export default function LedgerCalendar({ year, month, expenses, onDayClick, onPr
       </div>
 
       {/* Day-of-week headers */}
-      <div className="grid grid-cols-7 border-b border-gray-100">
+      <div className="grid grid-cols-7 border-b border-gray-100 dark:border-gray-700">
         {DAY_LABELS.map((label, i) => (
           <div
             key={label}
             className={cn(
               "py-2.5 text-center text-xs font-semibold",
-              i === 0 ? "text-red-400" : i === 6 ? "text-blue-400" : "text-gray-400"
+              i === 0 ? "text-red-400" : i === 6 ? "text-blue-400" : "text-gray-400 dark:text-gray-500"
             )}
           >
             {label}
@@ -81,7 +81,7 @@ export default function LedgerCalendar({ year, month, expenses, onDayClick, onPr
             return (
               <div
                 key={`empty-${idx}`}
-                className="min-h-[60px] md:min-h-[100px] xl:min-h-[120px] bg-gray-50/40 border-b border-r border-gray-50"
+                className="min-h-[60px] md:min-h-[100px] xl:min-h-[120px] bg-gray-50/40 dark:bg-gray-700/30 border-b border-r border-gray-50 dark:border-gray-700"
               />
             );
           }
@@ -99,8 +99,8 @@ export default function LedgerCalendar({ year, month, expenses, onDayClick, onPr
               key={dateKey}
               onClick={() => onDayClick(dateKey)}
               className={cn(
-                "min-h-[60px] md:min-h-[100px] xl:min-h-[120px] p-1.5 md:p-2.5 text-left border-b border-r border-gray-50",
-                "flex flex-col transition-colors hover:bg-green-50/50 focus:outline-none focus:bg-green-50/50",
+                "min-h-[60px] md:min-h-[100px] xl:min-h-[120px] p-1.5 md:p-2.5 text-left border-b border-r border-gray-50 dark:border-gray-700",
+                "flex flex-col transition-colors hover:bg-green-50/50 dark:hover:bg-green-900/20 focus:outline-none focus:bg-green-50/50 dark:focus:bg-green-900/20",
                 "last-of-type:border-r-0"
               )}
             >
@@ -114,7 +114,7 @@ export default function LedgerCalendar({ year, month, expenses, onDayClick, onPr
                     ? "text-red-400"
                     : dayOfWeek === 6
                     ? "text-blue-400"
-                    : "text-gray-700"
+                    : "text-gray-700 dark:text-gray-300"
                 )}
               >
                 {day}
@@ -123,7 +123,7 @@ export default function LedgerCalendar({ year, month, expenses, onDayClick, onPr
               {/* Desktop: amounts text */}
               {hasData && (
                 <div className="hidden sm:flex flex-col gap-0.5 min-w-0 w-full">
-                  <span className="text-[11px] text-gray-600 font-medium truncate leading-tight">
+                  <span className="text-[11px] text-gray-600 dark:text-gray-400 font-medium truncate leading-tight">
                     {fmt(total)}
                   </span>
                   {waste > 0 && (
@@ -131,7 +131,7 @@ export default function LedgerCalendar({ year, month, expenses, onDayClick, onPr
                       낭비 {fmt(waste)}
                     </span>
                   )}
-                  <span className="text-[10px] text-gray-400 leading-tight">
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">
                     {dayExpenses.length}건
                   </span>
                 </div>
@@ -152,14 +152,14 @@ export default function LedgerCalendar({ year, month, expenses, onDayClick, onPr
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-100 bg-gray-50/50">
+      <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30">
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-gray-400" />
-          <span className="text-xs text-gray-400">지출</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">지출</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-orange-400" />
-          <span className="text-xs text-gray-400">낭비</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">낭비</span>
         </div>
       </div>
     </div>

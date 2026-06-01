@@ -54,7 +54,7 @@ function InlineEditForm({
   };
 
   return (
-    <li className="px-4 py-3 flex flex-col gap-2.5 bg-blue-50/40 border-l-2 border-blue-400">
+    <li className="px-4 py-3 flex flex-col gap-2.5 bg-blue-50/40 dark:bg-blue-900/20 border-l-2 border-blue-400">
       {/* 카테고리 */}
       <div className="flex flex-wrap gap-1">
         {CATEGORIES.map((cat) => (
@@ -63,7 +63,9 @@ function InlineEditForm({
             type="button"
             onClick={() => setCategory(cat)}
             className={`px-2 py-0.5 rounded-full text-xs font-semibold transition-colors ${
-              category === cat ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              category === cat
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500"
             }`}
           >
             {cat}
@@ -80,9 +82,9 @@ function InlineEditForm({
             onChange={(e) => setAmount(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onCancel(); }}
             autoFocus
-            className="w-full border border-blue-200 rounded-xl px-3 py-2 pr-7 text-right text-sm font-bold text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+            className="w-full border border-blue-200 dark:border-blue-700 rounded-xl px-3 py-2 pr-7 text-right text-sm font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
           />
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span>
+          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xs pointer-events-none">원</span>
         </div>
         <input
           type="text"
@@ -90,12 +92,12 @@ function InlineEditForm({
           value={place}
           onChange={(e) => setPlace(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onCancel(); }}
-          className="flex-1 border border-blue-200 rounded-xl px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+          className="flex-1 border border-blue-200 dark:border-blue-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors placeholder:text-gray-300 dark:placeholder:text-gray-600"
         />
         <div className="flex gap-1.5 shrink-0">
           <button
             onClick={onCancel}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
           >
             <X size={14} />
           </button>
@@ -103,7 +105,7 @@ function InlineEditForm({
             onClick={handleSave}
             disabled={!isValid}
             className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-              isValid ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-100 text-gray-300 cursor-not-allowed"
+              isValid ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-100 dark:bg-gray-600 text-gray-300 dark:text-gray-500 cursor-not-allowed"
             }`}
           >
             <Check size={14} />
@@ -117,11 +119,11 @@ function InlineEditForm({
         className="flex items-center gap-1.5 w-fit"
       >
         <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
-          isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 bg-white"
+          isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-700"
         }`}>
           {isWaste && <Check size={9} className="text-white" strokeWidth={3} />}
         </span>
-        <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400"}`}>
+        <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400 dark:text-gray-500"}`}>
           낭비
         </span>
       </button>
@@ -229,23 +231,23 @@ function DayCard({
 
   return (
     <div
-      className={`bg-white rounded-2xl shadow-sm overflow-hidden transition-colors ${
-        isToday ? "border-2 border-dashed border-gray-200" : "border border-gray-100"
-      } ${!expanded ? "cursor-pointer hover:bg-gray-50/50" : ""}`}
+      className={`bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden transition-colors ${
+        isToday ? "border-2 border-dashed border-gray-200 dark:border-gray-600" : "border border-gray-100 dark:border-gray-700"
+      } ${!expanded ? "cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-700/50" : ""}`}
       onClick={!expanded ? handleOpen : undefined}
     >
       {/* 날짜 헤더 */}
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-bold text-gray-700">{parseDateLabel(date)}</h3>
+          <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{parseDateLabel(date)}</h3>
           {isToday && (
-            <span className="text-[10px] bg-green-100 text-green-600 font-semibold px-2 py-0.5 rounded-full">
+            <span className="text-[10px] bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 font-semibold px-2 py-0.5 rounded-full">
               오늘
             </span>
           )}
         </div>
         {expanded && (
-          <button onClick={handleClose} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+          <button onClick={handleClose} className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
             ✕
           </button>
         )}
@@ -253,7 +255,7 @@ function DayCard({
 
       {/* 아이템 리스트 */}
       {items.length > 0 && (
-        <ul className="divide-y divide-gray-50">
+        <ul className="divide-y divide-gray-50 dark:divide-gray-700">
           {items.map((expense) =>
             editingId === expense.id ? (
               <InlineEditForm
@@ -264,12 +266,12 @@ function DayCard({
               />
             ) : (
               <li key={expense.id} className="flex items-center gap-2 px-4 py-3 group">
-                <span className={`text-sm font-semibold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
+                <span className={`text-sm font-semibold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900 dark:text-white"}`}>
                   {fmt(expense.amount)}
                 </span>
                 {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
+                  <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600 dark:text-gray-300"}`}>
                     {expense.place !== "-" ? expense.place : ""}
                   </span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
@@ -279,13 +281,13 @@ function DayCard({
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                   <button
                     onClick={(e) => handleStartEdit(e, expense.id)}
-                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
+                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-300 dark:text-gray-600 hover:text-blue-400"
                   >
                     <Pencil size={12} />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); onDelete(expense.id); }}
-                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-300 dark:text-gray-600 hover:text-red-400"
                   >
                     <Trash2 size={12} />
                   </button>
@@ -298,7 +300,7 @@ function DayCard({
 
       {/* 저장 대기 아이템 */}
       {pendingItems.length > 0 && (
-        <ul className="divide-y divide-green-50 bg-green-50/40">
+        <ul className="divide-y divide-green-50 dark:divide-green-900/30 bg-green-50/40 dark:bg-green-900/10">
           {pendingItems.map((expense, i) =>
             editingPendingIndex === i ? (
               <InlineEditForm
@@ -312,12 +314,12 @@ function DayCard({
               />
             ) : (
               <li key={`pending-${i}`} className="flex items-center gap-2 px-4 py-3 group">
-                <span className={`text-sm font-semibold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900"}`}>
+                <span className={`text-sm font-semibold shrink-0 ${expense.isWaste ? "text-orange-500" : "text-gray-900 dark:text-white"}`}>
                   {fmt(expense.amount)}
                 </span>
                 {expense.isWaste && <TriangleAlert size={13} className="text-orange-400 shrink-0" />}
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600"}`}>
+                  <span className={`text-sm truncate ${expense.isWaste ? "text-orange-500" : "text-gray-600 dark:text-gray-300"}`}>
                     {expense.place !== "-" ? expense.place : ""}
                   </span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${CATEGORY_BADGE[expense.category] ?? "bg-gray-100 text-gray-600"}`}>
@@ -329,13 +331,13 @@ function DayCard({
                   <div className="absolute right-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => handleEditPending(e, i)}
-                      className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-blue-50 text-gray-300 hover:text-blue-400"
+                      className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-300 dark:text-gray-600 hover:text-blue-400"
                     >
                       <Pencil size={12} />
                     </button>
                     <button
                       onClick={(e) => handleRemovePending(e, i)}
-                      className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400"
+                      className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-300 dark:text-gray-600 hover:text-red-400"
                     >
                       <X size={12} />
                     </button>
@@ -350,8 +352,8 @@ function DayCard({
       {/* 빈 상태 */}
       {!expanded && items.length === 0 && pendingItems.length === 0 && (
         <div className="px-4 py-8 flex flex-col items-center gap-2">
-          <Plus size={22} className="text-gray-300" />
-          <span className="text-sm text-gray-400">
+          <Plus size={22} className="text-gray-300 dark:text-gray-600" />
+          <span className="text-sm text-gray-400 dark:text-gray-500">
             {isToday ? "오늘 지출 내역이 없습니다. 탭하여 추가하세요" : "탭하여 추가하세요"}
           </span>
         </div>
@@ -359,7 +361,7 @@ function DayCard({
 
       {/* 추가 입력 폼 */}
       {expanded && (
-        <div className="px-4 pt-4 pb-3 flex flex-col gap-3 border-t border-gray-100 bg-gray-50/50" onClick={(e) => e.stopPropagation()}>
+        <div className="px-4 pt-4 pb-3 flex flex-col gap-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30" onClick={(e) => e.stopPropagation()}>
           {/* 카테고리 */}
           <div className="flex flex-wrap gap-1.5">
             {CATEGORIES.map((cat) => (
@@ -368,7 +370,9 @@ function DayCard({
                 type="button"
                 onClick={() => setCategory(cat)}
                 className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
-                  category === cat ? "bg-green-500 text-white" : "bg-white text-gray-500 hover:bg-gray-100 border border-gray-200"
+                  category === cat
+                    ? "bg-green-500 text-white"
+                    : "bg-white dark:bg-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500 border border-gray-200 dark:border-gray-500"
                 }`}
               >
                 {cat}
@@ -386,9 +390,9 @@ function DayCard({
                 onChange={(e) => setAmount(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
                 autoFocus={editingId === null}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-8 text-right text-base font-bold text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors"
+                className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 pr-8 text-right text-base font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors placeholder:text-gray-300 dark:placeholder:text-gray-600"
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span>
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xs pointer-events-none">원</span>
             </div>
             <input
               type="text"
@@ -396,7 +400,7 @@ function DayCard({
               value={place}
               onChange={(e) => setPlace(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
-              className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors"
+              className="flex-1 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors placeholder:text-gray-300 dark:placeholder:text-gray-600"
             />
           </div>
           {/* 낭비 체크박스 */}
@@ -406,11 +410,11 @@ function DayCard({
             className="flex items-center gap-1.5 w-fit"
           >
             <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
-              isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 bg-white"
+              isWaste ? "border-orange-400 bg-orange-400" : "border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-700"
             }`}>
               {isWaste && <Check size={9} className="text-white" strokeWidth={3} />}
             </span>
-            <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400"}`}>
+            <span className={`text-xs transition-colors ${isWaste ? "text-orange-500 font-semibold" : "text-gray-400 dark:text-gray-500"}`}>
               낭비
             </span>
           </button>
@@ -419,7 +423,7 @@ function DayCard({
             onClick={handleAddPending}
             disabled={!isValid}
             className={`w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-colors ${
-              isValid ? "bg-green-500 text-white hover:bg-green-600 active:bg-green-700" : "bg-gray-100 text-gray-300 cursor-not-allowed"
+              isValid ? "bg-green-500 text-white hover:bg-green-600 active:bg-green-700" : "bg-gray-100 dark:bg-gray-600 text-gray-300 dark:text-gray-500 cursor-not-allowed"
             }`}
           >
             <Plus size={15} />
@@ -430,11 +434,11 @@ function DayCard({
 
       {/* 푸터 */}
       {(items.length > 0 || pendingItems.length > 0) && (
-        <div className="px-4 py-2.5 bg-gray-50 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
+        <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-700/50 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-gray-800">{fmt(total)}</span>
+            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{fmt(total)}</span>
             {waste > 0 && <span className="text-xs text-orange-500 font-medium">낭비 {fmt(waste)}</span>}
-            <span className="text-xs text-gray-400">{totalCount}건</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">{totalCount}건</span>
           </div>
           {expanded && pendingItems.length > 0 && (
             <button onClick={handleSave} className="px-4 py-1.5 rounded-lg text-xs font-bold bg-green-500 text-white hover:bg-green-600 transition-colors">
@@ -485,7 +489,7 @@ export default function WeeklyLogView({ monthExpenses, month, onAddExpense, onDe
 
   if (weeklyGroups.length === 0) {
     return (
-      <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
+      <div className="flex items-center justify-center py-20 text-gray-400 dark:text-gray-500 text-sm">
         이번달 지출 내역이 없습니다
       </div>
     );
@@ -498,15 +502,15 @@ export default function WeeklyLogView({ monthExpenses, month, onAddExpense, onDe
         <button
           onClick={() => setActiveIndex((i) => i - 1)}
           disabled={safeIndex === 0}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeft size={18} />
         </button>
-        <span className="text-sm font-bold text-gray-700">{weekLabel}</span>
+        <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{weekLabel}</span>
         <button
           onClick={() => setActiveIndex((i) => i + 1)}
           disabled={safeIndex === weeklyGroups.length - 1}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronRight size={18} />
         </button>

@@ -110,11 +110,11 @@ export default function AccountBookPage() {
           />
 
           {/* 낭비 요약 */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <p className="text-xs font-semibold text-gray-400 mb-3">이번달 낭비</p>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-4">
+            <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 mb-3">이번달 낭비</p>
             <div className="flex items-end justify-between">
               <p className="text-2xl font-bold text-orange-500">{fmt(totalWaste)}</p>
-              <p className="text-xs text-gray-400 mb-0.5">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">
                 지출의{" "}
                 <span className="font-semibold text-orange-400">
                   {totalExpense > 0 ? Math.round((totalWaste / totalExpense) * 100) : 0}%
@@ -125,18 +125,18 @@ export default function AccountBookPage() {
 
           {/* 카테고리별 지출 */}
           {categoryTotals.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-              <p className="text-xs font-semibold text-gray-400 mb-3">카테고리별 지출</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-4">
+              <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 mb-3">카테고리별 지출</p>
               <ul className="flex flex-col gap-3">
                 {categoryTotals.map(([cat, amount]) => {
                   const pct = Math.round((amount / totalExpense) * 100);
                   return (
                     <li key={cat}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-gray-700">{cat}</span>
-                        <span className="text-xs text-gray-500">{fmt(amount)}</span>
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{cat}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{fmt(amount)}</span>
                       </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-gray-100 dark:bg-gray-600 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${CATEGORY_COLORS[cat] ?? "bg-gray-400"}`}
                           style={{ width: `${pct}%` }}
@@ -154,15 +154,15 @@ export default function AccountBookPage() {
         <div className="flex-1 min-w-0">
           {/* View toggle + 오늘 추가 */}
           <div className="flex items-center justify-between mb-4 mx-4 lg:mx-0">
-            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl w-fit">
+            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl w-fit">
               {(["calendar", "weekly", "all"] as const).map((v) => (
                 <button
                   key={v}
                   onClick={() => setView(v)}
                   className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     view === v
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   }`}
                 >
                   {v === "calendar" ? "달력" : v === "weekly" ? "주차별" : "전체 로그"}
