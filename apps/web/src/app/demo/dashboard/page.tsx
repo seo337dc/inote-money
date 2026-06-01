@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Pencil, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 
-type ListItem = { id: string; name: string; amount: number };
+type ListItem = { id: string; name: string; amount: number; day?: number };
 
 type Settings = {
   monthlyIncome: number;
+  incomeDay?: number;
   dailyLimit: number;
   monthlyGoal: number;
+  assetUpdateDay?: number;
   savings: ListItem[];
   fixedExpenses: ListItem[];
 };
@@ -139,47 +141,67 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: "월급", value: settings.monthlyIncome },
-              { label: `적금 (${settings.savings.length}개)`, value: settings.savings.reduce((s, i) => s + i.amount, 0) },
-              { label: `고정 지출 (${settings.fixedExpenses.length}개)`, value: settings.fixedExpenses.reduce((s, i) => s + i.amount, 0) },
-              { label: "일일 한도", value: settings.dailyLimit },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <p className={`text-[11px] mb-0.5 ${LABEL}`}>{label}</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">{fmt(value)}</p>
-              </div>
-            ))}
+            <div>
+              <p className={`text-[11px] mb-0.5 ${LABEL}`}>월급</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{fmt(settings.monthlyIncome)}</p>
+              {settings.incomeDay ? <p className={`text-[10px] mt-0.5 ${LABEL}`}>매달 {settings.incomeDay}일 입금</p> : null}
+            </div>
+            <div>
+              <p className={`text-[11px] mb-0.5 ${LABEL}`}>적금 ({settings.savings.length}개)</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{fmt(settings.savings.reduce((s, i) => s + i.amount, 0))}</p>
+            </div>
+            <div>
+              <p className={`text-[11px] mb-0.5 ${LABEL}`}>고정 지출 ({settings.fixedExpenses.length}개)</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{fmt(settings.fixedExpenses.reduce((s, i) => s + i.amount, 0))}</p>
+            </div>
+            <div>
+              <p className={`text-[11px] mb-0.5 ${LABEL}`}>일일 한도</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{fmt(settings.dailyLimit)}</p>
+            </div>
           </div>
 
-          {infoExpanded && (settings.savings.length > 0 || settings.fixedExpenses.length > 0) && (
-            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {settings.savings.length > 0 && (
-                <div>
-                  <p className={`text-[11px] font-semibold mb-2 ${LABEL}`}>적금 목록</p>
-                  <ul className="flex flex-col gap-1.5">
-                    {settings.savings.map((item) => (
-                      <li key={item.id} className="flex items-center justify-between">
-                        <span className="text-xs text-gray-600 dark:text-gray-300">{item.name || "이름 없음"}</span>
-                        <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{fmt(item.amount)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {settings.fixedExpenses.length > 0 && (
-                <div>
-                  <p className={`text-[11px] font-semibold mb-2 ${LABEL}`}>고정 지출 목록</p>
-                  <ul className="flex flex-col gap-1.5">
-                    {settings.fixedExpenses.map((item) => (
-                      <li key={item.id} className="flex items-center justify-between">
-                        <span className="text-xs text-gray-600 dark:text-gray-300">{item.name || "이름 없음"}</span>
-                        <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{fmt(item.amount)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+          {infoExpanded && (
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-4">
+              {settings.assetUpdateDay ? (
+                <p className={`text-[11px] ${LABEL}`}>
+                  자산 정보 업데이트{" "}
+                  <span className="font-semibold text-gray-600 dark:text-gray-300">매달 {settings.assetUpdateDay}일</span>
+                </p>
+              ) : null}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {settings.savings.length > 0 && (
+                  <div>
+                    <p className={`text-[11px] font-semibold mb-2 ${LABEL}`}>적금 목록</p>
+                    <ul className="flex flex-col gap-1.5">
+                      {settings.savings.map((item) => (
+                        <li key={item.id} className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-gray-600 dark:text-gray-300 truncate">{item.name || "이름 없음"}</span>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {item.day ? <span className={`text-[10px] ${LABEL}`}>{item.day}일</span> : null}
+                            <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{fmt(item.amount)}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {settings.fixedExpenses.length > 0 && (
+                  <div>
+                    <p className={`text-[11px] font-semibold mb-2 ${LABEL}`}>고정 지출 목록</p>
+                    <ul className="flex flex-col gap-1.5">
+                      {settings.fixedExpenses.map((item) => (
+                        <li key={item.id} className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-gray-600 dark:text-gray-300 truncate">{item.name || "이름 없음"}</span>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {item.day ? <span className={`text-[10px] ${LABEL}`}>{item.day}일</span> : null}
+                            <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{fmt(item.amount)}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

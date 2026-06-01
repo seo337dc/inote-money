@@ -4,47 +4,70 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Plus, X } from "lucide-react";
 
-type ListItem = { id: string; name: string; amount: string };
+type ListItem = { id: string; name: string; amount: string; day: string };
 
 type FormState = {
   monthlyIncome: string;
+  incomeDay: string;
   dailyLimit: string;
   monthlyGoal: string;
+  assetUpdateDay: string;
   savings: ListItem[];
   fixedExpenses: ListItem[];
 };
 
 function newItem(): ListItem {
-  return { id: `${Date.now()}-${Math.random()}`, name: "", amount: "" };
+  return { id: `${Date.now()}-${Math.random()}`, name: "", amount: "", day: "" };
 }
 
 const INPUT_BASE = "flex-1 bg-transparent text-sm text-gray-900 dark:text-white outline-none placeholder:text-gray-300 dark:placeholder:text-gray-600 min-w-0";
 const INPUT_WRAP = "flex items-center bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-green-200 dark:focus-within:ring-green-800 focus-within:border-transparent transition-all";
+const DAY_SELECT = "h-[42px] bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-2 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 focus:border-transparent transition-all shrink-0 w-[72px]";
+
+function DaySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)} className={DAY_SELECT}>
+      <option value="">날짜</option>
+      {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+        <option key={d} value={String(d)}>{d}일</option>
+      ))}
+    </select>
+  );
+}
 
 function NumberField({
   label,
   hint,
   value,
   onChange,
+  day,
+  onDayChange,
 }: {
   label: string;
   hint?: string;
   value: string;
   onChange: (v: string) => void;
+  day?: string;
+  onDayChange?: (v: string) => void;
 }) {
   return (
     <div>
       <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 block mb-1">{label}</label>
       {hint && <p className="text-[11px] text-gray-400 dark:text-gray-500 mb-1.5">{hint}</p>}
-      <div className={INPUT_WRAP}>
-        <input
-          type="number"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="0"
-          className={INPUT_BASE}
-        />
-        <span className="text-xs text-gray-400 dark:text-gray-500 ml-1 shrink-0">원</span>
+      <div className="flex gap-2">
+        <div className={`${INPUT_WRAP} flex-1`}>
+          <input
+            type="number"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="0"
+            className={INPUT_BASE}
+          />
+          <span className="text-xs text-gray-400 dark:text-gray-500 ml-1 shrink-0">원</span>
+        </div>
+        {onDayChange !== undefined && (
+          <DaySelect value={day ?? ""} onChange={onDayChange} />
+        )}
       </div>
     </div>
   );
@@ -63,7 +86,7 @@ function DynamicList({
   addLabel: string;
   namePlaceholder: string;
 }) {
-  const update = (id: string, field: "name" | "amount", value: string) =>
+  const update = (id: string, field: keyof Omit<ListItem, "id">, value: string) =>
     onChange(items.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
 
   const remove = (id: string) => onChange(items.filter((item) => item.id !== id));
@@ -96,7 +119,7 @@ function DynamicList({
               placeholder={namePlaceholder}
               className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 focus:border-transparent transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600 min-w-0"
             />
-            <div className={`${INPUT_WRAP} w-36 shrink-0`}>
+            <div className={`${INPUT_WRAP} w-28 shrink-0`}>
               <input
                 type="number"
                 value={item.amount}
@@ -106,6 +129,7 @@ function DynamicList({
               />
               <span className="text-xs text-gray-400 dark:text-gray-500 ml-1 shrink-0">원</span>
             </div>
+            <DaySelect value={item.day} onChange={(v) => update(item.id, "day", v)} />
             <button
               type="button"
               onClick={() => remove(item.id)}
@@ -133,8 +157,10 @@ export default function SetupPage() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>({
     monthlyIncome: "",
+    incomeDay: "",
     dailyLimit: "",
     monthlyGoal: "",
+    assetUpdateDay: "",
     savings: [],
     fixedExpenses: [],
   });
@@ -145,24 +171,36 @@ export default function SetupPage() {
       const s = JSON.parse(saved);
       setForm({
         monthlyIncome: s.monthlyIncome ? String(s.monthlyIncome) : "",
+        incomeDay: s.incomeDay ? String(s.incomeDay) : "",
         dailyLimit: s.dailyLimit ? String(s.dailyLimit) : "",
         monthlyGoal: s.monthlyGoal ? String(s.monthlyGoal) : "",
-        savings: s.savings ?? [],
-        fixedExpenses: s.fixedExpenses ?? [],
+        assetUpdateDay: s.assetUpdateDay ? String(s.assetUpdateDay) : "",
+        savings: (s.savings ?? []).map((item: { id: string; name: string; amount: number; day?: number }) => ({
+          ...item,
+          amount: String(item.amount),
+          day: item.day ? String(item.day) : "",
+        })),
+        fixedExpenses: (s.fixedExpenses ?? []).map((item: { id: string; name: string; amount: number; day?: number }) => ({
+          ...item,
+          amount: String(item.amount),
+          day: item.day ? String(item.day) : "",
+        })),
       });
     }
   }, []);
 
-  const set = (key: keyof Pick<FormState, "monthlyIncome" | "dailyLimit" | "monthlyGoal">) =>
+  const set = (key: keyof Pick<FormState, "monthlyIncome" | "incomeDay" | "dailyLimit" | "monthlyGoal" | "assetUpdateDay">) =>
     (v: string) => setForm((f) => ({ ...f, [key]: v }));
 
   const handleSave = () => {
     const settings = {
       monthlyIncome: Number(form.monthlyIncome) || 0,
+      incomeDay: Number(form.incomeDay) || 0,
       dailyLimit: Number(form.dailyLimit) || 0,
       monthlyGoal: Number(form.monthlyGoal) || 0,
-      savings: form.savings.map((item) => ({ ...item, amount: Number(item.amount) || 0 })),
-      fixedExpenses: form.fixedExpenses.map((item) => ({ ...item, amount: Number(item.amount) || 0 })),
+      assetUpdateDay: Number(form.assetUpdateDay) || 0,
+      savings: form.savings.map((item) => ({ ...item, amount: Number(item.amount) || 0, day: Number(item.day) || 0 })),
+      fixedExpenses: form.fixedExpenses.map((item) => ({ ...item, amount: Number(item.amount) || 0, day: Number(item.day) || 0 })),
     };
     localStorage.setItem("inote-settings", JSON.stringify(settings));
     router.back();
@@ -185,9 +223,21 @@ export default function SetupPage() {
         {/* 기본 정보 */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 flex flex-col gap-5">
           <p className="text-xs font-semibold text-gray-400 dark:text-gray-500">기본 정보</p>
-          <NumberField label="월급 (매달 수입)" hint="세후 실수령액 기준" value={form.monthlyIncome} onChange={set("monthlyIncome")} />
+          <NumberField
+            label="월급 (매달 수입)"
+            hint="세후 실수령액 기준"
+            value={form.monthlyIncome}
+            onChange={set("monthlyIncome")}
+            day={form.incomeDay}
+            onDayChange={set("incomeDay")}
+          />
           <NumberField label="일일 지출 한도" hint="하루에 최대 얼마까지 쓸지 설정" value={form.dailyLimit} onChange={set("dailyLimit")} />
           <NumberField label="월 저축 목표" hint="이번 달 얼마를 모을 것인지" value={form.monthlyGoal} onChange={set("monthlyGoal")} />
+          <div>
+            <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 block mb-1">자산 정보 업데이트</label>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 mb-1.5">매달 자산 현황을 점검하는 날짜</p>
+            <DaySelect value={form.assetUpdateDay} onChange={set("assetUpdateDay")} />
+          </div>
         </div>
 
         {/* 적금 목록 */}
