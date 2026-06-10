@@ -379,6 +379,99 @@ src/app/demo/
 
 ---
 
+### 2026-06-01 (세션 4)
+
+#### ✅ 가계부 전체 다크모드 적용
+
+**적용 컴포넌트**
+- `SummaryCards.tsx` — 카드별 배경색 `bg-*-50 dark:bg-*-900/20` 방식 (data-driven)
+- `LedgerCalendar.tsx` — 캘린더 컨테이너, 셀, 범례, 네비게이션 버튼
+- `DayDetailModal.tsx` — 모달 전체, InlineEditForm, 카테고리 칩, 입력 필드
+- `WeeklyLogView.tsx` / `AllLogView.tsx` — DayCard, 폼, 미저장 pending 배경
+- `account-book/page.tsx` — 낭비 요약 카드, 카테고리별 지출 카드, 뷰 토글 탭
+
+---
+
+### 2026-06-01 (세션 5)
+
+#### ✅ 대시보드 설정 — 날짜 필드 추가
+
+**변경 내용 (`/demo/dashboard/setup`)**
+- `ListItem` 타입에 `day: string` 필드 추가 (적금·고정지출 이체일)
+- `FormState`에 `incomeDay`, `assetUpdateDay` 추가
+- `DaySelect` 컴포넌트 신규 (1~31일 선택 드롭다운, `w-[72px]`)
+- `NumberField`에 선택적 `day` + `onDayChange` prop → 월급 입금일 inline 표시
+- `DynamicList` 행: `[이름] [금액] [날짜] [삭제]` 4열 구조
+- 자산 업데이트일 standalone DaySelect 추가
+
+**대시보드 표시 (`/demo/dashboard`)**
+- 월급 셀: 금액 아래 "매달 N일 입금" 서브텍스트
+- 상세 펼침 시: 자산 업데이트일, 각 항목 이체일 표시
+
+---
+
+### 2026-06-08 (세션 6)
+
+#### ✅ 주식 페이지 초기 구현 (`/demo/stocks`)
+
+**구성**
+- 환율 영역: USD/KRW, 100엔/KRW, EUR/KRW — `open.er-api.com` 무료 API
+- 내 보유 종목 영역: 가로 스크롤 카드 (좌우 슬라이드 버튼)
+- 주식 차트 영역: TradingView iframe embed (전체 너비)
+
+**초기 차트 방식: TradingView 스크립트 → iframe으로 전환**
+- 처음에 `tv.js` 스크립트 방식 시도 → 종목 전환 시 이전 차트 잔류 버그
+- iframe `key={src}` 방식으로 변경 → URL 변경 시 DOM 완전 교체로 해결
+
+**입력 방식 2가지 지원**
+- 수량 모드 (국내 기본): 보유 수량(주) + 평균 매입가
+- 금액 모드 (해외 기본): 투자 총액(USD)만 입력
+- 통화 선택(KRW/USD) 시 inputMode 자동 전환
+
+**샘플 데이터**
+- 국내: 삼성전자, TIGER S&P500, TIGER 나스닥100, TIGER 미국우주테크
+- 해외: 엔비디아, 애플, 테슬라, 마이크로소프트
+
+---
+
+### 2026-06-10 (세션 7)
+
+#### ✅ 주식 페이지 — 국내/해외 2섹션 분리 + Naver API 차트
+
+**레이아웃 재구성**
+```
+환율 영역 (USD/KRW, 100엔, EUR)
+──────────────────────────────
+국내 주식 / ETF 섹션
+  [가로 스크롤 카드] + 좌우 슬라이드 버튼
+  [차트: Naver 금융 + Lightweight Charts]
+──────────────────────────────
+해외 주식 섹션
+  [가로 스크롤 카드]
+  [차트: TradingView iframe]
+```
+
+**신규: Next.js API Route 프록시**
+- `src/app/api/stock/[ticker]/route.ts`
+- Naver `fchart.stock.naver.com/siseJson.nhn` CORS 우회
+- OHLCV 파싱 → `{ time: "YYYY-MM-DD", open, high, low, close, volume }[]`
+- 5분 캐시 (`Cache-Control: public, max-age=300`)
+
+**신규: KoreanStockChart 컴포넌트**
+- `src/app/demo/stocks/components/KoreanStockChart.tsx`
+- `lightweight-charts` v5 (`chart.addSeries(CandlestickSeries, ...)`)
+- 로딩 스피너 / 에러 상태 처리
+- 다크모드 대응 (배경, 그리드, 텍스트 색상)
+- 녹색/빨간 캔들 (상승/하락)
+- `ResizeObserver`로 컨테이너 크기 변화 대응
+
+**섹션별 독립 상태**
+- `domesticSelectedId` / `foreignSelectedId` 분리
+- 섹션별 `scrollRef` 분리
+- 추가 버튼: 국내 섹션 → `defaultCurrency: "KRW"`, 해외 → `"USD"` 자동 세팅
+
+---
+
 ## UI 인사이트 / 기획 메모
 
 ### 리스트·테이블 뷰 필요 (2026-05-08)
@@ -413,28 +506,22 @@ src/app/demo/
 
 ## 다음 작업 예정
 
-### FE — 웹/태블릿
-- [x] `/demo` 가계부 — 달력 / 주차별 / 전체 로그 뷰 탭 전환
-- [x] `/demo` 주차별 뷰 — 오늘 카드 인라인 입력 + 저장 버튼
-- [x] `/demo` 가계부 CRUD 완성 (수정 / 삭제 / pending 패턴)
-- [x] `/demo` 전체 뷰 입력 폼 UX 통일 (카테고리 → 금액/사용처 → 낭비 체크박스 → 추가하기)
-- [x] `/demo` 지출 추가 UX — 데스크탑 "+ 오늘 추가" 버튼 + 모바일 FAB
-- [x] `/demo` 프로젝트 구조 개편 — 메뉴 기반 멀티 섹션 구조로 전환
-- [x] `/demo` 자산 관리 대시보드 구현
-- [x] `/demo` 설정 페이지 + 다크 모드 시스템 구축
-- [ ] `/demo` 대시보드 가계부 연동
-- [ ] `/demo` 수입/지출 관리 화면 구현
-- [ ] `/demo` 투자 기록 화면 구현
-- [ ] `/demo` 포트폴리오 화면 구현
-- [ ] `/demo` 월별 기록 화면 구현
+### FE — 데모 화면
 
-### FE — 모바일 (다음 작업)
-- [ ] `/demo` 가계부 모바일 뷰 — 달력 / 주차별 / 전체 로그 (모바일 전용 레이아웃)
-- [ ] 하단 탭 네비게이션 (모바일 전용)
+**완료**
+- [x] 가계부 — 달력 / 주차별 / 전체 로그 뷰, CRUD
+- [x] 가계부 전체 다크모드 적용
+- [x] 대시보드 — 내 정보 카드 / 주간 리뷰 / 월간 요약
+- [x] 내 정보 설정 — 월급·적금·고정지출·날짜 입력
+- [x] 설정 — 프로필 + 다크모드
+- [x] 주식 — 국내(Naver API + Lightweight Charts) / 해외(TradingView) / 환율
 
-> **모바일/데스크탑 분리 전략 확정** (2026-05-12)
-> CSS 숨기기 방식 (`hidden lg:block` / `block lg:hidden`) + 컴포넌트 분리.
-> 상세 내용은 `CLAUDE.md` → "모바일 / 데스크탑 UI 분리 전략" 섹션 참고.
+**진행 예정**
+- [ ] 금융 지식 화면 구현
+- [ ] 미니게임 (캐시 플로우) 화면 구현
+- [ ] 대시보드 ↔ 가계부 데이터 연동
+- [ ] 알림 배너 (자산 업데이트일 D-2~3)
+- [ ] 주간/월간 상세 작성 모달
 
 ### BE
 - [ ] NestJS 프로젝트 생성 (`backend/`)

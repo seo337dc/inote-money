@@ -108,15 +108,26 @@ inote-money/
 
 ## 미결정 항목
 
-- [ ] 대시보드 화면 정의
+- [x] 대시보드 화면 — 데모 구현 완료, 실서비스 스펙 미정
 - [ ] 수입/지출 관리 화면 정의
-- [ ] 투자 기록 화면 정의
-- [ ] 포트폴리오 화면 정의
-- [ ] 월별 기록 화면 정의
+- [ ] 금융 지식 화면 정의
+- [ ] 미니게임 (캐시플로우) 화면 정의
 - [ ] DB 스키마
 - [ ] AWS 인프라 구성
 - [x] 인증 방식 — Better Auth (소셜 로그인, Next.js 16 + Prisma 지원)
 - [ ] 앱 배포 여부 (App Store / Play Store)
+
+## 데모 구현 완료 화면 목록
+
+| 경로 | 화면 | 상태 |
+|------|------|------|
+| `/demo/dashboard` | 자산 관리 대시보드 | ✅ 완료 |
+| `/demo/dashboard/setup` | 내 정보 설정 | ✅ 완료 |
+| `/demo/account-book` | 가계부 (달력/주차별/전체) | ✅ 완료 |
+| `/demo/stocks` | 주식 (국내+해외+환율) | ✅ 완료 |
+| `/demo/settings` | 설정 (프로필+다크모드) | ✅ 완료 |
+| `/demo/financial-knowledge` | 금융 지식 | 🚧 준비 중 |
+| `/demo/mini-game` | 미니게임 | 🚧 준비 중 |
 
 ---
 
@@ -136,6 +147,10 @@ inote-money/
 ### Claude Code 바로 전달 가능 (기획 완료)
 
 - [x] 가계부 화면 — 달력 / 주차별 / 전체 로그 뷰 (구현 완료)
+- [x] 대시보드 — 내 정보 카드 / 주간 리뷰 / 월간 요약 (구현 완료)
+- [x] 내 정보 설정 — 월급·적금·고정지출·날짜 입력 (구현 완료)
+- [x] 설정 페이지 — 프로필 + 다크모드 토글 (구현 완료)
+- [x] 주식 페이지 — 국내(Naver API + Lightweight Charts) + 해외(TradingView iframe) + 환율 (구현 완료)
 
 ---
 
@@ -190,7 +205,7 @@ src/app/demo/
 
 ## 현재 단계
 
-`/demo` 가계부 웹/태블릿 UI 완성 — 모바일 뷰 개발 예정
+`/demo` 주식 페이지까지 구현 완료. 국내/해외 주식 2섹션, Naver 금융 API + Lightweight Charts (국내), TradingView iframe (해외) 적용.
 
 ---
 
