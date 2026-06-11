@@ -506,33 +506,32 @@ src/app/demo/
 
 ## 다음 작업 예정
 
-### FE — 데모 화면
+### 2단계 — FE 데모 나머지 화면 (BE 배포와 병행 가능)
 
-**완료**
 - [x] 가계부 — 달력 / 주차별 / 전체 로그 뷰, CRUD
 - [x] 가계부 전체 다크모드 적용
 - [x] 대시보드 — 내 정보 카드 / 주간 리뷰 / 월간 요약
 - [x] 내 정보 설정 — 월급·적금·고정지출·날짜 입력
 - [x] 설정 — 프로필 + 다크모드
 - [x] 주식 — 국내(Naver API + Lightweight Charts) / 해외(TradingView) / 환율
+- [ ] **금융 지식 화면 구현** (`/demo/financial-knowledge`)
+- [ ] **미니게임 화면 구현** (`/demo/mini-game`)
 
-**진행 예정**
-- [ ] 금융 지식 화면 구현
-- [ ] 미니게임 (캐시 플로우) 화면 구현
+### 3단계 — FE + BE 연동 (inote-server Railway 배포 후 시작)
+
+> BE dev 환경 URL 확보 후 진행. 그 전까지는 localStorage/더미 데이터 유지.
+
+- [ ] 로그인 페이지 실제 연동 (Better Auth Google 소셜 로그인)
+- [ ] 가계부 localStorage → 실제 API 교체 (`/api/v1/money/expenses`)
+- [ ] 주식 localStorage → 실제 API 교체 (`/api/v1/money/stocks`)
+- [ ] 내 정보 설정 localStorage → 실제 API 교체 (`/api/v1/money/settings`)
 - [ ] 대시보드 ↔ 가계부 데이터 연동
 - [ ] 알림 배너 (자산 업데이트일 D-2~3)
-- [ ] 주간/월간 상세 작성 모달
-
-### BE
-- [ ] NestJS 프로젝트 생성 (`backend/`)
-- [ ] DB 스키마 설계 (Prisma + PostgreSQL)
-- [ ] 가계부 API (CRUD)
-- [ ] Better Auth 설정
 
 ### 인프라
-- [ ] Supabase or Neon — PostgreSQL 세팅
-- [ ] Vercel 배포 (FE)
-- [ ] Railway 배포 (BE)
+- [x] Neon PostgreSQL 세팅 (inote-server)
+- [x] Railway 배포 대상: inote-server (BE)
+- [ ] Vercel 배포 (FE — inote-money)
 
 ---
 
