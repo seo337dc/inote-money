@@ -39,7 +39,7 @@ export default function Home() {
               기획 문서
             </a>
             <a
-              href="https://app.notion.com/p/37bb5151f22f80429433d1c1f0241bd8"
+              href="https://app.notion.com/p/devlog-de6909091d054042a9b39ee1ebc7283b"
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
