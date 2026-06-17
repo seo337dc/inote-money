@@ -25,6 +25,29 @@ export default function Home() {
             시작하기
           </Link>
         </div>
+
+        {/* 프로젝트 문서 링크 */}
+        <div className="flex flex-col items-center gap-2 pt-4 border-t border-border w-full max-w-xs">
+          <p className="text-xs text-muted-foreground">프로젝트 문서</p>
+          <div className="flex gap-4">
+            <a
+              href="https://app.notion.com/p/35ab5151f22f8048b08cdc6ee8c38253"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
+            >
+              기획 문서
+            </a>
+            <a
+              href="https://app.notion.com/p/37bb5151f22f80429433d1c1f0241bd8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
+            >
+              개발 문서
+            </a>
+          </div>
+        </div>
       </main>
     </div>
   );
