@@ -133,7 +133,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <p className={`text-xs font-semibold ${LABEL}`}>내 정보</p>
             <Link
-              href="/demo/dashboard/setup"
+              href="/dashboard/setup"
               className="flex items-center gap-1 text-xs text-gray-400 hover:text-green-600 dark:text-gray-500 dark:hover:text-green-400 transition-colors"
             >
               <Pencil size={11} />
@@ -216,7 +216,7 @@ export default function DashboardPage() {
         <div className={`${CARD} mb-6 flex flex-col items-center gap-4 py-10`}>
           <p className="text-sm text-gray-400 dark:text-gray-500">아직 설정된 정보가 없어요</p>
           <Link
-            href="/demo/dashboard/setup"
+            href="/dashboard/setup"
             className="flex items-center gap-1.5 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-colors"
           >
             <span className="text-base leading-none">+</span>

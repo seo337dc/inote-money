@@ -11,17 +11,17 @@ import {
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DarkModeProvider, useDarkMode } from "./dark-mode";
+import { DarkModeProvider, useDarkMode } from "@/lib/dark-mode";
 
 const MAIN_NAV = [
-  { href: "/demo/dashboard", label: "자산 관리", icon: LayoutDashboard },
-  { href: "/demo/account-book", label: "가계부", icon: BookOpen },
-  { href: "/demo/stocks", label: "주식", icon: TrendingUp },
-  { href: "/demo/financial-knowledge", label: "금융 지식", icon: GraduationCap },
-  { href: "/demo/mini-game", label: "미니게임", icon: Gamepad2 },
+  { href: "/dashboard", label: "자산 관리", icon: LayoutDashboard },
+  { href: "/account-book", label: "가계부", icon: BookOpen },
+  { href: "/stocks", label: "주식", icon: TrendingUp },
+  { href: "/financial-knowledge", label: "금융 지식", icon: GraduationCap },
+  { href: "/mini-game", label: "미니게임", icon: Gamepad2 },
 ];
 
-const SETTINGS_NAV = { href: "/demo/settings", label: "설정", icon: Settings };
+const SETTINGS_NAV = { href: "/settings", label: "설정", icon: Settings };
 
 const ALL_MOBILE_NAV = [...MAIN_NAV, SETTINGS_NAV];
 
@@ -60,16 +60,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     <div className={cn("min-h-screen bg-gray-50 flex", isDark && "dark")}>
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-56 shrink-0 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 fixed top-0 left-0 bottom-0 z-30">
-        {/* Brand */}
         <div className="flex items-center gap-2.5 px-5 py-5 border-b border-gray-100 dark:border-gray-800">
           <span className="text-xl">💰</span>
           <span className="font-bold text-gray-900 dark:text-white text-[15px]">iNote Money</span>
-          <span className="text-[10px] bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full font-semibold ml-auto shrink-0">
-            데모
-          </span>
         </div>
 
-        {/* Main nav */}
         <nav className="flex flex-col gap-0.5 p-3 flex-1">
           {MAIN_NAV.map(({ href, label, icon }) => (
             <NavLink
@@ -77,12 +72,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
               href={href}
               label={label}
               icon={icon}
-              active={pathname.startsWith(href)}
+              active={pathname === href || pathname.startsWith(href + "/")}
             />
           ))}
         </nav>
 
-        {/* Settings pinned at bottom */}
         <div className="p-3 border-t border-gray-100 dark:border-gray-800">
           <NavLink
             href={SETTINGS_NAV.href}
@@ -93,7 +87,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="flex-1 lg:ml-56 min-w-0 pb-16 lg:pb-0 bg-gray-50 dark:bg-gray-900">
         {children}
       </div>
@@ -101,7 +94,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       {/* Mobile bottom nav */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex z-40">
         {ALL_MOBILE_NAV.map(({ href, label, icon: Icon }) => {
-          const active = pathname.startsWith(href);
+          const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link
               key={href}
@@ -123,7 +116,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function DemoLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <DarkModeProvider>
       <LayoutContent>{children}</LayoutContent>
