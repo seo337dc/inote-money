@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Moon, Sun, User, LogOut } from "lucide-react";
-import { useDarkMode } from "../dark-mode";
+import { useDarkMode } from "@/lib/dark-mode";
+import { signOut } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 type Profile = {
   name: string;
@@ -14,6 +16,8 @@ export default function SettingsPage() {
   const { isDark, toggle } = useDarkMode();
   const [profile, setProfile] = useState<Profile>({ name: "", jobTitle: "", intro: "" });
   const [saved, setSaved] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const p = localStorage.getItem("inote-profile");
@@ -24,6 +28,12 @@ export default function SettingsPage() {
     localStorage.setItem("inote-profile", JSON.stringify(profile));
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await signOut();
+    router.push("/login");
   };
 
   const set = (key: keyof Profile) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -114,7 +124,6 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Toggle switch */}
             <button
               onClick={toggle}
               className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
@@ -135,10 +144,12 @@ export default function SettingsPage() {
           <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 mb-4">계정</p>
 
           <button
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
           >
             <LogOut size={15} />
-            로그아웃
+            {loggingOut ? "로그아웃 중..." : "로그아웃"}
           </button>
         </div>
 
