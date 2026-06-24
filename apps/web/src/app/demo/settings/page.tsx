@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Moon, Sun, User, LogOut } from "lucide-react";
 import { useDarkMode } from "../dark-mode";
+import { useRouter } from "next/navigation";
 
 type Profile = {
   name: string;
@@ -14,6 +15,7 @@ export default function SettingsPage() {
   const { isDark, toggle } = useDarkMode();
   const [profile, setProfile] = useState<Profile>({ name: "", jobTitle: "", intro: "" });
   const [saved, setSaved] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const p = localStorage.getItem("inote-profile");
@@ -135,6 +137,7 @@ export default function SettingsPage() {
           <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 mb-4">계정</p>
 
           <button
+            onClick={() => router.push("/")}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           >
             <LogOut size={15} />

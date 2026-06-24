@@ -33,7 +33,7 @@ export default function SettingsPage() {
   const handleLogout = async () => {
     setLoggingOut(true);
     await signOut();
-    router.push("/login");
+    router.push("/");
   };
 
   const set = (key: keyof Profile) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
