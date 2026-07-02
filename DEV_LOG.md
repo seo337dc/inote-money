@@ -83,8 +83,29 @@ http://localhost:3000/demo   # 데모
 | 7 | 로그아웃 후 `/dashboard` 재접근 | `/login` 리다이렉트 ✅ |
 | 8 | 설정 로그아웃 클릭 | `/` 이동 ✅ |
 
+#### ✅ 크로스 도메인 인증 버그 수정
+
+**증상**
+- 프로덕션(Vercel FE + Render BE)에서 Google 로그인 후 `/dashboard`로 이동하지 않고 `/login`으로 튕김
+- Render 로그에는 아무 반응 없음
+
+**근본 원인**
+Next.js 미들웨어가 세션 쿠키를 직접 체크하는 방식이 크로스 도메인에서 동작하지 않음.
+
+- Render BE가 세션 쿠키를 `onrender.com` 도메인에 세팅
+- Vercel 미들웨어는 `vercel.app` 요청의 쿠키만 확인 → Render 쿠키 없음 → 항상 미인증 판단
+- OAuth 완료 후 Vercel `/dashboard`로 이동해도 미들웨어가 즉시 `/login`으로 튕겨버림 → 클라이언트 코드 실행 기회 없음
+
+로컬에서는 FE(`localhost:3000`)와 BE(`localhost:3200`)가 같은 `localhost` 호스트라 쿠키가 공유돼 문제없었음.
+
+**수정**
+- `middleware.ts` — 세션 체크 로직 제거 (pass-through)
+- `dashboard/layout.tsx` — `useSession()` hook으로 세션 체크 (미인증 시 `/login` 리다이렉트)
+- `login/page.tsx` — `useSession()` hook으로 이미 인증된 경우 `/dashboard` 리다이렉트
+
+`useSession()`은 Render BE에 직접 요청을 보내므로 브라우저가 `onrender.com` 쿠키를 정상 전달 → 크로스 도메인에서도 세션 확인 가능.
+
 #### 🔜 다음 작업
-- 프로덕션 QA (Google 로그인 + 라우트 보호)
 - FE + BE API 연동
 
 ---
