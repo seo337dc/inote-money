@@ -21,7 +21,7 @@
 | BE | NestJS + Prisma |
 | 인증 | Better Auth |
 | DB | PostgreSQL |
-| DevOps | Vercel (FE) + Railway (BE) + Supabase (DB) |
+| DevOps | Vercel (FE) + Render (BE) + Neon (DB) |
 
 ---
 
@@ -96,8 +96,8 @@ inote-money/
 | 영역 | 서비스 | 비고 |
 |------|--------|------|
 | FE | Vercel | Next.js 무료 배포 |
-| BE | Railway | NestJS 무료 플랜 |
-| DB | Supabase 또는 Neon | PostgreSQL 무료 플랜 |
+| BE | Render | NestJS 무료 플랜 |
+| DB | Neon | PostgreSQL 무료 플랜 |
 | 도메인 | Vercel 서브도메인 | 추후 Cloudflare 도메인 연결 가능 |
 
 - AWS 사용 안 함 (프리티어 1년 후 과금)
@@ -109,12 +109,11 @@ inote-money/
 ## 미결정 항목
 
 - [x] 대시보드 화면 — 데모 구현 완료, 실서비스 스펙 미정
+- [x] 인증 방식 — Better Auth + Google OAuth (실서비스 배포 완료)
 - [ ] 수입/지출 관리 화면 정의
 - [ ] 금융 지식 화면 정의
 - [ ] 미니게임 (캐시플로우) 화면 정의
 - [ ] DB 스키마
-- [ ] AWS 인프라 구성
-- [x] 인증 방식 — Better Auth (소셜 로그인, Next.js 16 + Prisma 지원)
 - [ ] 앱 배포 여부 (App Store / Play Store)
 
 ## 데모 구현 완료 화면 목록
@@ -203,9 +202,19 @@ src/app/demo/
 
 ---
 
+## 실서비스 구현 완료 목록
+
+| 경로 | 화면 | 상태 |
+|------|------|------|
+| `/login` | 로그인 (Google OAuth) | ✅ 완료 |
+| `/dashboard` | 자산 관리 대시보드 레이아웃 + 인증 보호 | ✅ 완료 |
+| `/settings` | 설정 (프로필+로그아웃) | ✅ 완료 |
+
+---
+
 ## 현재 단계
 
-`/demo` 주식 페이지까지 구현 완료. 국내/해외 주식 2섹션, Naver 금융 API + Lightweight Charts (국내), TradingView iframe (해외) 적용.
+로그인 + Google OAuth 인증 구현 완료. Vercel(FE) + Render(BE) + Neon(DB) 프로덕션 배포 완료. 크로스 도메인 쿠키 이슈 해결 (middleware 제거, 각 layout에서 `useSession()` 클라이언트 훅으로 세션 체크). 다음 단계: FE ↔ BE API 연동 (가계부, 주식, 설정 CRUD).
 
 ---
 
