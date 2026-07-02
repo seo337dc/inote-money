@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   LayoutDashboard,
   BookOpen,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DarkModeProvider, useDarkMode } from "@/lib/dark-mode";
+import { useSession } from "@/lib/auth-client";
 
 const MAIN_NAV = [
   { href: "/dashboard", label: "자산 관리", icon: LayoutDashboard },
@@ -53,8 +55,26 @@ function NavLink({
 }
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
+  const { data: session, isPending } = useSession();
+  const router = useRouter();
   const { isDark } = useDarkMode();
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.replace('/login');
+    }
+  }, [session, isPending, router]);
+
+  if (isPending) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!session) return null;
 
   return (
     <div className={cn("min-h-screen bg-gray-50 flex", isDark && "dark")}>

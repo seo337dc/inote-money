@@ -1,11 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn } from '@/lib/auth-client';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { signIn, useSession } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const { data: session, isPending } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isPending && session) {
+      router.replace('/dashboard');
+    }
+  }, [session, isPending, router]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
