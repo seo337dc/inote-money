@@ -12,8 +12,9 @@
 | 레포 위치 | `~/Desktop/side-project/inote-money` |
 | FE 경로 | `apps/web` (Next.js 16) |
 | BE 경로 | `backend/` (미시작) |
-| 현재 진행 단계 | FE `/demo` 프로토타입 개발 중 |
-| 실행 포트 | `http://localhost:3100` |
+| 현재 진행 단계 | 로그인 + 미들웨어 구현 완료, 프로덕션 QA 진행 중 |
+| 실행 포트 | `http://localhost:3000` |
+| Vercel 배포 | `https://inote-money.vercel.app` |
 
 ---
 
@@ -22,16 +23,71 @@
 ```bash
 # FE 개발 서버
 cd apps/web
-npm run dev -- --port 3100
+npm run dev
 
 # 접속
-http://localhost:3100        # 홈
-http://localhost:3100/demo   # 가계부 데모
+http://localhost:3000        # 홈
+http://localhost:3000/login  # 로그인
+http://localhost:3000/demo   # 데모
 ```
+
+> ⚠️ 로컬 개발 시 `.env.local`의 `NEXT_PUBLIC_API_URL`을 `http://localhost:3200`으로 설정해야 인증이 정상 동작합니다. (프로덕션은 Render URL 사용)
 
 ---
 
 ## 작업 로그
+
+### 2026-07-02
+
+#### ✅ 로그인 페이지 구현 (Better Auth Google OAuth)
+
+**신규 파일**
+- `src/app/login/page.tsx` — Google 로그인 버튼 UI
+- `src/lib/auth-client.ts` — Better Auth 클라이언트 설정
+  - `baseURL: process.env.NEXT_PUBLIC_API_URL`
+  - `basePath: '/api/v1/auth'`
+
+**BE 연결 설정**
+- `apps/web/.env.local` — `NEXT_PUBLIC_API_URL` 환경변수
+  - 로컬: `http://localhost:3200` (로컬 BE)
+  - 프로덕션 Vercel 환경변수: `https://inote-server-5a63.onrender.com`
+
+#### ✅ 미인증 라우트 보호 미들웨어 구현
+
+- `src/middleware.ts` — 세션 쿠키 체크 기반 라우트 보호
+  - 보호 경로: `/dashboard`, `/settings` → 미인증 시 `/login` 리다이렉트
+  - 인증 경로: `/login` → 인증 시 `/dashboard` 리다이렉트
+  - 쿠키명: `better-auth.session_token` / `__Secure-better-auth.session_token`
+
+#### ✅ 설정 페이지 로그아웃 구현
+
+- `/settings/page.tsx` — `signOut()` 호출 후 `/` 이동
+- `/settings/layout.tsx` — 대시보드 레이아웃 재사용 (`export { default } from '../dashboard/layout'`)
+- `/demo/settings/page.tsx` — 데모용 로그아웃 (UI만, `/`로 이동)
+
+#### ✅ Vercel FE 배포 완료
+
+- 배포 URL: `https://inote-money.vercel.app`
+- 환경변수 설정: `NEXT_PUBLIC_API_URL=https://inote-server-5a63.onrender.com`
+
+#### ✅ 로컬 QA 완료 — 로그인 / 라우트 보호
+
+| # | 시나리오 | 결과 |
+|---|---------|------|
+| 1 | 미인증 → `/dashboard` 접근 | `/login` 리다이렉트 ✅ |
+| 2 | 미인증 → `/settings` 접근 | `/login` 리다이렉트 ✅ |
+| 3 | 인증 상태 → `/login` 접근 | `/dashboard` 리다이렉트 ✅ |
+| 4 | 로그인 후 `/dashboard` 접근 | 정상 표시 ✅ |
+| 5 | 로그인 후 `/settings` 접근 | 정상 표시 ✅ |
+| 6 | 미인증 → `/demo` 접근 | 정상 접근 ✅ |
+| 7 | 로그아웃 후 `/dashboard` 재접근 | `/login` 리다이렉트 ✅ |
+| 8 | 설정 로그아웃 클릭 | `/` 이동 ✅ |
+
+#### 🔜 다음 작업
+- 프로덕션 QA (Google 로그인 + 라우트 보호)
+- FE + BE API 연동
+
+---
 
 ### 2026-05-08
 
@@ -530,8 +586,8 @@ src/app/demo/
 
 ### 인프라
 - [x] Neon PostgreSQL 세팅 (inote-server)
-- [x] Railway 배포 대상: inote-server (BE)
-- [ ] Vercel 배포 (FE — inote-money)
+- [x] Render 배포: inote-server (BE) — https://inote-server-5a63.onrender.com
+- [x] Vercel 배포 (FE — inote-money) — https://inote-money.vercel.app
 
 ---
 
@@ -542,7 +598,7 @@ src/app/demo/
 | 인증 라이브러리 | Better Auth | Next.js 16 + Prisma 지원, next-auth 대체 |
 | DB 호스팅 | Supabase or Neon | 무료 플랜 PostgreSQL |
 | FE 배포 | Vercel | Next.js 무료 배포 |
-| BE 배포 | Railway | NestJS 무료 플랜 |
+| BE 배포 | Render | NestJS 무료 플랜 (15분 슬립) |
 | AWS | 사용 안 함 | 프리티어 1년 후 과금 |
 | shadcn 스타일 | base-nova | 설치 시 자동 선택됨 (@base-ui/react 기반) |
 
