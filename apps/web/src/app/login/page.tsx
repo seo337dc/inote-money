@@ -18,6 +18,28 @@ export default function LoginPage() {
     }
   }, [session, isPending, router]);
 
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      console.log('[login] message 수신:', event.origin, event.data);
+      if (event.origin !== window.location.origin) {
+        console.log('[login] origin 불일치 — 무시:', event.origin, '기대값:', window.location.origin);
+        return;
+      }
+      if (event.data?.type === 'AUTH_SUCCESS') {
+        console.log('[login] AUTH_SUCCESS 수신 → /dashboard 이동');
+        cleanup();
+        router.replace('/dashboard');
+      }
+    };
+
+    console.log('[login] message 리스너 등록');
+    window.addEventListener('message', handleMessage);
+    return () => {
+      console.log('[login] message 리스너 제거');
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [router]);
+
   const cleanup = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setPopupOpen(false);
@@ -38,22 +60,16 @@ export default function LoginPage() {
 
     if (!popup) return;
 
+    console.log('[login] 팝업 열림');
     popupRef.current = popup;
     setPopupOpen(true);
 
-    // 팝업이 열려있는 동안 세션 폴링 — 세션 확인되면 팝업 닫고 이동
-    timerRef.current = setInterval(async () => {
+    timerRef.current = setInterval(() => {
       if (popup.closed) {
+        console.log('[login] 팝업 닫힘 감지');
         cleanup();
-        return;
       }
-      const { data } = await authClient.getSession();
-      if (data?.session) {
-        popup.close();
-        cleanup();
-        router.replace('/dashboard');
-      }
-    }, 1000);
+    }, 500);
   };
 
   return (
