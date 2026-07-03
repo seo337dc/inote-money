@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from '@/lib/auth-client';
+import { authClient, useSession } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
@@ -54,8 +54,14 @@ export default function LoginPage() {
     popupRef.current = popup;
     setPopupOpen(true);
 
-    timerRef.current = setInterval(() => {
-      if (popup.closed) cleanup();
+    // 팝업이 닫히면 세션을 직접 확인해서 리다이렉트 (postMessage 유실 대비 폴백)
+    timerRef.current = setInterval(async () => {
+      if (!popup.closed) return;
+      cleanup();
+      const { data } = await authClient.getSession();
+      if (data?.session) {
+        router.replace('/dashboard');
+      }
     }, 500);
   };
 
