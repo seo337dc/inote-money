@@ -13,7 +13,7 @@ function ServerWakeScreen({ waking }: { waking: boolean }) {
           <div className="flex flex-col items-center gap-1">
             <span className="text-[18px] font-medium text-gray-900 tracking-tight">iNote Money</span>
             <span className="text-[13px] text-gray-400">
-              {waking ? '서버를 깨우는 중이에요...' : '연결 중이에요...'}
+              {waking ? '서버 접속을 확인하는 중이에요...' : '연결 중이에요...'}
             </span>
           </div>
         </div>
