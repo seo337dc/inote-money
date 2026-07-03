@@ -124,9 +124,57 @@ Next.js 미들웨어가 세션 쿠키를 직접 체크하는 방식이 크로스
 - 화면 정의에 로그인 스펙 추가 (인증 플로우, 크로스 도메인 이슈, 상태 처리)
 - 미결정 항목 갱신, 배포 URL 추가
 
+#### ✅ Google OAuth 팝업 로그인 구현
+
+**배경**
+- 기존: Google 로그인 클릭 시 현재 탭에서 Google OAuth로 리다이렉트 → 돌아올 때 흰 화면 깜빡임
+- 개선: `window.open()`으로 팝업 창을 열어 OAuth 진행 → 부모 창에서 대기 → 완료 후 `/dashboard` 이동
+
+**구현 방식: postMessage**
+```
+로그인 버튼 클릭
+  → window.open('/auth/popup')                    팝업 창 열기
+  → signIn.social({ provider: 'google' })        Better Auth OAuth 시작
+  → Google 계정 선택
+  → BE /api/v1/auth/callback/google              Better Auth 세션 생성
+  → FE /auth/callback                            콜백 페이지
+  → window.opener.postMessage({ type: 'AUTH_SUCCESS' })  부모에 완료 신호
+  → window.close()                               팝업 닫기
+  → 부모 창 message 이벤트 수신
+  → window.location.href = '/dashboard'          대시보드 이동
+```
+
+**신규 파일**
+- `src/app/auth/popup/page.tsx` — 팝업 창에서 열리는 중간 페이지. `signIn.social()` 호출 후 Google로 이동
+- `src/app/auth/callback/page.tsx` — OAuth 완료 후 돌아오는 콜백 페이지. `window.opener`가 있으면 `postMessage`, 없으면 직접 `/dashboard` 이동
+
+**주요 변경 파일**
+- `src/app/login/page.tsx` — 팝업 오픈 + `message` 이벤트 리스너 등록
+
+**구현 시 마주친 이슈들**
+
+1. **팝업 오픈 후 dashboard 미이동 — `router.replace` 무력화**
+   - 증상: `AUTH_SUCCESS` 메시지는 수신되고 핸들러도 실행됐으나 화면 이동 없음
+   - 원인: `router.replace('/dashboard')` 호출 직후 dashboard layout의 `useSession()`이 세션을 아직 못 가져온 순간(`isPending=false, session=null`)이 발생해 즉시 `/login`으로 다시 튕김 → 로그인 페이지 재렌더 → `message` 리스너 재등록 → 이동 안 된 것처럼 보임
+   - 해결: `router.replace` → `window.location.href = '/dashboard'`로 변경. 하드 이동이므로 Next.js 라우터 상태 간섭 없이 전체 페이지 새로 로드 → `useSession()`이 세션을 새로 패치 → dashboard 정상 표시
+
+2. **COOP 에러 — `popup.closed` 접근 차단**
+   - 증상: 팝업이 Google 페이지(`accounts.google.com`)에 있을 때 `Cross-Origin-Opener-Policy policy would block the window.closed call` 에러 발생
+   - 원인: Google OAuth 페이지가 `Cross-Origin-Opener-Policy: same-origin` 헤더를 설정 → 다른 오리진 팝업에서 `popup.closed` 읽기 차단
+   - 해결: `setInterval` 내 `popup.closed` 체크를 `try/catch`로 감싸 에러 억제 (팝업 닫힘 감지는 부가 기능이므로 차단돼도 postMessage 메인 플로우에 영향 없음)
+
+3. **로컬 vs 프로덕션 환경 Google Cloud Console 리다이렉트 URI 설정**
+   - 로컬: `http://localhost:3200/api/v1/auth/callback/google`
+   - 프로덕션: `https://inote-server-5a63.onrender.com/api/v1/auth/callback/google`
+   - Google Cloud Console → OAuth 2.0 클라이언트 → 승인된 리다이렉션 URI에 두 개 모두 등록 필요
+
+**팝업 UX**
+- 팝업 열리는 동안 로그인 페이지에 반투명 오버레이 + 초록 bouncing dots 표시
+- `popupOpen` state로 버튼 비활성화 (중복 팝업 방지)
+- `setInterval`로 `popup.closed` 감지 → 팝업 닫히면 overlay 해제 (COOP try/catch 적용)
+
 #### 🔜 다음 작업
-- Google 팝업 로그인 구현 (현재: 리다이렉트 방식 → 팝업 방식으로 변경)
-- FE + BE API 연동
+- FE + BE API 연동 (가계부, 주식, 설정 CRUD)
 
 ---
 

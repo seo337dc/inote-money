@@ -28,7 +28,7 @@ export default function LoginPage() {
       if (event.data?.type === 'AUTH_SUCCESS') {
         console.log('[login] AUTH_SUCCESS 수신 → /dashboard 이동');
         cleanup();
-        router.replace('/dashboard');
+        window.location.href = '/dashboard';
       }
     };
 
@@ -65,9 +65,13 @@ export default function LoginPage() {
     setPopupOpen(true);
 
     timerRef.current = setInterval(() => {
-      if (popup.closed) {
-        console.log('[login] 팝업 닫힘 감지');
-        cleanup();
+      try {
+        if (popup.closed) {
+          console.log('[login] 팝업 닫힘 감지');
+          cleanup();
+        }
+      } catch {
+        // COOP 정책으로 popup.closed 접근 차단 — 무시
       }
     }, 500);
   };
