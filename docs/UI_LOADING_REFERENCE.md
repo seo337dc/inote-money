@@ -98,7 +98,7 @@ Render 무료 플랜의 콜드 스타트 대응 + 앱 진입 시 로딩 경험 �
 
 ---
 
-## 기술 스택 & 의존성
+## 의존성
 
 ```json
 {
@@ -122,69 +122,3 @@ Render 무료 플랜의 콜드 스타트 대응 + 앱 진입 시 로딩 경험 �
 | rose | `#f43f5e` |
 | amber | `#f59e0b` |
 | sky | `#0ea5e9` |
-
----
-
-## 실 프로덕션 연결 — ServerWakeProvider
-
-로딩 스타일을 결정한 후 `ServerWakeProvider.tsx`에 실제 적용.  
-현재 적용된 버전은 이 테스트 페이지의 스타일과 별개로 심플하게 구현되어 있음.
-
-**파일**: `apps/web/src/components/ServerWakeProvider.tsx`
-
-```
-진입 → localhost? → 바로 통과
-     → 프로덕션? → BE /health ping
-                 → 1s 내 응답 없으면 "서버 접속을 확인하는 중이에요..." 표시
-                 → 응답 오면 children 렌더
-```
-
-**현재 로딩 UI**: 💰 로고 + 이름 + 3점 바운스 애니메이션 (초록)  
-→ 추후 여기에 위 4가지 스타일 중 하나를 이식할 수 있음
-
----
-
-## 작업 로그
-
-### 2026-07-03
-
-| 시간 | 작업 |
-|------|------|
-| 오전 | `inote-money-loader` Vite 앱을 `/test/loading` 페이지로 완전 이식 |
-| 오전 | `LoadingScreens.tsx` — 4가지 스타일 (glassmorphic / minimal-memo / cyber-neon / organic-flow) |
-| 오전 | `Customizer.tsx` — 다크 컨트롤 패널 이식 |
-| 오전 | `Dashboard.tsx` — 더미 대시보드 이식 |
-| 오전 | `page.tsx` — 로딩 시뮬레이션 엔진 + AnimatePresence |
-| 오후 | 미니멀 2안 (`LoadingScreenLight` — Toss 스타일) 제거 결정 및 삭제 |
-| 오후 | `proposal` 상태, 2안 관련 버튼 모두 제거, `LoadingScreenLight.tsx` 파일 삭제 |
-
-**최종 결론**: 1안 4스타일만 유지. 2안(Toss 스타일 단순 스피너)은 필요 없음.
-
----
-
-## 원본 소스 위치
-
-`inote-money-loader`는 별도 Vite 프로젝트로 존재.
-
-```
-/Users/seodongchan/Desktop/side-project/inote-money-loader/
-├── src/
-│   ├── App.tsx         ← page.tsx의 원본
-│   ├── types.ts
-│   └── components/
-│       ├── LoadingScreens.tsx
-│       ├── LoadingScreenLight.tsx  (삭제됨 — 2안)
-│       ├── Customizer.tsx
-│       └── Dashboard.tsx
-```
-
-> 원본 Vite 앱은 유지. `/test/loading`은 Next.js App Router용으로 포팅한 버전.  
-> 차이점: `'use client'` 추가, 이미지 경로 제거 (`src=""` + onError 이모지 폴백)
-
----
-
-## 다음 단계 (미결)
-
-- [ ] 4가지 스타일 중 실서비스 로딩으로 쓸 1개 최종 결정
-- [ ] 결정 후 `ServerWakeProvider.tsx`에 이식
-- [ ] 로딩 → 실제 세션 확인 완료 → 대시보드 진입 플로우와 연결

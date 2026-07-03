@@ -176,6 +176,81 @@ Next.js 미들웨어가 세션 쿠키를 직접 체크하는 방식이 크로스
 #### 🔜 다음 작업
 - FE + BE API 연동 (가계부, 주식, 설정 CRUD)
 
+#### ✅ 세션 만료 감지 + 토스트 알림
+
+**배경**
+- 로그인 후 세션이 만료됐을 때 그냥 `/login`으로 튕기면 사용자가 이유를 모름
+- 만료(세션 없음)와 미로그인(세션 없음)을 FE에서 구분해야 함
+
+**구현 방식**
+- `localStorage.session_active = '1'` — 로그인 성공 시 세팅 (`auth/callback/page.tsx`)
+- `localStorage.removeItem('session_active')` — 로그아웃 시 제거 (`settings/page.tsx`)
+- `dashboard/layout.tsx` — `useSession()` 결과가 `session=null`일 때 `session_active` 유무로 분기
+  - 있으면: 만료 → `toast.error('세션이 만료되었습니다...')` + 1초 후 `/login`
+  - 없으면: 미로그인 → 바로 `/login`
+
+**BE 세션 설정** (`inote-server/src/auth/auth.ts`)
+- `expiresIn: 86400` (1일)
+- `updateAge: 43200` (12시간마다 자동 갱신)
+
+---
+
+#### ✅ Render 콜드 스타트 대응 — ServerWakeProvider
+
+**배경**
+- Render 무료 플랜은 15분 비활동 후 서버 슬립 → 첫 요청에 30~60초 지연
+- 앱 진입 시 먼저 BE에 핑을 보내고, 응답 올 때까지 로딩 화면 표시
+
+**파일**: `apps/web/src/components/ServerWakeProvider.tsx`
+
+**동작 흐름**
+```
+앱 진입
+  → localhost? → 바로 통과 (로컬 개발 환경 제외)
+  → 프로덕션? → GET /health 핑
+              → 1초 내 응답 없으면 "서버 접속을 확인하는 중이에요..." 문구 전환
+              → 응답 오면 → children 렌더 (앱 정상 진입)
+              → 실패 시 3초 후 재시도 (무한 재시도)
+```
+
+**로딩 화면**: 💰 로고 + `iNote Money` + 초록 3점 바운스 (`animate-bounce`) — 전체 화면, opacity 없음
+
+**주의사항**
+- `apps/web/src/app/layout.tsx`의 `<body>` 전체를 `ServerWakeProvider`로 감쌈
+- `NEXT_PUBLIC_API_URL` 환경변수로 BE URL 참조
+
+---
+
+#### ✅ 로딩 UI 테스트 페이지 — `/test/loading`
+
+**배경**
+- `inote-money-loader` Vite 앱(AI Studio 기반)을 참고용으로 Next.js에 이식
+- 실서비스 로딩 스타일 결정 전 인터랙티브하게 4가지 스타일 비교
+
+**파일 구조**
+```
+apps/web/src/app/test/loading/
+├── page.tsx                ← 시뮬레이션 엔진 (progress 타이머 + AnimatePresence)
+├── types.ts
+└── components/
+    ├── LoadingScreens.tsx  ← 4가지 스타일
+    ├── Customizer.tsx      ← 다크 컨트롤 패널
+    └── Dashboard.tsx       ← 로딩 후 더미 대시보드
+```
+
+**스타일 4가지** (→ 상세 스펙: `docs/UI_LOADING_REFERENCE.md`)
+- `glassmorphic` — 원형 SVG 링 게이지, 파티클, 블러 배경
+- `minimal-memo` — 메모장 플립 애니메이션, 그리드 종이 배경
+- `cyber-neon` — 터미널 콘솔 로그, 세그먼트 바, 스캔 라인
+- `organic-flow` — 모핑 blob, 부드러운 초록 오브
+
+**2안 제거**: `LoadingScreenLight` (Toss 스타일 단순 스피너) — 필요 없어서 삭제
+
+#### 🔜 다음 작업
+- `/test/loading` 4가지 스타일 중 실서비스 로딩 1개 최종 결정
+- 결정 후 `ServerWakeProvider.tsx`에 이식
+- FE + BE API 연동 (가계부, 주식, 설정 CRUD)
+
 ---
 
 ### 2026-05-08
