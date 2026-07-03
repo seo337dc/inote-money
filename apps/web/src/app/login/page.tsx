@@ -18,19 +18,6 @@ export default function LoginPage() {
     }
   }, [session, isPending, router]);
 
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-      if (event.data?.type === 'AUTH_SUCCESS') {
-        cleanup();
-        router.replace('/dashboard');
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [router]);
-
   const cleanup = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setPopupOpen(false);
@@ -54,15 +41,19 @@ export default function LoginPage() {
     popupRef.current = popup;
     setPopupOpen(true);
 
-    // 팝업이 닫히면 세션을 직접 확인해서 리다이렉트 (postMessage 유실 대비 폴백)
+    // 팝업이 열려있는 동안 세션 폴링 — 세션 확인되면 팝업 닫고 이동
     timerRef.current = setInterval(async () => {
-      if (!popup.closed) return;
-      cleanup();
+      if (popup.closed) {
+        cleanup();
+        return;
+      }
       const { data } = await authClient.getSession();
       if (data?.session) {
+        popup.close();
+        cleanup();
         router.replace('/dashboard');
       }
-    }, 500);
+    }, 1000);
   };
 
   return (
