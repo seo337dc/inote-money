@@ -205,17 +205,7 @@ export default function Dashboard({ onRestartLoader, primaryColor }: DashboardPr
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="p-1 bg-white rounded-xl border border-gray-200 shadow-sm">
-              <img 
-                src="" 
-                alt="iNote Logo" 
-                className="w-10 h-10 rounded-lg object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const fallback = document.getElementById('header-logo-fallback');
-                  if (fallback) fallback.classList.remove('hidden');
-                }}
-              />
-              <div id="header-logo-fallback" className="hidden w-10 h-10 rounded-lg bg-green-50 border border-green-200 flex items-center justify-center text-xl">
+              <div className="w-10 h-10 rounded-lg bg-green-50 border border-green-200 flex items-center justify-center text-xl">
                 💰
               </div>
             </div>
