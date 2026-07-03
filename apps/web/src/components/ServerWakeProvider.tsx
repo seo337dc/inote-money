@@ -33,6 +33,12 @@ export default function ServerWakeProvider({ children }: { children: React.React
   const [waking, setWaking] = useState(false);
 
   useEffect(() => {
+    // 로컬 개발 환경에서는 서버 웜업 불필요
+    if (window.location.hostname === 'localhost') {
+      setReady(true);
+      return;
+    }
+
     let cancelled = false;
 
     const ping = async (): Promise<void> => {
