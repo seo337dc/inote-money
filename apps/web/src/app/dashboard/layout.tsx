@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { DarkModeProvider, useDarkMode } from "@/lib/dark-mode";
 import { useSession } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 const MAIN_NAV = [
   { href: "/dashboard", label: "자산 관리", icon: LayoutDashboard },
@@ -62,7 +63,14 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isPending && !session) {
-      router.replace('/login');
+      const wasLoggedIn = localStorage.getItem('session_active');
+      if (wasLoggedIn) {
+        localStorage.removeItem('session_active');
+        toast.error('세션이 만료되었습니다. 다시 로그인해주세요.', { duration: 3000 });
+        setTimeout(() => router.replace('/login'), 1000);
+      } else {
+        router.replace('/login');
+      }
     }
   }, [session, isPending, router]);
 

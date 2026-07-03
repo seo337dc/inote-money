@@ -32,6 +32,7 @@ export default function SettingsPage() {
 
   const handleLogout = async () => {
     setLoggingOut(true);
+    localStorage.removeItem('session_active');
     await signOut();
     router.push("/");
   };

@@ -7,13 +7,11 @@ export default function AuthCallbackPage() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log('[callback] 페이지 로드, window.opener:', !!window.opener);
+    localStorage.setItem('session_active', '1');
     if (window.opener) {
-      console.log('[callback] postMessage 전송 → origin:', window.location.origin);
       window.opener.postMessage({ type: 'AUTH_SUCCESS' }, window.location.origin);
       window.close();
     } else {
-      console.log('[callback] opener 없음 → /dashboard 이동');
       router.replace('/dashboard');
     }
   }, [router]);
