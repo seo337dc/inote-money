@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LoaderConfig } from './types';
 import LoadingScreens from './components/LoadingScreens';
-import LoadingScreenLight from './components/LoadingScreenLight';
 import Customizer from './components/Customizer';
 import Dashboard from './components/Dashboard';
 
@@ -25,7 +24,6 @@ const INITIAL_CONFIG: LoaderConfig = {
 };
 
 export default function TestLoadingPage() {
-  const [proposal, setProposal] = useState<'1' | '2'>('1');
   const [config, setConfig] = useState<LoaderConfig>(INITIAL_CONFIG);
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -64,39 +62,15 @@ export default function TestLoadingPage() {
   };
 
   useEffect(() => {
-    if (proposal === '1') startLoadingSimulation();
+    startLoadingSimulation();
     return () => {
       if (progressTimerRef.current) clearInterval(progressTimerRef.current);
       if (messageTimerRef.current) clearInterval(messageTimerRef.current);
     };
-  }, [config.style, config.speedMultiplier, proposal]);
-
-  const handleTriggerLoading = () => startLoadingSimulation();
-
-  if (proposal === '2') {
-    return (
-      <LoadingScreenLight
-        onBackToOption1={() => {
-          setProposal('1');
-          setIsLoading(true);
-        }}
-      />
-    );
-  }
+  }, [config.style, config.speedMultiplier]);
 
   return (
     <div className="min-h-screen bg-[#f4f6f8] font-sans selection:bg-green-200 selection:text-green-800">
-      {!isLoading && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <button
-            onClick={() => setProposal('2')}
-            className="px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-bold shadow-[0_4px_14px_rgba(22,163,74,0.3)] border border-green-500 transition-all flex items-center gap-1.5 active:scale-95"
-          >
-            <span>💰 미니멀 2안 (Toss 스타일) 보기</span>
-          </button>
-        </div>
-      )}
-
       <AnimatePresence mode="wait">
         {isLoading ? (
           <motion.div
@@ -111,13 +85,7 @@ export default function TestLoadingPage() {
               progress={progress}
               currentMessageIndex={currentMessageIndex}
             />
-            <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
-              <button
-                onClick={() => setProposal('2')}
-                className="px-3.5 py-1.5 rounded-full bg-green-100 hover:bg-green-200 text-green-800 text-xs font-bold border border-green-300/50 transition backdrop-blur-sm"
-              >
-                Toss스타일 2안 바로가기
-              </button>
+            <div className="absolute top-4 right-4 z-50">
               <button
                 onClick={() => setIsLoading(false)}
                 className="px-3.5 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300 transition backdrop-blur-sm"
@@ -137,11 +105,11 @@ export default function TestLoadingPage() {
             <Customizer
               config={config}
               onChangeConfig={setConfig}
-              onTriggerLoading={handleTriggerLoading}
+              onTriggerLoading={startLoadingSimulation}
             />
             <Dashboard
               primaryColor={config.primaryColor}
-              onRestartLoader={handleTriggerLoading}
+              onRestartLoader={startLoadingSimulation}
             />
           </motion.div>
         )}
