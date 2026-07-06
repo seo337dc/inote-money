@@ -217,7 +217,7 @@ export default function SetupPage() {
         >
           <ChevronLeft size={18} />
         </button>
-        <h1 className="text-lg font-bold text-gray-900 dark:text-white">내 정보 설정</h1>
+        <h1 className="text-lg font-bold text-gray-900 dark:text-white">내 자산 설정</h1>
       </div>
 
       <div className="flex flex-col gap-4">

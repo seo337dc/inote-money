@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Plus, X } from "lucide-react";
+import { ChevronLeft, Plus, X, History } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -214,6 +214,7 @@ export default function SetupPage() {
     fixedExpenses: [],
   });
   const [error, setError] = useState<string | null>(null);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ["settings"],
@@ -231,9 +232,21 @@ export default function SetupPage() {
       api.put("/money/settings", payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["settings"] });
-      router.back();
+      setShowHistoryModal(true);
     },
     onError: () => setError("저장에 실패했어요. 다시 시도해주세요."),
+  });
+
+  const { mutate: saveHistory, isPending: savingHistory } = useMutation({
+    mutationFn: () => {
+      const now = new Date();
+      const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      return api.post("/money/settings/history", { month });
+    },
+    onSettled: () => {
+      setShowHistoryModal(false);
+      router.back();
+    },
   });
 
   const set = (key: keyof Pick<FormState, "monthlyIncome" | "incomeDay" | "dailyLimit" | "monthlyGoal" | "assetUpdateDay">) =>
@@ -255,8 +268,44 @@ export default function SetupPage() {
         >
           <ChevronLeft size={18} />
         </button>
-        <h1 className="text-lg font-bold text-gray-900 dark:text-white">내 정보 설정</h1>
+        <h1 className="text-lg font-bold text-gray-900 dark:text-white flex-1">내 자산 설정</h1>
+        <button
+          onClick={() => router.push("/dashboard/setup/history")}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        >
+          <History size={14} />
+          히스토리
+        </button>
       </div>
+
+      {/* 기록 확인 모달 */}
+      {showHistoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="relative z-10 w-full max-w-sm mx-4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6">
+            <h2 className="text-base font-bold text-gray-900 dark:text-white mb-2">저장 완료</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              현재 자산 설정을 이번 달 히스토리로 기록할까요?<br />
+              <span className="text-xs text-gray-400 dark:text-gray-500">월별로 변화를 추적할 수 있어요.</span>
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setShowHistoryModal(false); router.back(); }}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                건너뛰기
+              </button>
+              <button
+                onClick={() => saveHistory()}
+                disabled={savingHistory}
+                className="flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white text-sm font-semibold transition-colors"
+              >
+                {savingHistory ? "기록 중..." : "기록하기"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
