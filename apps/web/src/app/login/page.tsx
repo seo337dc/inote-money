@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authClient, useSession } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
+import AppBrand from '@/components/AppBrand';
 
 export default function LoginPage() {
   const [popupOpen, setPopupOpen] = useState(false);
@@ -91,9 +92,8 @@ export default function LoginPage() {
       )}
 
       <div className="w-full max-w-sm flex flex-col items-center gap-8 px-4">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <span className="text-4xl">💰</span>
-          <h1 className="text-2xl font-bold">iNote Money</h1>
+        <div className="flex flex-col items-center gap-3 text-center">
+          <AppBrand />
           <p className="text-sm text-muted-foreground">
             소셜 계정으로 간편하게 시작하세요
           </p>
@@ -117,12 +117,17 @@ export default function LoginPage() {
           </Button>
         </div>
 
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-xs text-muted-foreground text-center leading-5">
+          매일 조금씩 기록하고, 아끼고, 불려가세요. <br />
+          오늘의 습관이 내일의 자산이 됩니다.
+        </p>
+
+        {/* <p className="text-xs text-muted-foreground text-center">
           로그인하면{' '}
           <span className="underline underline-offset-2">이용약관</span> 및{' '}
           <span className="underline underline-offset-2">개인정보처리방침</span>
           에 동의하게 됩니다.
-        </p>
+        </p> */}
       </div>
     </div>
   );

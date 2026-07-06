@@ -112,32 +112,36 @@ function DynamicList({
 
       <div className="flex flex-col gap-2">
         {items.map((item) => (
-          <div key={item.id} className="flex items-center gap-2">
-            <Input
-              type="text"
-              value={item.name}
-              onChange={(e) => update(item.id, "name", e.target.value)}
-              placeholder={namePlaceholder}
-              className="flex-1"
-            />
-            <div className={`${INPUT_WRAP} w-28 shrink-0`}>
-              <input
-                type="number"
-                value={item.amount}
-                onChange={(e) => update(item.id, "amount", e.target.value)}
-                placeholder="0"
-                className={INPUT_BASE}
+          <div key={item.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Input
+                type="text"
+                value={item.name}
+                onChange={(e) => update(item.id, "name", e.target.value)}
+                placeholder={namePlaceholder}
+                className="flex-1"
               />
-              <span className="text-xs text-gray-400 dark:text-gray-500 ml-1 shrink-0">원</span>
+              <button
+                type="button"
+                onClick={() => remove(item.id)}
+                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-gray-600 hover:text-red-400 transition-colors shrink-0"
+              >
+                <X size={14} />
+              </button>
             </div>
-            <DaySelect value={item.day} onChange={(v) => update(item.id, "day", v)} />
-            <button
-              type="button"
-              onClick={() => remove(item.id)}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-gray-600 hover:text-red-400 transition-colors shrink-0"
-            >
-              <X size={14} />
-            </button>
+            <div className="flex items-center gap-2">
+              <div className={`${INPUT_WRAP} flex-1`}>
+                <input
+                  type="number"
+                  value={item.amount}
+                  onChange={(e) => update(item.id, "amount", e.target.value)}
+                  placeholder="0"
+                  className={INPUT_BASE}
+                />
+                <span className="text-xs text-gray-400 dark:text-gray-500 ml-1 shrink-0">원</span>
+              </div>
+              <DaySelect value={item.day} onChange={(v) => update(item.id, "day", v)} />
+            </div>
           </div>
         ))}
 

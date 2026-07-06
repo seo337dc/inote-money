@@ -4,17 +4,21 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Pencil, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuery } from "@tanstack/react-query";
+import { api, ApiError } from "@/lib/api";
+import LoadingScreen from "@/components/LoadingScreen";
 
 type ListItem = { id: string; name: string; amount: number; day?: number };
 
 type Settings = {
-  monthlyIncome: number;
-  incomeDay?: number;
+  salary: number;
+  salaryDate: number;
   dailyLimit: number;
-  monthlyGoal: number;
-  assetUpdateDay?: number;
+  monthlySavingGoal: number;
+  assetUpdateDate: number;
   savings: ListItem[];
   fixedExpenses: ListItem[];
+  memo: string | null;
 };
 
 type Review = { stars: number; text: string };
@@ -72,7 +76,6 @@ const SUBCARD_ORANGE = "bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3";
 const LABEL = "text-[11px] text-gray-400 dark:text-gray-500";
 
 export default function DashboardPage() {
-  const [settings, setSettings] = useState<Settings | null>(null);
   const [infoExpanded, setInfoExpanded] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0);
   const [monthOffset, setMonthOffset] = useState(0);
@@ -81,9 +84,19 @@ export default function DashboardPage() {
   const [weekDraft, setWeekDraft] = useState<Review>({ stars: 0, text: "" });
   const [monthDraft, setMonthDraft] = useState<Review>({ stars: 0, text: "" });
 
+  const { data: settings, isLoading } = useQuery<Settings | null>({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      try {
+        return await api.get<Settings>("/money/settings");
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 404) return null;
+        throw e;
+      }
+    },
+  });
+
   useEffect(() => {
-    const s = localStorage.getItem("inote-settings");
-    if (s) setSettings(JSON.parse(s));
     const wr = localStorage.getItem("inote-week-reviews");
     if (wr) setWeekReviews(JSON.parse(wr));
     const mr = localStorage.getItem("inote-month-reviews");
@@ -123,6 +136,8 @@ export default function DashboardPage() {
     localStorage.setItem("inote-month-reviews", JSON.stringify(updated));
   };
 
+  if (isLoading) return <LoadingScreen />;
+
   return (
     <div className="max-w-5xl mx-auto px-4 lg:px-8 pt-6 pb-8">
       <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-5">자산 관리</h1>
@@ -143,8 +158,8 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <p className={`text-[11px] mb-0.5 ${LABEL}`}>월급</p>
-              <p className="text-sm font-bold text-gray-900 dark:text-white">{fmt(settings.monthlyIncome)}</p>
-              {settings.incomeDay ? <p className={`text-[10px] mt-0.5 ${LABEL}`}>매달 {settings.incomeDay}일 입금</p> : null}
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{fmt(settings.salary)}</p>
+              {settings.salaryDate ? <p className={`text-[10px] mt-0.5 ${LABEL}`}>매달 {settings.salaryDate}일 입금</p> : null}
             </div>
             <div>
               <p className={`text-[11px] mb-0.5 ${LABEL}`}>적금 ({settings.savings.length}개)</p>
@@ -162,10 +177,10 @@ export default function DashboardPage() {
 
           {infoExpanded && (
             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-4">
-              {settings.assetUpdateDay ? (
+              {settings.assetUpdateDate ? (
                 <p className={`text-[11px] ${LABEL}`}>
                   자산 정보 업데이트{" "}
-                  <span className="font-semibold text-gray-600 dark:text-gray-300">매달 {settings.assetUpdateDay}일</span>
+                  <span className="font-semibold text-gray-600 dark:text-gray-300">매달 {settings.assetUpdateDate}일</span>
                 </p>
               ) : null}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -315,7 +330,7 @@ export default function DashboardPage() {
             <div className={SUBCARD_ORANGE}>
               <p className={`text-[11px] mb-1 ${LABEL}`}>낭비 금액</p>
               <p className="text-base font-bold text-orange-500 dark:text-orange-400">0원</p>
-              {settings && <p className={`text-[10px] mt-1 ${LABEL}`}>저축 목표 {fmt(settings.monthlyGoal)}</p>}
+              {settings && <p className={`text-[10px] mt-1 ${LABEL}`}>저축 목표 {fmt(settings.monthlySavingGoal)}</p>}
             </div>
           </div>
 
