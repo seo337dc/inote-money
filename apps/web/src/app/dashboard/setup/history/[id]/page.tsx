@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ChevronLeft, PiggyBank, TrendingDown, Check, Pencil } from "lucide-react";
+import { ChevronLeft, PiggyBank, TrendingDown, Check, Pencil, StickyNote } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -19,6 +19,7 @@ type HistoryItem = {
   assetUpdateDate: number | null;
   savings: { id: string; name: string; amount: number; day?: number }[];
   fixedExpenses: { id: string; name: string; amount: number; day?: number }[];
+  memo: string | null;
   recordedAt: string;
 };
 
@@ -202,6 +203,16 @@ export default function SettingHistoryDetailPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+        {/* 메모 */}
+        {item.memo && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+            <div className="flex items-center gap-1.5 mb-3">
+              <StickyNote size={14} className="text-gray-400" />
+              <p className="text-xs font-semibold text-gray-600 dark:text-gray-300">메모</p>
+            </div>
+            <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">{item.memo}</p>
           </div>
         )}
       </div>

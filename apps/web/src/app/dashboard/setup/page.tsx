@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 // ── 타입 ────────────────────────────────────────────────────────
 type ListItem = { id: string; name: string; amount: string; day: string };
@@ -19,6 +20,7 @@ type FormState = {
   assetUpdateDay: string;
   savings: ListItem[];
   fixedExpenses: ListItem[];
+  memo: string;
 };
 
 type SettingsResponse = {
@@ -29,6 +31,7 @@ type SettingsResponse = {
   assetUpdateDate: number;
   savings: { id: string; name: string; amount: number; day?: number }[];
   fixedExpenses: { id: string; name: string; amount: number; day?: number }[];
+  memo: string | null;
 };
 
 // ── 유틸 ────────────────────────────────────────────────────────
@@ -53,6 +56,7 @@ function toFormState(s: SettingsResponse): FormState {
       amount: String(item.amount),
       day: item.day ? String(item.day) : "",
     })),
+    memo: s.memo ?? "",
   };
 }
 
@@ -75,6 +79,7 @@ function toApiPayload(form: FormState) {
       amount: Number(item.amount) || 0,
       day: Number(item.day) || undefined,
     })),
+    memo: form.memo.trim() || undefined,
   };
 }
 
@@ -212,6 +217,7 @@ export default function SetupPage() {
     assetUpdateDay: "",
     savings: [],
     fixedExpenses: [],
+    memo: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -254,7 +260,7 @@ export default function SetupPage() {
     },
   });
 
-  const set = (key: keyof Pick<FormState, "monthlyIncome" | "incomeDay" | "dailyLimit" | "monthlyGoal" | "assetUpdateDay">) =>
+  const set = (key: keyof Pick<FormState, "monthlyIncome" | "incomeDay" | "dailyLimit" | "monthlyGoal" | "assetUpdateDay" | "memo">) =>
     (v: string) => setForm((f) => ({ ...f, [key]: v }));
 
   const handleSave = () => {
@@ -366,6 +372,16 @@ export default function SetupPage() {
             onChange={(fixedExpenses) => setForm((f) => ({ ...f, fixedExpenses }))}
             addLabel="고정 지출 추가"
             namePlaceholder="넷플릭스, 통신비, 보험..."
+          />
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+          <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 block mb-1.5">메모</label>
+          <Textarea
+            value={form.memo}
+            onChange={(e) => set("memo")(e.target.value)}
+            placeholder="이번 설정의 배경이나 변경 이유를 기록해두세요..."
+            rows={3}
           />
         </div>
 
