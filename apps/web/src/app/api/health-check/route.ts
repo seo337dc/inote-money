@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/health`, {
       cache: 'no-store',
       signal: AbortSignal.timeout(8000),
     });
