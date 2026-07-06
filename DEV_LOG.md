@@ -246,6 +246,31 @@ apps/web/src/app/test/loading/
 
 **2안 제거**: `LoadingScreenLight` (Toss 스타일 단순 스피너) — 필요 없어서 삭제
 
+#### ✅ ServerWakeProvider CORS 버그 수정
+
+**증상**
+- 프로덕션에서 앱 진입 시 로딩 화면이 끝나지 않고 무한 루프
+- Network 탭: `/health` 요청이 빨간 X로 계속 실패
+
+**원인 1 — CORS**
+- `ServerWakeProvider`가 브라우저에서 직접 `https://inote-server-5a63.onrender.com/health` 요청
+- Vercel(`inote-money.vercel.app`) → Render(`onrender.com`) 크로스 도메인
+- 브라우저가 CORS 정책으로 응답 차단 → Response Headers 비어있음 → catch → 3초 후 재시도 → 무한 루프
+
+**원인 2 — 잘못된 경로**
+- `/health`로 요청했으나 NestJS에 `app.setGlobalPrefix('api/v1')` 설정으로 실제 경로는 `/api/v1/health`
+- 404 반환 → 프록시가 502 반환 → 계속 실패
+
+**해결**
+- `apps/web/src/app/api/health-check/route.ts` 신규 생성 (Next.js API Route 프록시)
+  - 브라우저는 같은 도메인(`/api/health-check`)에 요청 → CORS 없음
+  - Vercel 서버 사이드에서 `NEXT_PUBLIC_API_URL/api/v1/health`로 서버간 요청
+- `ServerWakeProvider.tsx` — fetch 대상을 `/api/health-check`로 변경
+
+**교훈**
+- 브라우저에서 직접 크로스 도메인 핑을 보내면 CORS에 막힘 → 반드시 Next.js API Route 프록시 경유
+- NestJS globalPrefix 설정 확인 필수 (`/health` ≠ `/api/v1/health`)
+
 #### 🔜 다음 작업
 - `/test/loading` 4가지 스타일 중 실서비스 로딩 1개 최종 결정
 - 결정 후 `ServerWakeProvider.tsx`에 이식
