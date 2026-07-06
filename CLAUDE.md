@@ -221,12 +221,13 @@ src/app/demo/
 | `/dashboard/setup/history` | 자산 설정 히스토리 목록 | ✅ 완료 |
 | `/dashboard/setup/history/[id]` | 자산 설정 히스토리 상세 (제목 수정·삭제·메모) | ✅ 완료 |
 | `/settings` | 설정 (프로필+로그아웃+자산설정 진입점) | ✅ 완료 |
+| `/account-book` | 가계부 (달력/주차별/전체, CRUD API 연동) | ✅ 완료 |
 
 ---
 
 ## 현재 단계
 
-로그인 + Google OAuth 인증 구현 완료. Vercel(FE) + Render(BE) + Neon(DB) 프로덕션 배포 완료. 크로스 도메인 쿠키 이슈 해결 (middleware 제거, 각 layout에서 `useSession()` 클라이언트 훅으로 세션 체크). ServerWakeProvider CORS 버그 수정 (Next.js API Route 프록시 경유). FE API 클라이언트(`src/lib/api.ts`) + @tanstack/react-query v5 설치 완료. `/dashboard/setup` 내 자산 설정 실서비스 API 연동 완료. 로딩 UI 전체 Minimal Memo 스타일로 통일 완료. shadcn/ui `Input` + `Textarea` + `Dialog` 컴포넌트 설치 및 전체 파일에 적용 완료. 자산 설정 히스토리 기능 구현 완료 (저장 후 기록 모달 → 목록 → 상세 / 제목 수정 · 삭제 · 메모). 모든 원시 모달을 shadcn Dialog로 교체 완료 (5개). 다음 단계: 가계부 페이지 API 연동, 대시보드 내 자산 카드 API 연동.
+로그인 + Google OAuth 인증 구현 완료. Vercel(FE) + Render(BE) + Neon(DB) 프로덕션 배포 완료. 크로스 도메인 쿠키 이슈 해결 (middleware 제거, 각 layout에서 `useSession()` 클라이언트 훅으로 세션 체크). ServerWakeProvider CORS 버그 수정 (Next.js API Route 프록시 경유). FE API 클라이언트(`src/lib/api.ts`) + @tanstack/react-query v5 설치 완료. `/dashboard/setup` 내 자산 설정 실서비스 API 연동 완료. 로딩 UI 전체 Minimal Memo 스타일로 통일 완료 + 페이지별 커스텀 메시지 지원 (`messages` prop). shadcn/ui `Input` + `Textarea` + `Dialog` 컴포넌트 설치 및 전체 파일에 적용 완료. 자산 설정 히스토리 기능 구현 완료 (저장 후 기록 모달 → 목록 → 상세 / 제목 수정 · 삭제 · 메모). 모든 원시 모달을 shadcn Dialog로 교체 완료 (5개). `/account-book` 가계부 페이지 구현 완료 (달력/주차별/전체 뷰, CRUD API 연동, 수정 모드 일괄 저장 UX). AppBrand 공통 컴포넌트 추가 (로그인/홈/로딩 화면 공통 적용). 다음 단계: 주식 페이지 API 연동, 대시보드 내 자산 카드 API 연동.
 
 ---
 

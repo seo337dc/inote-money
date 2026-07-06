@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppBrand from '@/components/AppBrand';
 
-const MESSAGES_NORMAL = [
-  '자산 데이터를 불러오는 중...',
-  '금융 정보를 정리하는 중...',
-  '잠시만 기다려주세요...',
+const MESSAGES_DEFAULT = [
+  '오늘의 기록이 내일의 자산이 됩니다.',
+  '작은 절약이 쌓여 큰 부를 만듭니다.',
+  '부자는 습관에서 시작됩니다.',
 ];
 
 const MESSAGES_WAKING = [
@@ -16,15 +16,21 @@ const MESSAGES_WAKING = [
   '곧 연결될 거예요, 조금만 기다려주세요...',
 ];
 
-export default function LoadingScreen({ waking = false }: { waking?: boolean }) {
+export default function LoadingScreen({
+  waking = false,
+  messages,
+}: {
+  waking?: boolean;
+  messages?: string[];
+}) {
   const [msgIdx, setMsgIdx] = useState(0);
-  const messages = waking ? MESSAGES_WAKING : MESSAGES_NORMAL;
+  const resolvedMessages = waking ? MESSAGES_WAKING : (messages ?? MESSAGES_DEFAULT);
 
   useEffect(() => {
     setMsgIdx(0);
-    const t = setInterval(() => setMsgIdx((i) => (i + 1) % messages.length), 2200);
+    const t = setInterval(() => setMsgIdx((i) => (i + 1) % resolvedMessages.length), 2200);
     return () => clearInterval(t);
-  }, [waking, messages.length]);
+  }, [waking, resolvedMessages.length]);
 
   return (
     <div className="relative w-full h-full min-h-screen flex flex-col items-center justify-center bg-stone-50 text-stone-800 font-sans">
@@ -44,14 +50,14 @@ export default function LoadingScreen({ waking = false }: { waking?: boolean }) 
         <div className="h-6 overflow-hidden mb-6 relative w-full flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.p
-              key={`${waking}-${msgIdx}`}
+              key={msgIdx}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
               transition={{ duration: 0.25 }}
               className="text-xs text-stone-500 font-mono tracking-wide"
             >
-              ✏️ {messages[msgIdx]}
+              ✏️ {resolvedMessages[msgIdx]}
             </motion.p>
           </AnimatePresence>
         </div>
