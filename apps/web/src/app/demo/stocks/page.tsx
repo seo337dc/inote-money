@@ -5,6 +5,7 @@ import { Plus, X, Edit2, RefreshCw, BarChart2, ChevronLeft, ChevronRight } from 
 import { useDarkMode } from "../dark-mode";
 import { KoreanStockChart } from "./components/KoreanStockChart";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogPortal, DialogOverlay, DialogPopup } from "@/components/ui/dialog";
 
 // ─── Types ───────────────────────────────────────────────
 type Currency = "KRW" | "USD";
@@ -174,7 +175,10 @@ function StockModal({
     }`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-4">
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogPopup className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
           <h3 className="text-base font-bold text-gray-900 dark:text-white">
@@ -265,7 +269,9 @@ function StockModal({
           </button>
         </div>
       </div>
-    </div>
+        </DialogPopup>
+      </DialogPortal>
+    </Dialog>
   );
 }
 

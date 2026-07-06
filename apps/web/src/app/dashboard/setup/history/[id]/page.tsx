@@ -7,6 +7,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 type HistoryItem = {
   id: string;
@@ -86,33 +93,32 @@ export default function SettingHistoryDetailPage() {
   return (
     <div className="max-w-lg mx-auto px-4 lg:px-8 pt-6 pb-10">
       {/* 삭제 확인 모달 */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
-          <div className="relative z-10 w-full max-w-sm mx-4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6">
-            <h2 className="text-base font-bold text-gray-900 dark:text-white mb-2">히스토리 삭제</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent showCloseButton={false} className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border-0 ring-0 p-6 sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 dark:text-white">히스토리 삭제</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">
               이 기록을 삭제할까요?<br />
               <span className="text-xs text-gray-400 dark:text-gray-500">삭제한 기록은 복구할 수 없어요.</span>
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                취소
-              </button>
-              <button
-                onClick={() => deleteHistory()}
-                disabled={deleting}
-                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-semibold transition-colors"
-              >
-                {deleting ? "삭제 중..." : "삭제"}
-              </button>
-            </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              취소
+            </button>
+            <button
+              onClick={() => deleteHistory()}
+              disabled={deleting}
+              className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-semibold transition-colors"
+            >
+              {deleting ? "삭제 중..." : "삭제"}
+            </button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-1">

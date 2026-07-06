@@ -8,6 +8,13 @@ import { api, ApiError } from "@/lib/api";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 // ── 타입 ────────────────────────────────────────────────────────
 type ListItem = { id: string; name: string; amount: string; day: string };
@@ -290,44 +297,43 @@ export default function SetupPage() {
       </div>
 
       {/* 기록 확인 모달 */}
-      {showHistoryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-sm mx-4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6">
-            <h2 className="text-base font-bold text-gray-900 dark:text-white mb-1">저장 완료</h2>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+      <Dialog open={showHistoryModal} onOpenChange={(open) => !open && setShowHistoryModal(false)}>
+        <DialogContent showCloseButton={false} className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border-0 ring-0 p-6 sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 dark:text-white">저장 완료</DialogTitle>
+            <DialogDescription className="text-xs text-gray-400 dark:text-gray-500">
               현재 자산 설정을 히스토리로 기록할까요?
-            </p>
-            <div className="mb-5">
-              <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 block mb-1.5">
-                기록 제목 <span className="font-normal text-gray-400">(선택)</span>
-              </label>
-              <Input
-                type="text"
-                value={historyTitle}
-                onChange={(e) => setHistoryTitle(e.target.value)}
-                placeholder="7월 자산 현황, 연봉 인상 후 첫 기록..."
-                onKeyDown={(e) => e.key === "Enter" && saveHistory()}
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => { setShowHistoryModal(false); router.back(); }}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                건너뛰기
-              </button>
-              <button
-                onClick={() => saveHistory()}
-                disabled={savingHistory}
-                className="flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white text-sm font-semibold transition-colors"
-              >
-                {savingHistory ? "기록 중..." : "기록하기"}
-              </button>
-            </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 block mb-1.5">
+              기록 제목 <span className="font-normal text-gray-400">(선택)</span>
+            </label>
+            <Input
+              type="text"
+              value={historyTitle}
+              onChange={(e) => setHistoryTitle(e.target.value)}
+              placeholder="7월 자산 현황, 연봉 인상 후 첫 기록..."
+              onKeyDown={(e) => e.key === "Enter" && saveHistory()}
+            />
           </div>
-        </div>
-      )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setShowHistoryModal(false); router.back(); }}
+              className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              건너뛰기
+            </button>
+            <button
+              onClick={() => saveHistory()}
+              disabled={savingHistory}
+              className="flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white text-sm font-semibold transition-colors"
+            >
+              {savingHistory ? "기록 중..." : "기록하기"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {error && (
         <div className="mb-4 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">

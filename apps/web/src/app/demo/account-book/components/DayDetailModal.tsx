@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { TriangleAlert, X, Trash2, Pencil, Check, Plus } from "lucide-react";
+import { Dialog, DialogPortal, DialogOverlay, DialogPopup } from "@/components/ui/dialog";
 import { type Expense, CATEGORY_BADGE, CATEGORIES } from "../data";
 
 type Props = {
@@ -168,10 +169,11 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-
-      <div className="relative z-10 w-full sm:max-w-md bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col h-[88vh] sm:h-[640px]">
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogPopup className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div className="w-full sm:max-w-md bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col h-[88vh] sm:h-[640px]">
         {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <span className="w-10 h-1 rounded-full bg-gray-200 dark:bg-gray-600" />
@@ -391,6 +393,8 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
           )}
         </div>
       </div>
-    </div>
+        </DialogPopup>
+      </DialogPortal>
+    </Dialog>
   );
 }

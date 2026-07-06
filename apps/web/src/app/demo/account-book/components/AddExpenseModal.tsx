@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogPortal, DialogOverlay, DialogPopup } from "@/components/ui/dialog";
 import { CATEGORIES, type Expense } from "../data";
 
 type Props = {
@@ -31,15 +32,11 @@ export default function AddExpenseModal({ date, onClose, onSave }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Sheet / Modal */}
-      <div className="relative z-10 w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl">
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogPopup className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+      <div className="w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl">
         {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <span className="w-10 h-1 rounded-full bg-gray-200" />
@@ -151,6 +148,8 @@ export default function AddExpenseModal({ date, onClose, onSave }: Props) {
           </Button>
         </div>
       </div>
-    </div>
+        </DialogPopup>
+      </DialogPortal>
+    </Dialog>
   );
 }
