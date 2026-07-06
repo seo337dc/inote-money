@@ -43,8 +43,8 @@ export default function ServerWakeProvider({ children }: { children: React.React
 
     const ping = async (): Promise<void> => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`, {
-          signal: AbortSignal.timeout(5000),
+        const res = await fetch('/api/health-check', {
+          signal: AbortSignal.timeout(10000),
           cache: 'no-store',
         });
         if (res.ok && !cancelled) {
