@@ -215,6 +215,7 @@ export default function SetupPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyTitle, setHistoryTitle] = useState("");
 
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ["settings"],
@@ -232,6 +233,7 @@ export default function SetupPage() {
       api.put("/money/settings", payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["settings"] });
+      setHistoryTitle("");
       setShowHistoryModal(true);
     },
     onError: () => setError("저장에 실패했어요. 다시 시도해주세요."),
@@ -241,7 +243,10 @@ export default function SetupPage() {
     mutationFn: () => {
       const now = new Date();
       const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-      return api.post("/money/settings/history", { month });
+      return api.post("/money/settings/history", {
+        month,
+        title: historyTitle.trim() || undefined,
+      });
     },
     onSettled: () => {
       setShowHistoryModal(false);
@@ -283,11 +288,22 @@ export default function SetupPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <div className="relative z-10 w-full max-w-sm mx-4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6">
-            <h2 className="text-base font-bold text-gray-900 dark:text-white mb-2">저장 완료</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              현재 자산 설정을 이번 달 히스토리로 기록할까요?<br />
-              <span className="text-xs text-gray-400 dark:text-gray-500">월별로 변화를 추적할 수 있어요.</span>
+            <h2 className="text-base font-bold text-gray-900 dark:text-white mb-1">저장 완료</h2>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+              현재 자산 설정을 히스토리로 기록할까요?
             </p>
+            <div className="mb-5">
+              <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 block mb-1.5">
+                기록 제목 <span className="font-normal text-gray-400">(선택)</span>
+              </label>
+              <Input
+                type="text"
+                value={historyTitle}
+                onChange={(e) => setHistoryTitle(e.target.value)}
+                placeholder="7월 자산 현황, 연봉 인상 후 첫 기록..."
+                onKeyDown={(e) => e.key === "Enter" && saveHistory()}
+              />
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={() => { setShowHistoryModal(false); router.back(); }}

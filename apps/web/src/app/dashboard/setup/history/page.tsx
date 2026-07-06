@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Wallet, TrendingDown, PiggyBank } from "lucide-react";
+import { ChevronLeft, ChevronRight, Wallet } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -9,13 +9,11 @@ import LoadingScreen from "@/components/LoadingScreen";
 type HistoryItem = {
   id: string;
   month: string;
+  title: string | null;
   salary: number;
-  salaryDate: number | null;
-  dailyLimit: number;
   monthlySavingGoal: number;
-  assetUpdateDate: number | null;
-  savings: { id: string; name: string; amount: number; day?: number }[];
-  fixedExpenses: { id: string; name: string; amount: number; day?: number }[];
+  savings: { id: string; name: string; amount: number }[];
+  fixedExpenses: { id: string; name: string; amount: number }[];
   recordedAt: string;
 };
 
@@ -28,7 +26,9 @@ function monthLabel(month: string) {
 
 function recordedAtLabel(iso: string) {
   const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")} 기록`;
+  const date = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+  return `${date} ${time}`;
 }
 
 export default function SettingHistoryPage() {
@@ -60,79 +60,53 @@ export default function SettingHistoryPage() {
           <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">자산 설정 저장 후 기록하기를 눌러보세요</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {history.map((item) => {
             const savingsTotal = item.savings.reduce((s, v) => s + v.amount, 0);
             const fixedTotal = item.fixedExpenses.reduce((s, v) => s + v.amount, 0);
 
             return (
-              <div
+              <button
                 key={item.id}
-                className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5"
+                onClick={() => router.push(`/dashboard/setup/history/${item.id}`)}
+                className="w-full text-left bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 hover:border-green-200 dark:hover:border-green-800 hover:shadow-md transition-all group"
               >
-                {/* 헤더 */}
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <p className="text-base font-bold text-gray-900 dark:text-white">{monthLabel(item.month)}</p>
-                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{recordedAtLabel(item.recordedAt)}</p>
-                  </div>
-                </div>
-
-                {/* 주요 수치 */}
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  <div className="bg-gray-50 dark:bg-gray-700/60 rounded-xl p-3">
-                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mb-1">월 수입</p>
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">{fmt(item.salary)}</p>
-                    {item.salaryDate && (
-                      <p className="text-[10px] text-gray-400 mt-0.5">{item.salaryDate}일 입금</p>
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                      {item.title || monthLabel(item.month)}
+                    </p>
+                    {item.title && (
+                      <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{monthLabel(item.month)}</p>
                     )}
+                    <p className="text-[11px] text-gray-300 dark:text-gray-600 mt-0.5">{recordedAtLabel(item.recordedAt)}</p>
                   </div>
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-3">
-                    <p className="text-[11px] text-green-500 mb-1">월 저축 목표</p>
-                    <p className="text-sm font-bold text-green-600 dark:text-green-400">{fmt(item.monthlySavingGoal)}</p>
-                  </div>
+                  <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-green-500 transition-colors shrink-0 mt-0.5" />
                 </div>
 
-                {/* 적금 */}
-                {item.savings.length > 0 && (
-                  <div className="mb-3">
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <PiggyBank size={12} className="text-gray-400" />
-                      <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500">
-                        적금 · 합계 {fmt(savingsTotal)}
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      {item.savings.map((s) => (
-                        <div key={s.id} className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300">
-                          <span>{s.name}</span>
-                          <span className="font-medium">{fmt(s.amount)}{s.day ? ` · ${s.day}일` : ""}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 고정 지출 */}
-                {item.fixedExpenses.length > 0 && (
+                <div className="flex gap-4 mt-3 pt-3 border-t border-gray-50 dark:border-gray-700">
                   <div>
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <TrendingDown size={12} className="text-gray-400" />
-                      <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500">
-                        고정 지출 · 합계 {fmt(fixedTotal)}
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      {item.fixedExpenses.map((e) => (
-                        <div key={e.id} className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300">
-                          <span>{e.name}</span>
-                          <span className="font-medium">{fmt(e.amount)}{e.day ? ` · ${e.day}일` : ""}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500">월 수입</p>
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">{fmt(item.salary)}</p>
                   </div>
-                )}
-              </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500">저축 목표</p>
+                    <p className="text-xs font-semibold text-green-600 dark:text-green-400">{fmt(item.monthlySavingGoal)}</p>
+                  </div>
+                  {savingsTotal > 0 && (
+                    <div>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500">적금 합계</p>
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">{fmt(savingsTotal)}</p>
+                    </div>
+                  )}
+                  {fixedTotal > 0 && (
+                    <div>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500">고정 지출</p>
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">{fmt(fixedTotal)}</p>
+                    </div>
+                  )}
+                </div>
+              </button>
             );
           })}
         </div>
