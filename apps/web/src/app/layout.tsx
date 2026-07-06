@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import ServerWakeProvider from "@/components/ServerWakeProvider";
+import { ReactQueryProvider } from "@/lib/query-client";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,9 +31,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ServerWakeProvider>
-          {children}
-        </ServerWakeProvider>
+        <ReactQueryProvider>
+          <ServerWakeProvider>
+            {children}
+          </ServerWakeProvider>
+        </ReactQueryProvider>
         <Toaster position="top-center" richColors />
       </body>
     </html>

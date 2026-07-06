@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Plus, X } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
 
 // ── 타입 ────────────────────────────────────────────────────────
@@ -200,6 +201,7 @@ function DynamicList({
 // ── 페이지 ───────────────────────────────────────────────────────
 export default function SetupPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [form, setForm] = useState<FormState>({
     monthlyIncome: "",
     incomeDay: "",
@@ -209,40 +211,38 @@ export default function SetupPage() {
     savings: [],
     fixedExpenses: [],
   });
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { data: settingsData, isLoading } = useQuery({
+    queryKey: ["settings"],
+    queryFn: () => api.get<SettingsResponse>("/money/settings"),
+    retry: (failureCount, error) =>
+      !(error instanceof ApiError && error.status === 404) && failureCount < 1,
+  });
+
   useEffect(() => {
-    api.get<SettingsResponse>("/money/settings")
-      .then((data) => {
-        if (data) setForm(toFormState(data));
-      })
-      .catch((e) => {
-        if (!(e instanceof ApiError && e.status === 404)) {
-          setError("설정을 불러오지 못했어요.");
-        }
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    if (settingsData) setForm(toFormState(settingsData));
+  }, [settingsData]);
+
+  const { mutate: save, isPending: saving } = useMutation({
+    mutationFn: (payload: ReturnType<typeof toApiPayload>) =>
+      api.put("/money/settings", payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      router.back();
+    },
+    onError: () => setError("저장에 실패했어요. 다시 시도해주세요."),
+  });
 
   const set = (key: keyof Pick<FormState, "monthlyIncome" | "incomeDay" | "dailyLimit" | "monthlyGoal" | "assetUpdateDay">) =>
     (v: string) => setForm((f) => ({ ...f, [key]: v }));
 
-  const handleSave = async () => {
-    setSaving(true);
+  const handleSave = () => {
     setError(null);
-    try {
-      await api.put("/money/settings", toApiPayload(form));
-      router.back();
-    } catch {
-      setError("저장에 실패했어요. 다시 시도해주세요.");
-    } finally {
-      setSaving(false);
-    }
+    save(toApiPayload(form));
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
