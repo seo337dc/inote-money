@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ChevronLeft, PiggyBank, TrendingDown, Check, Pencil, StickyNote } from "lucide-react";
+import { ChevronLeft, PiggyBank, TrendingDown, Check, Pencil, StickyNote, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -44,6 +44,7 @@ export default function SettingHistoryDetailPage() {
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { data: item, isLoading } = useQuery({
     queryKey: ["settings-history", id],
@@ -53,6 +54,14 @@ export default function SettingHistoryDetailPage() {
   useEffect(() => {
     if (item) setTitleInput(item.title ?? "");
   }, [item]);
+
+  const { mutate: deleteHistory, isPending: deleting } = useMutation({
+    mutationFn: () => api.delete(`/money/settings/history/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings-history"] });
+      router.back();
+    },
+  });
 
   const { mutate: updateTitle, isPending: savingTitle } = useMutation({
     mutationFn: (title: string) =>
@@ -76,6 +85,35 @@ export default function SettingHistoryDetailPage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 lg:px-8 pt-6 pb-10">
+      {/* 삭제 확인 모달 */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="relative z-10 w-full max-w-sm mx-4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6">
+            <h2 className="text-base font-bold text-gray-900 dark:text-white mb-2">히스토리 삭제</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              이 기록을 삭제할까요?<br />
+              <span className="text-xs text-gray-400 dark:text-gray-500">삭제한 기록은 복구할 수 없어요.</span>
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => deleteHistory()}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-semibold transition-colors"
+              >
+                {deleting ? "삭제 중..." : "삭제"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 헤더 */}
       <div className="flex items-center gap-2 mb-1">
         <button
@@ -108,7 +146,7 @@ export default function SettingHistoryDetailPage() {
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-1 flex-1 min-w-0">
             <h1 className="text-lg font-bold text-gray-900 dark:text-white truncate flex-1">
               {item.title || monthLabel(item.month)}
             </h1>
@@ -117,6 +155,12 @@ export default function SettingHistoryDetailPage() {
               className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 transition-colors shrink-0"
             >
               <Pencil size={13} />
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-gray-600 hover:text-red-400 transition-colors shrink-0"
+            >
+              <Trash2 size={13} />
             </button>
           </div>
         )}
