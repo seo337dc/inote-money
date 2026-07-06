@@ -28,7 +28,13 @@
 
 ## 문서 관리
 
-- 기획 문서 및 프로젝트 문서: [자산관리 프로그램 노션](https://www.notion.so/35ab5151f22f8048b08cdc6ee8c38253)
+| 문서 | 링크 |
+|------|------|
+| 프로젝트 홈 | [Inote-money 노션](https://app.notion.com/p/Inote-money-35ab5151f22f8048b08cdc6ee8c38253) |
+| 기획 문서 | [planning](https://app.notion.com/p/planning-22c408bcf32b47829e78d95eabad51a6) |
+| 개발 일지 | [devlog](https://app.notion.com/p/de6909091d054042a9b39ee1ebc7283b) |
+| 회고 | [retrospective](https://app.notion.com/p/a72cbb70cff940d89727e8fa8212e41d) |
+| QA 테스트 | [QA](https://app.notion.com/p/391b5151f22f802a9127c2114e09bae5) |
 
 ---
 
@@ -43,18 +49,20 @@
 
 ## 기능 목록 (v0.1)
 
-1. 대시보드
-2. 수입/지출 관리
-3. 가계부
-4. 투자 기록
-5. 포트폴리오
-6. 월별 기록
+1. 자산 관리 (대시보드) ✅ 데모 구현
+2. 가계부 ✅ 데모 구현
+3. 주식 ✅ 데모 구현
+4. 수입/지출 관리
+5. 금융 지식 (경제 용어, 경제 책)
+6. 미니게임 (캐시플로우)
+7. 포트폴리오
+8. 월별 기록
 
 ---
 
 ## 화면 정의
 
-→ 상세 화면 스펙은 [기획 문서](https://www.notion.so/22c408bcf32b47829e78d95eabad51a6) 참조
+→ 상세 화면 스펙은 [기획 문서](https://app.notion.com/p/planning-22c408bcf32b47829e78d95eabad51a6) 참조
 
 ---
 
@@ -122,7 +130,7 @@ inote-money/
 | 경로 | 화면 | 상태 |
 |------|------|------|
 | `/demo/dashboard` | 자산 관리 대시보드 | ✅ 완료 |
-| `/demo/dashboard/setup` | 내 정보 설정 | ✅ 완료 |
+| `/demo/dashboard/setup` | 내 자산 설정 | ✅ 완료 |
 | `/demo/account-book` | 가계부 (달력/주차별/전체) | ✅ 완료 |
 | `/demo/stocks` | 주식 (국내+해외+환율) | ✅ 완료 |
 | `/demo/settings` | 설정 (프로필+다크모드) | ✅ 완료 |
@@ -148,7 +156,7 @@ inote-money/
 
 - [x] 가계부 화면 — 달력 / 주차별 / 전체 로그 뷰 (구현 완료)
 - [x] 대시보드 — 내 정보 카드 / 주간 리뷰 / 월간 요약 (구현 완료)
-- [x] 내 정보 설정 — 월급·적금·고정지출·날짜 입력 (구현 완료)
+- [x] 내 자산 설정 — 월급·적금·고정지출·날짜 입력 (구현 완료)
 - [x] 설정 페이지 — 프로필 + 다크모드 토글 (구현 완료)
 - [x] 주식 페이지 — 국내(Naver API + Lightweight Charts) + 해외(TradingView iframe) + 환율 (구현 완료)
 
@@ -209,14 +217,16 @@ src/app/demo/
 |------|------|------|
 | `/login` | 로그인 (Google OAuth) | ✅ 완료 |
 | `/dashboard` | 자산 관리 대시보드 레이아웃 + 인증 보호 | ✅ 완료 |
-| `/dashboard/setup` | 내 정보 설정 (월급·적금·고정지출, API 연동) | ✅ 완료 |
+| `/dashboard/setup` | 내 자산 설정 (월급·적금·고정지출·메모, API 연동) | ✅ 완료 |
+| `/dashboard/setup/history` | 자산 설정 히스토리 목록 | ✅ 완료 |
+| `/dashboard/setup/history/[id]` | 자산 설정 히스토리 상세 (제목 수정·삭제·메모) | ✅ 완료 |
 | `/settings` | 설정 (프로필+로그아웃+자산설정 진입점) | ✅ 완료 |
 
 ---
 
 ## 현재 단계
 
-로그인 + Google OAuth 인증 구현 완료. Vercel(FE) + Render(BE) + Neon(DB) 프로덕션 배포 완료. 크로스 도메인 쿠키 이슈 해결 (middleware 제거, 각 layout에서 `useSession()` 클라이언트 훅으로 세션 체크). ServerWakeProvider CORS 버그 수정 (Next.js API Route 프록시 경유). FE API 클라이언트(`src/lib/api.ts`) + @tanstack/react-query v5 설치 완료. `/dashboard/setup` 내 정보 설정 실서비스 API 연동 완료. 로딩 UI 전체 Minimal Memo 스타일로 통일 완료. shadcn/ui `Input` + `Textarea` 컴포넌트 설치 및 전체 파일에 적용 완료. 다음 단계: 가계부 페이지 API 연동, 대시보드 내 정보 카드 API 연동.
+로그인 + Google OAuth 인증 구현 완료. Vercel(FE) + Render(BE) + Neon(DB) 프로덕션 배포 완료. 크로스 도메인 쿠키 이슈 해결 (middleware 제거, 각 layout에서 `useSession()` 클라이언트 훅으로 세션 체크). ServerWakeProvider CORS 버그 수정 (Next.js API Route 프록시 경유). FE API 클라이언트(`src/lib/api.ts`) + @tanstack/react-query v5 설치 완료. `/dashboard/setup` 내 자산 설정 실서비스 API 연동 완료. 로딩 UI 전체 Minimal Memo 스타일로 통일 완료. shadcn/ui `Input` + `Textarea` + `Dialog` 컴포넌트 설치 및 전체 파일에 적용 완료. 자산 설정 히스토리 기능 구현 완료 (저장 후 기록 모달 → 목록 → 상세 / 제목 수정 · 삭제 · 메모). 모든 원시 모달을 shadcn Dialog로 교체 완료 (5개). 다음 단계: 가계부 페이지 API 연동, 대시보드 내 자산 카드 API 연동.
 
 ---
 

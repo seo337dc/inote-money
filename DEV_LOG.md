@@ -393,6 +393,86 @@ apps/web/src/app/test/loading/
 
 ---
 
+### 2026-07-06 (세션 4)
+
+#### ✅ "내 자산 설정" 이름 변경
+
+- 전체 코드베이스에서 "내 정보 설정" → "내 자산 설정" 텍스트 일괄 수정
+- 관련 파일: `setup/page.tsx`, `settings/page.tsx`, `demo/settings/page.tsx`, `CLAUDE.md` 등
+
+#### ✅ 자산 설정 히스토리 기능 구현 (BE + FE 전체)
+
+**BE 스키마 변경** (`inote-server/prisma/schema.prisma`)
+- `UserSetting` — `memo String?` 필드 추가
+- `SettingHistory` 모델 신규 추가
+  ```
+  id / userId / month / title? / salary / salaryDate / dailyLimit /
+  monthlySavingGoal / assetUpdateDate / savings(Json) / fixedExpenses(Json) /
+  memo? / recordedAt(DateTime @default(now))
+  ```
+- `user` 모델 — `settingHistories SettingHistory[]` 관계 추가
+- `prisma migrate dev` 대신 `prisma db push` 사용 (Better Auth가 DB에 추가한 컬럼으로 migration drift 발생)
+
+**BE API 추가** (`inote-server/src/money/settings/`)
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| GET | `/money/settings/history` | 히스토리 목록 (최신순) |
+| POST | `/money/settings/history` | 현재 설정 스냅샷 저장 |
+| GET | `/money/settings/history/:id` | 단건 조회 |
+| PATCH | `/money/settings/history/:id` | 제목 수정 |
+| DELETE | `/money/settings/history/:id` | 삭제 (204) |
+
+- DTO 신규: `CreateSettingHistoryDto` (month, title?), `UpdateSettingHistoryDto` (title?)
+- `UpsertSettingsDto` — `memo?: string` 필드 추가
+- 소유권 체크: `userId !== item.userId` 시 `ForbiddenException`
+
+**FE 변경**
+
+*`/dashboard/setup/page.tsx`*
+- 헤더 우측 "히스토리" 버튼 추가 → `/dashboard/setup/history`
+- 저장 성공 후 히스토리 기록 확인 모달 표시 (제목 입력 + 기록하기 / 건너뛰기)
+- `saveHistory` mutation — `POST /money/settings/history`
+- 메모 `<Textarea>` 섹션 추가 (저장 시 API에 함께 전송)
+
+*`/dashboard/setup/history/page.tsx` (신규)*
+- 히스토리 목록 — 제목(없으면 월 라벨), 기록일(시:분:초), 기본 정보 요약
+- 카드 클릭 → 상세 페이지 이동
+
+*`/dashboard/setup/history/[id]/page.tsx` (신규)*
+- 헤더: ✏️ 제목 인라인 수정 + 🗑 삭제 버튼
+- 섹션: 기본 정보 그리드 / 적금 목록 / 고정 지출 목록 / 메모 (있을 때만)
+- 제목 수정: `PATCH /money/settings/history/:id`
+- 삭제: `DELETE` 후 `router.back()`
+
+#### ✅ shadcn Dialog 설치 및 전체 모달 교체
+
+**설치**
+- `npx shadcn add dialog` → `src/components/ui/dialog.tsx` 생성 (`@base-ui/react/dialog` 기반)
+- `button.tsx` 덮어쓰기 방지 — 설치 시 "N" 선택
+
+**`dialog.tsx` 커스터마이징**
+- `DialogOverlay` — 기본 배경 `bg-black/40 backdrop-blur-sm`으로 프로젝트 스타일 통일
+- `DialogPopup` 신규 추가 — bottom-sheet 모달용 커스텀 포지셔닝 래퍼
+  - `DialogPrimitive.Popup`을 `fixed inset-0 flex` 컨테이너로 사용 가능하게 래핑
+  - 접근성(ESC 닫기, 포커스 트랩, aria-modal) 자동 적용
+
+**교체 파일 목록**
+
+| 파일 | 교체 방식 | 비고 |
+|------|---------|------|
+| `dashboard/setup/page.tsx` | `Dialog` + `DialogContent` + `DialogHeader` | 히스토리 기록 확인 |
+| `dashboard/setup/history/[id]/page.tsx` | `Dialog` + `DialogContent` + `DialogHeader` | 삭제 확인 |
+| `demo/stocks/page.tsx` (StockModal) | `Dialog` + `DialogPortal` + `DialogOverlay` + `DialogPopup` | bottom-sheet 유지 |
+| `demo/account-book/AddExpenseModal.tsx` | 동일 | bottom-sheet 유지 |
+| `demo/account-book/DayDetailModal.tsx` | 동일 | 고정 높이 bottom-sheet |
+
+#### 🔜 다음 작업
+- 대시보드 내 자산 카드 → settings API 연동
+- 가계부 페이지 API 신규 구현 (GET/POST/PATCH/DELETE)
+- 주식 페이지 API 신규 구현
+
+---
+
 ### 2026-07-06 (세션 3)
 
 #### ✅ shadcn/ui Input · Textarea 컴포넌트 전체 적용
@@ -913,14 +993,14 @@ src/app/demo/
 - [ ] **금융 지식 화면 구현** (`/demo/financial-knowledge`)
 - [ ] **미니게임 화면 구현** (`/demo/mini-game`)
 
-### 3단계 — FE + BE 연동 (inote-server Railway 배포 후 시작)
+### 3단계 — FE + BE 연동 (BE Render 배포 완료)
 
-> BE dev 환경 URL 확보 후 진행. 그 전까지는 localStorage/더미 데이터 유지.
-
-- [ ] 로그인 페이지 실제 연동 (Better Auth Google 소셜 로그인)
+- [x] 로그인 페이지 실제 연동 (Better Auth Google 소셜 로그인)
+- [x] 내 자산 설정 localStorage → 실제 API 교체 (`/api/v1/money/settings`)
+- [x] 자산 설정 히스토리 API 연동 (목록·상세·저장·수정·삭제)
+- [ ] 대시보드 내 자산 카드 → settings API 연동
 - [ ] 가계부 localStorage → 실제 API 교체 (`/api/v1/money/expenses`)
 - [ ] 주식 localStorage → 실제 API 교체 (`/api/v1/money/stocks`)
-- [ ] 내 정보 설정 localStorage → 실제 API 교체 (`/api/v1/money/settings`)
 - [ ] 대시보드 ↔ 가계부 데이터 연동
 - [ ] 알림 배너 (자산 업데이트일 D-2~3)
 
