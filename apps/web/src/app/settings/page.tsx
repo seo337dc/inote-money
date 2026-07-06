@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Moon, Sun, User, LogOut } from "lucide-react";
+import { Moon, Sun, User, LogOut, ChevronRight, Wallet } from "lucide-react";
+import Link from "next/link";
 import { useDarkMode } from "@/lib/dark-mode";
 import { signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -104,6 +105,24 @@ export default function SettingsPage() {
               {saved ? "저장됨 ✓" : "저장하기"}
             </button>
           </div>
+        </div>
+
+        {/* 나의 자산 설정 */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Wallet size={15} className="text-gray-400" />
+            <p className="text-xs font-semibold text-gray-400 dark:text-gray-500">나의 자산 설정</p>
+          </div>
+          <Link
+            href="/dashboard/setup"
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-colors group"
+          >
+            <div>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors">자산 설정하기</p>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">월급, 적금, 고정 지출 등 설정</p>
+            </div>
+            <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-green-500 transition-colors" />
+          </Link>
         </div>
 
         {/* 앱 설정 */}
