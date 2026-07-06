@@ -5,6 +5,8 @@ import { Moon, Sun, User, LogOut, ChevronRight, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useDarkMode } from "../dark-mode";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 type Profile = {
   name: string;
@@ -50,39 +52,21 @@ export default function SettingsPage() {
               <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 block mb-1.5">
                 이름
               </label>
-              <input
-                type="text"
-                value={profile.name}
-                onChange={set("name")}
-                placeholder="홍길동"
-                className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 transition-all placeholder:text-gray-300 dark:placeholder:text-gray-500"
-              />
+              <Input type="text" value={profile.name} onChange={set("name")} placeholder="홍길동" />
             </div>
 
             <div>
               <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 block mb-1.5">
                 직업 / 직책
               </label>
-              <input
-                type="text"
-                value={profile.jobTitle}
-                onChange={set("jobTitle")}
-                placeholder="프론트엔드 개발자"
-                className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 transition-all placeholder:text-gray-300 dark:placeholder:text-gray-500"
-              />
+              <Input type="text" value={profile.jobTitle} onChange={set("jobTitle")} placeholder="프론트엔드 개발자" />
             </div>
 
             <div>
               <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 block mb-1.5">
                 한 줄 소개
               </label>
-              <textarea
-                value={profile.intro}
-                onChange={set("intro")}
-                placeholder="절약하며 자유를 향해 달리는 중"
-                rows={2}
-                className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 transition-all placeholder:text-gray-300 dark:placeholder:text-gray-500 resize-none"
-              />
+              <Textarea value={profile.intro} onChange={set("intro")} placeholder="절약하며 자유를 향해 달리는 중" rows={2} />
             </div>
 
             <button

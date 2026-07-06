@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Plus, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 type ListItem = { id: string; name: string; amount: string; day: string };
 
@@ -112,12 +113,12 @@ function DynamicList({
       <div className="flex flex-col gap-2">
         {items.map((item) => (
           <div key={item.id} className="flex items-center gap-2">
-            <input
+            <Input
               type="text"
               value={item.name}
               onChange={(e) => update(item.id, "name", e.target.value)}
               placeholder={namePlaceholder}
-              className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 focus:border-transparent transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600 min-w-0"
+              className="flex-1"
             />
             <div className={`${INPUT_WRAP} w-28 shrink-0`}>
               <input

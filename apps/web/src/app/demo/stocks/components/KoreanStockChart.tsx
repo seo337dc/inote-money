@@ -94,10 +94,18 @@ export function KoreanStockChart({
 
   if (status === "loading") {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-white dark:bg-gray-800">
-        <div className="flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500">
-          <span className="w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-green-500 rounded-full animate-spin" />
-          차트 로딩 중...
+      <div className="w-full h-full flex items-center justify-center bg-stone-50 dark:bg-gray-800">
+        <div className="flex flex-col items-center gap-3">
+          <div className="relative w-10 h-12 flex items-center justify-center">
+            <div className="absolute w-8 h-10 bg-stone-200 dark:bg-stone-700 border border-stone-300 dark:border-stone-600 rounded transform rotate-6 shadow-sm" />
+            <div className="absolute w-8 h-10 bg-stone-100 dark:bg-stone-600 border border-stone-300 dark:border-stone-500 rounded transform -rotate-3 shadow-sm" />
+            <div className="absolute w-8 h-10 bg-white dark:bg-gray-700 border-2 border-stone-800 dark:border-stone-400 rounded shadow-md p-1 flex flex-col gap-1 justify-center">
+              <div className="w-full h-1 bg-stone-300 dark:bg-stone-500 rounded" />
+              <div className="w-4/5 h-1 bg-stone-300 dark:bg-stone-500 rounded" />
+              <div className="w-3/5 h-1 bg-emerald-400/40 rounded" />
+            </div>
+          </div>
+          <p className="text-[11px] text-stone-400 dark:text-stone-500 font-mono tracking-wide">✏️ 차트 데이터 로딩 중...</p>
         </div>
       </div>
     );

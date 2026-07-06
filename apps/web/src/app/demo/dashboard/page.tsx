@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Pencil, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 type ListItem = { id: string; name: string; amount: number; day?: number };
 
@@ -69,7 +70,6 @@ const CARD = "bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:
 const SUBCARD_GRAY = "bg-gray-50 dark:bg-gray-700/60 rounded-xl p-3";
 const SUBCARD_ORANGE = "bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3";
 const LABEL = "text-[11px] text-gray-400 dark:text-gray-500";
-const TEXTAREA = "w-full text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 resize-none outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 placeholder:text-gray-300 dark:placeholder:text-gray-600";
 
 export default function DashboardPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -278,12 +278,11 @@ export default function DashboardPage() {
 
           <div>
             <p className={`text-[11px] mb-1.5 ${LABEL}`}>리뷰</p>
-            <textarea
+            <Textarea
               value={weekDraft.text}
               onChange={(e) => setWeekDraft((d) => ({ ...d, text: e.target.value }))}
               placeholder="이번 주 소비를 되돌아보세요..."
               rows={5}
-              className={TEXTAREA}
             />
           </div>
 
@@ -342,12 +341,11 @@ export default function DashboardPage() {
 
           <div>
             <p className={`text-[11px] mb-1.5 ${LABEL}`}>리뷰</p>
-            <textarea
+            <Textarea
               value={monthDraft.text}
               onChange={(e) => setMonthDraft((d) => ({ ...d, text: e.target.value }))}
               placeholder="이번 달 소비를 되돌아보세요..."
               rows={5}
-              className={TEXTAREA}
             />
           </div>
 

@@ -278,6 +278,157 @@ apps/web/src/app/test/loading/
 
 ---
 
+### 2026-07-06
+
+#### ✅ FE API 인프라 구축
+
+**공통 API 클라이언트** (`apps/web/src/lib/api.ts`)
+- `fetch` 래퍼 — `credentials: 'include'`로 Better Auth 세션 쿠키 자동 전달
+- `ApiError` 클래스 — HTTP status 코드 보존 (404 = 첫 설정, 401 = 세션 만료 등 분기 처리)
+- `api.get / post / put / patch / delete` 메서드
+
+**@tanstack/react-query v5 설치 및 설정**
+- `apps/web/src/lib/query-client.tsx` — `ReactQueryProvider` 컴포넌트
+  - `staleTime: 60초`, `retry: 1` 기본 설정
+- `apps/web/src/app/layout.tsx` — `ReactQueryProvider`로 `ServerWakeProvider` 래핑
+- 사용 패턴: `useQuery`로 GET, `useMutation`으로 PUT/POST, 저장 성공 시 `invalidateQueries`로 캐시 무효화
+
+#### ✅ BE UpsertSettingsDto 스키마 수정
+
+**문제**: `savings`, `fixedExpenses`가 `@IsInt()`로 선언되어 있었으나 DB 컬럼은 `Json` 타입
+
+**수정** (`inote-server/src/money/settings/dto/upsert-settings.dto.ts`)
+- `SettingsItemDto` 신규 추가 (`id: string`, `name: string`, `amount: number`, `day?: number`)
+- `savings`, `fixedExpenses`를 `SettingsItemDto[]`로 변경 (`@ValidateNested`, `@Type`)
+
+**수정** (`inote-server/src/money/settings/settings.service.ts`)
+- `savings as unknown as Prisma.InputJsonValue` 캐스트 추가 (Prisma Json 타입 호환)
+
+#### ✅ `/dashboard/setup` 실서비스 구현 (API 연동)
+
+**파일**: `apps/web/src/app/dashboard/setup/page.tsx`
+
+**동작 흐름**
+- `useQuery(['settings'])` → `GET /api/v1/money/settings`
+  - 404 = 첫 설정 → 빈 폼 (에러 아님)
+  - 200 = 기존 설정 → 폼에 자동 입력
+- `useMutation` → `PUT /api/v1/money/settings` → 성공 시 `invalidateQueries(['settings'])` + 뒤로가기
+
+**필드 매핑**
+| 폼 필드 | API 필드 |
+|---------|---------|
+| monthlyIncome | salary |
+| incomeDay | salaryDate |
+| dailyLimit | dailyLimit |
+| monthlyGoal | monthlySavingGoal |
+| assetUpdateDay | assetUpdateDate |
+| savings (items) | savings[] |
+| fixedExpenses (items) | fixedExpenses[] |
+
+#### ✅ 설정 페이지 — 나의 자산 설정 섹션 추가
+
+- `apps/web/src/app/settings/page.tsx` — 프로필 카드 아래 `Wallet` 아이콘 섹션 + `/dashboard/setup` 링크
+- `apps/web/src/app/demo/settings/page.tsx` — 동일 섹션, `/demo/dashboard/setup` 링크
+
+#### 🔜 다음 작업
+- 대시보드 내 정보 카드 → settings API 연동
+- 가계부 페이지 API 신규 구현 (GET/POST/PATCH/DELETE)
+- 주식 페이지 API 신규 구현
+
+---
+
+### 2026-07-06 (세션 2)
+
+#### ✅ 로딩 UI 전체 Minimal Memo 스타일로 통일
+
+**배경**
+- 기존 로딩이 초록 스피너, 바운싱 dots 등 제각각
+- `/test/loading`의 4가지 스타일 중 Minimal Memo Book 선택 → 실서비스 로딩으로 확정
+- Cyber Neon Terminal 스타일 제거 (불필요)
+
+**Cyber Neon Terminal 제거**
+- `LoadingScreens.tsx` — `cyber-neon` case 삭제, 관련 미사용 import 정리 (`Cpu`, `FileText`, `Loader2`, `PieChart`, `DollarSign`)
+- `types.ts` — `LoaderStyle`에서 `'cyber-neon'` 제거
+- `Customizer.tsx` — 스타일 목록에서 Cyber Neon Terminal 항목 제거
+
+**`LoadingScreen.tsx` 재작성** (`apps/web/src/components/LoadingScreen.tsx`)
+- Minimal Memo 스타일 기반으로 전면 교체
+- `waking` prop: `false`(초기) / `true`(1초 후 서버 느릴 때) 에 따라 메시지 세트 전환
+- 메모장 플립 애니메이션 + 그리드 종이 배경 (`radial-gradient`)
+- 좌→우 shimmer 프로그레스 바 (무한 루프)
+- `motion/react` 기반, `AnimatePresence`로 메시지 전환 애니메이션
+
+**ServerWakeProvider 정리** (`apps/web/src/components/ServerWakeProvider.tsx`)
+- 인라인 `ServerWakeScreen` 컴포넌트 제거
+- `<LoadingScreen waking={waking} />`으로 교체
+
+**Next.js route-level loading 추가**
+- `apps/web/src/app/demo/loading.tsx` 신규 — `/demo/*` 페이지 이동 시 LoadingScreen
+- `apps/web/src/app/dashboard/loading.tsx` 신규 — `/dashboard/*` 페이지 이동 시 LoadingScreen
+
+**전체 스피너 → LoadingScreen 교체**
+
+| 파일 | 변경 내용 |
+|------|-----------|
+| `dashboard/layout.tsx` | 세션 체크 스피너 → `<LoadingScreen />` |
+| `dashboard/setup/page.tsx` | API isLoading 스피너 → `<LoadingScreen />` |
+| `auth/callback/page.tsx` | 콜백 스피너 → `<LoadingScreen />` |
+| `auth/popup/page.tsx` | 팝업 스피너 → `<LoadingScreen />` |
+| `demo/stocks/components/KoreanStockChart.tsx` | 차트 스피너 → 미니 memo 스타일 인라인 (차트 영역 내장) |
+
+**최종 로딩 통일 현황**
+
+| 상황 | UI |
+|------|-----|
+| 앱 최초 진입 (서버 웨이크업) | Minimal Memo 전체 화면 (`waking` prop) |
+| `/demo/*`, `/dashboard/*` 페이지 이동 | Minimal Memo 전체 화면 |
+| 세션 체크 중 | Minimal Memo 전체 화면 |
+| API 데이터 로딩 (react-query) | Minimal Memo 전체 화면 |
+| 차트 데이터 로딩 (컴포넌트 내장) | 미니 memo 스타일 인라인 |
+
+#### 🔜 다음 작업
+- 대시보드 내 정보 카드 → settings API 연동
+- 가계부 페이지 API 신규 구현 (GET/POST/PATCH/DELETE)
+- 주식 페이지 API 신규 구현
+
+---
+
+### 2026-07-06 (세션 3)
+
+#### ✅ shadcn/ui Input · Textarea 컴포넌트 전체 적용
+
+**배경**
+- `components/ui/`에 `button`만 있고 `input`, `textarea`는 shadcn 미설치 상태
+- 20개 이상 파일에서 동일한 `className` 문자열을 반복 사용 중
+
+**컴포넌트 커스터마이징** (`apps/web/src/components/ui/`)
+- `input.tsx` — `@base-ui/react/input` 기반, 프로젝트 스타일 적용
+  - `bg-gray-50`, `rounded-xl`, `focus-visible:ring-green-200` 등
+- `textarea.tsx` — 네이티브 `<textarea>` 기반, Input과 동일한 스타일
+
+**적용 파일 목록**
+
+| 파일 | 변경 내용 |
+|------|-----------|
+| `settings/page.tsx` | 이름·직책·소개 입력 → `<Input>` + `<Textarea>` |
+| `demo/settings/page.tsx` | 동일 |
+| `dashboard/page.tsx` | 주간·월간 리뷰 → `<Textarea>`, `TEXTAREA` 상수 제거 |
+| `demo/dashboard/page.tsx` | 동일 |
+| `dashboard/setup/page.tsx` | DynamicList 이름 입력 → `<Input className="flex-1">` |
+| `demo/dashboard/setup/page.tsx` | 동일 + import 추가 |
+| `demo/stocks/page.tsx` | 종목명·티커·메모 → `<Input>`, 수량·매입가·투자금액 → `<Input className="pr-*">` |
+
+**의도적으로 유지한 raw input**
+- `NumberField` / DynamicList 금액 입력: 래퍼 div + "원" suffix 패턴 필요 (`INPUT_WRAP` + `INPUT_BASE` 유지)
+- account-book 모달 인라인 수정 폼: 파란색 편집 상태 스타일로 의도적으로 다름
+
+#### 🔜 다음 작업
+- 대시보드 내 정보 카드 → settings API 연동
+- 가계부 페이지 API 신규 구현 (GET/POST/PATCH/DELETE)
+- 주식 페이지 API 신규 구현
+
+---
+
 ### 2026-05-08
 
 #### ✅ 프로젝트 초기 세팅

@@ -33,7 +33,6 @@ export default function Customizer({ config, onChangeConfig, onTriggerLoading }:
   const styles: { id: LoaderStyle; label: string; desc: string }[] = [
     { id: 'glassmorphic', label: '✨ Glassmorphic Ledger', desc: '유려한 블러, 빛나는 구형 서클, 세련된 하이테크 스타일' },
     { id: 'minimal-memo', label: '✏️ Minimal Memo Book', desc: '아날로그 플립 애니메이션, 텍스처 그리드 종이, 서정적인 무드' },
-    { id: 'cyber-neon', label: '💻 Cyber Neon Terminal', desc: '네온 스캔 라인, 실시간 텍스트 디버깅 로그, 레트로 매트릭스 테마' },
     { id: 'organic-flow', label: '🌊 Organic Emerald Blob', desc: '유동적인 자연 액체 형태의 모핑, 마인드풀니스 소비 습관 유도' },
   ];
 

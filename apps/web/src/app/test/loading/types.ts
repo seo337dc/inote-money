@@ -8,7 +8,7 @@ export interface Transaction {
   rawNote: string;
 }
 
-export type LoaderStyle = 'glassmorphic' | 'minimal-memo' | 'cyber-neon' | 'organic-flow';
+export type LoaderStyle = 'glassmorphic' | 'minimal-memo' | 'organic-flow';
 
 export interface LoaderConfig {
   style: LoaderStyle;

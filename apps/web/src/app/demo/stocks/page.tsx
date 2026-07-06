@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Plus, X, Edit2, RefreshCw, BarChart2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useDarkMode } from "../dark-mode";
 import { KoreanStockChart } from "./components/KoreanStockChart";
+import { Input } from "@/components/ui/input";
 
 // ─── Types ───────────────────────────────────────────────
 type Currency = "KRW" | "USD";
@@ -187,11 +188,11 @@ function StockModal({
         <div className="p-5 flex flex-col gap-4 overflow-y-auto max-h-[70vh]">
           <div>
             <label className={LABEL}>종목명</label>
-            <input type="text" value={form.name} onChange={(e) => set("name")(e.target.value)} placeholder="삼성전자, 애플..." className={INPUT} />
+            <Input type="text" value={form.name} onChange={(e) => set("name")(e.target.value)} placeholder="삼성전자, 애플..." />
           </div>
           <div>
             <label className={LABEL}>티커</label>
-            <input type="text" value={form.ticker} onChange={(e) => set("ticker")(e.target.value)} placeholder="KRX:005930 또는 NASDAQ:AAPL" className={INPUT} />
+            <Input type="text" value={form.ticker} onChange={(e) => set("ticker")(e.target.value)} placeholder="KRX:005930 또는 NASDAQ:AAPL" />
             <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">거래소:티커 형식 · 예) KRX:005930, NASDAQ:AAPL</p>
           </div>
           <div>
@@ -218,14 +219,14 @@ function StockModal({
               <div className="flex-1">
                 <label className={LABEL}>보유 수량</label>
                 <div className="relative">
-                  <input type="number" value={form.quantity} onChange={(e) => set("quantity")(e.target.value)} placeholder="0" className={INPUT + " pr-6"} />
+                  <Input type="number" value={form.quantity} onChange={(e) => set("quantity")(e.target.value)} placeholder="0" className="pr-6" />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">주</span>
                 </div>
               </div>
               <div className="flex-1">
                 <label className={LABEL}>평균 매입가</label>
                 <div className="relative">
-                  <input type="number" value={form.buyPrice} onChange={(e) => set("buyPrice")(e.target.value)} placeholder="0" className={INPUT + " pr-8"} />
+                  <Input type="number" value={form.buyPrice} onChange={(e) => set("buyPrice")(e.target.value)} placeholder="0" className="pr-8" />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
                     {form.currency === "KRW" ? "원" : "$"}
                   </span>
@@ -236,7 +237,7 @@ function StockModal({
             <div>
               <label className={LABEL}>투자 금액</label>
               <div className="relative">
-                <input type="number" value={form.investAmount} onChange={(e) => set("investAmount")(e.target.value)} placeholder="0" className={INPUT + " pr-10"} />
+                <Input type="number" value={form.investAmount} onChange={(e) => set("investAmount")(e.target.value)} placeholder="0" className="pr-10" />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
                   {form.currency === "KRW" ? "원" : "USD"}
                 </span>
@@ -247,7 +248,7 @@ function StockModal({
 
           <div>
             <label className={LABEL}>메모 (선택)</label>
-            <input type="text" value={form.memo} onChange={(e) => set("memo")(e.target.value)} placeholder="장기 보유, 분할 매수 중..." className={INPUT} />
+            <Input type="text" value={form.memo} onChange={(e) => set("memo")(e.target.value)} placeholder="장기 보유, 분할 매수 중..." />
           </div>
         </div>
 

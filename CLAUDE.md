@@ -22,6 +22,7 @@
 | 인증 | Better Auth |
 | DB | PostgreSQL |
 | DevOps | Vercel (FE) + Render (BE) + Neon (DB) |
+| 서버 상태 | @tanstack/react-query v5 |
 
 ---
 
@@ -208,13 +209,14 @@ src/app/demo/
 |------|------|------|
 | `/login` | 로그인 (Google OAuth) | ✅ 완료 |
 | `/dashboard` | 자산 관리 대시보드 레이아웃 + 인증 보호 | ✅ 완료 |
-| `/settings` | 설정 (프로필+로그아웃) | ✅ 완료 |
+| `/dashboard/setup` | 내 정보 설정 (월급·적금·고정지출, API 연동) | ✅ 완료 |
+| `/settings` | 설정 (프로필+로그아웃+자산설정 진입점) | ✅ 완료 |
 
 ---
 
 ## 현재 단계
 
-로그인 + Google OAuth 인증 구현 완료. Vercel(FE) + Render(BE) + Neon(DB) 프로덕션 배포 완료. 크로스 도메인 쿠키 이슈 해결 (middleware 제거, 각 layout에서 `useSession()` 클라이언트 훅으로 세션 체크). 다음 단계: FE ↔ BE API 연동 (가계부, 주식, 설정 CRUD).
+로그인 + Google OAuth 인증 구현 완료. Vercel(FE) + Render(BE) + Neon(DB) 프로덕션 배포 완료. 크로스 도메인 쿠키 이슈 해결 (middleware 제거, 각 layout에서 `useSession()` 클라이언트 훅으로 세션 체크). ServerWakeProvider CORS 버그 수정 (Next.js API Route 프록시 경유). FE API 클라이언트(`src/lib/api.ts`) + @tanstack/react-query v5 설치 완료. `/dashboard/setup` 내 정보 설정 실서비스 API 연동 완료. 로딩 UI 전체 Minimal Memo 스타일로 통일 완료. shadcn/ui `Input` + `Textarea` 컴포넌트 설치 및 전체 파일에 적용 완료. 다음 단계: 가계부 페이지 API 연동, 대시보드 내 정보 카드 API 연동.
 
 ---
 

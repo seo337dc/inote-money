@@ -2,18 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Coins, 
-  FileText, 
-  Sparkles, 
-  Cpu, 
-  TrendingUp, 
-  CheckCircle, 
-  PenTool, 
-  Loader2,
+import {
+  Coins,
+  Sparkles,
+  TrendingUp,
+  CheckCircle,
+  PenTool,
   Lock,
-  PieChart,
-  DollarSign
 } from 'lucide-react';
 import { LoaderConfig, LoaderStyle } from '../types';
 
@@ -281,92 +276,6 @@ export default function LoadingScreens({ config, progress, currentMessageIndex, 
             <div className="flex justify-between text-[11px] font-mono text-stone-400">
               <span>수집 중...</span>
               <span className="font-bold text-stone-700">{Math.round(progress)}%</span>
-            </div>
-          </motion.div>
-        </div>
-      );
-
-    case 'cyber-neon':
-      return (
-        <div className="relative w-full h-full min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-700 font-mono p-4">
-          {/* Cyberpunk matrix background effect in light mode */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(100,116,139,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(100,116,139,0.02)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-
-          {/* Glowing scanner line */}
-          <motion.div 
-            className="absolute top-0 left-0 right-0 h-[2px] shadow-[0_0_10px_rgba(34,197,94,0.4)] z-0"
-            style={{ backgroundColor: primaryColorHex }}
-            animate={{ y: ['0vh', '100vh'] }}
-            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-          />
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="z-10 w-full max-w-lg border-2 border-gray-200 bg-white p-6 rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.04)] relative overflow-hidden"
-          >
-            {/* Cyber corner marks */}
-            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: primaryColorHex }} />
-            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2" style={{ borderColor: primaryColorHex }} />
-            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2" style={{ borderColor: primaryColorHex }} />
-            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: primaryColorHex }} />
-
-            {/* Top status header */}
-            <div className="flex justify-between border-b border-gray-150 pb-3 mb-6 text-xs font-bold">
-              <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-green-600 animate-spin-slow" />
-                <span className="tracking-widest text-gray-900">SYS.INIT_SEQUENCE</span>
-              </div>
-              <span className="text-gray-400">NODE_ID: AIS-466B</span>
-            </div>
-
-            {/* Retro segment block loader */}
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-2 text-xs font-bold text-gray-700">
-                <span>PARSING ENGINE METRICS:</span>
-                <span className="font-extrabold text-gray-900 tracking-widest">{Math.round(progress)}% COMPLETED</span>
-              </div>
-              <div className="flex gap-1 h-8 border border-gray-200 p-1 bg-gray-50 rounded-lg">
-                {Array.from({ length: 20 }).map((_, i) => {
-                  const isActive = (progress / 100) * 20 > i;
-                  return (
-                    <motion.div
-                      key={i}
-                      className="h-full flex-1 rounded-sm"
-                      style={{ 
-                        backgroundColor: isActive ? primaryColorHex : 'transparent',
-                        opacity: isActive ? 1 : 0.05,
-                        boxShadow: isActive ? `0 0 6px ${primaryColorHex}` : 'none'
-                      }}
-                      initial={{ scaleY: 0.8 }}
-                      animate={isActive ? { scaleY: [0.8, 1, 0.8] } : {}}
-                      transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.05 }}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Console logs output */}
-            <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs leading-relaxed space-y-1 h-36 overflow-y-auto font-mono scrollbar-none mb-4 shadow-inner text-emerald-400">
-              <div className="text-slate-400">&gt;&gt; Initializing ledger memory mapping...</div>
-              <div className="text-slate-400">&gt;&gt; Synchronizing with decentralized financial cache...</div>
-              {progress > 20 && <div className="text-emerald-400 font-bold">&gt;&gt; Success: Linked with DB (latency: 14ms)</div>}
-              {progress > 40 && <div className="text-slate-400">&gt;&gt; Running Natural Language Parser (NLP V4)...</div>}
-              {progress > 60 && <div className="text-yellow-400 font-bold">&gt;&gt; Warning: Loaded 3 uncategorized manual inputs. Re-indexing...</div>}
-              {progress > 80 && <div className="text-cyan-400 font-bold">&gt;&gt; Success: AI Auto-categorization model loaded.</div>}
-              {progress >= 100 && <div className="text-green-400 font-bold">&gt;&gt; SYSTEM READY. REDIRECTING...</div>}
-              <div className="text-white flex items-center gap-2 font-bold animate-pulse mt-2">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColorHex }} />
-                <span>{activeMessage}...</span>
-              </div>
-            </div>
-
-            {/* Footer with telemetry */}
-            <div className="flex justify-between text-[10px] text-gray-400 font-bold pt-2 border-t border-gray-150">
-              <span>MEM_USAGE: 34.2MB / 512MB</span>
-              <span>SEC: TLS_1.3</span>
-              <span>PARSED_TX: 2,491</span>
             </div>
           </motion.div>
         </div>

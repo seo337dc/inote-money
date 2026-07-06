@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Plus, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
+import LoadingScreen from "@/components/LoadingScreen";
+import { Input } from "@/components/ui/input";
 
 // ── 타입 ────────────────────────────────────────────────────────
 type ListItem = { id: string; name: string; amount: string; day: string };
@@ -158,12 +160,12 @@ function DynamicList({
       <div className="flex flex-col gap-2">
         {items.map((item) => (
           <div key={item.id} className="flex items-center gap-2">
-            <input
+            <Input
               type="text"
               value={item.name}
               onChange={(e) => update(item.id, "name", e.target.value)}
               placeholder={namePlaceholder}
-              className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 focus:border-transparent transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600 min-w-0"
+              className="flex-1"
             />
             <div className={`${INPUT_WRAP} w-28 shrink-0`}>
               <input
@@ -242,13 +244,7 @@ export default function SetupPage() {
     save(toApiPayload(form));
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
 
   return (
     <div className="max-w-lg mx-auto px-4 lg:px-8 pt-6 pb-10">

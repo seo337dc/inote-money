@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { DarkModeProvider, useDarkMode } from "@/lib/dark-mode";
 import { useSession } from "@/lib/auth-client";
 import { toast } from "sonner";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const MAIN_NAV = [
   { href: "/dashboard", label: "자산 관리", icon: LayoutDashboard },
@@ -74,13 +75,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     }
   }, [session, isPending, router]);
 
-  if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (isPending) return <LoadingScreen />;
 
   if (!session) return null;
 

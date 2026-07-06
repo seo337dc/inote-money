@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { signIn } from '@/lib/auth-client';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function AuthPopupPage() {
   useEffect(() => {
@@ -11,9 +12,5 @@ export default function AuthPopupPage() {
     });
   }, []);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  return <LoadingScreen />;
 }
