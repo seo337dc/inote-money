@@ -15,6 +15,7 @@ type Props = {
 };
 
 const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
+const fmtNum = (v: string) => { if (!v) return ''; return Number(v).toLocaleString('ko-KR'); };
 
 function parseDate(dateStr: string) {
   const [, m, d] = dateStr.split("-").map(Number);
@@ -66,10 +67,10 @@ function InlineEditForm({
       <div className="flex gap-2 items-center">
         <div className="relative w-32 shrink-0">
           <input
-            type="number"
+            type="text"
             inputMode="numeric"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            value={fmtNum(amount)}
+            onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
             onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onCancel(); }}
             autoFocus
             className="w-full border border-blue-200 dark:border-blue-700 rounded-xl px-3 py-2 pr-7 text-right text-sm font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
@@ -172,8 +173,19 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogPortal>
         <DialogOverlay />
-        <DialogPopup className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="w-full sm:max-w-md bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col h-[88vh] sm:h-[640px]">
+        <DialogPopup
+          className={[
+            'fixed z-50 bg-white dark:bg-gray-800 outline-none flex flex-col',
+            'duration-200',
+            'bottom-0 left-0 right-0 rounded-t-2xl max-h-[85dvh]',
+            'data-open:animate-in data-open:slide-in-from-bottom',
+            'data-closed:animate-out data-closed:slide-out-to-bottom',
+            'sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2',
+            'sm:w-full sm:max-w-md sm:rounded-2xl sm:max-h-[80vh]',
+            'sm:data-open:zoom-in-95 sm:data-closed:zoom-out-95',
+            'sm:ring-1 sm:ring-foreground/10',
+          ].join(' ')}
+        >
         {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <span className="w-10 h-1 rounded-full bg-gray-200 dark:bg-gray-600" />
@@ -324,11 +336,11 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
           <div className="flex gap-2 items-center">
             <div className="relative w-32 shrink-0">
               <input
-                type="number"
+                type="text"
                 inputMode="numeric"
                 placeholder="0"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                value={fmtNum(amount)}
+                onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
                 onKeyDown={(e) => e.key === "Enter" && handleAddPending()}
                 className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 pr-7 text-right text-base font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-colors placeholder:text-gray-300 dark:placeholder:text-gray-600"
               />
@@ -392,7 +404,6 @@ export default function DayDetailModal({ date, expenses, onClose, onAdd, onDelet
             </button>
           )}
         </div>
-      </div>
         </DialogPopup>
       </DialogPortal>
     </Dialog>

@@ -1,9 +1,32 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ChevronDown, Check, Pencil } from 'lucide-react';
+import { X, Check, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { type Expense, type Category, CATEGORIES, CATEGORY_KO, CATEGORY_BADGE } from '../types';
+
+function fmtNum(v: string | number) {
+  if (v === '' || v === 0) return '';
+  return Number(v).toLocaleString('ko-KR');
+}
+
+function CategorySelect({ value, onChange }: { value: Category; onChange: (v: Category) => void }) {
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as Category)}>
+      <SelectTrigger className="w-[80px] h-8 text-xs shrink-0">
+        <span>{CATEGORY_KO[value]}</span>
+      </SelectTrigger>
+      <SelectContent>
+        {CATEGORIES.map((c) => (
+          <SelectItem key={c} value={c} className="text-xs py-2.5">
+            {CATEGORY_KO[c]}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
 // ─────────────────── AddExpenseForm ───────────────────
 
@@ -45,26 +68,16 @@ export function AddExpenseForm({ onAdd }: AddFormProps) {
       <div className="flex gap-2">
         <div className="flex-1 flex items-center bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-200 dark:focus-within:ring-green-800">
           <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            type="text"
+            inputMode="numeric"
+            value={fmtNum(amount)}
+            onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
             placeholder="금액"
             className="flex-1 bg-transparent text-sm outline-none text-gray-900 dark:text-white min-w-0"
           />
           <span className="text-xs text-gray-400 ml-1 shrink-0">원</span>
         </div>
-        <div className="relative">
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as Category)}
-            className="h-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 pr-6 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 appearance-none cursor-pointer"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{CATEGORY_KO[c]}</option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
-        </div>
+        <CategorySelect value={category} onChange={setCategory} />
       </div>
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -113,20 +126,12 @@ function EditModeRow({
   if (expense._deleted) return null;
 
   return (
-    <div className="py-2.5 flex flex-col gap-2 border-b border-gray-50 dark:border-gray-700/50 last:border-0">
+    <div className="py-3.5 flex flex-col gap-2 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
       <div className="flex items-center gap-2">
-        <div className="relative shrink-0">
-          <select
-            value={expense.category}
-            onChange={(e) => onChange({ ...expense, category: e.target.value as Category })}
-            className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 pr-6 py-1.5 text-xs text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 appearance-none cursor-pointer"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{CATEGORY_KO[c]}</option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
-        </div>
+        <CategorySelect
+          value={expense.category}
+          onChange={(v) => onChange({ ...expense, category: v })}
+        />
         <input
           type="text"
           value={expense.description ?? ''}
@@ -144,9 +149,10 @@ function EditModeRow({
       <div className="flex items-center gap-2">
         <div className="flex-1 flex items-center bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 focus-within:ring-2 focus-within:ring-green-200 dark:focus-within:ring-green-800">
           <input
-            type="number"
-            value={expense.amount || ''}
-            onChange={(e) => onChange({ ...expense, amount: parseInt(e.target.value) || 0 })}
+            type="text"
+            inputMode="numeric"
+            value={fmtNum(expense.amount)}
+            onChange={(e) => onChange({ ...expense, amount: parseInt(e.target.value.replace(/[^0-9]/g, '')) || 0 })}
             className="flex-1 bg-transparent text-xs outline-none text-gray-900 dark:text-white min-w-0"
           />
           <span className="text-xs text-gray-400 ml-1 shrink-0">원</span>
@@ -279,20 +285,22 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
         </div>
       )}
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-50 dark:border-gray-700 flex items-center gap-2">
-        {showDate && (
-          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex-1">
-            {formatDateLabel(dateKey)}
-          </span>
-        )}
+      <div className="px-4 py-3 border-b border-gray-50 dark:border-gray-700 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {showDate && (
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              {formatDateLabel(dateKey)}
+            </span>
+          )}
+        </div>
         {total > 0 && !editMode && (
-          <span className="text-sm font-bold text-gray-900 dark:text-white ml-auto">
+          <span className="text-sm font-bold text-gray-900 dark:text-white shrink-0">
             {total.toLocaleString('ko-KR')}원
           </span>
         )}
 
-        {editMode ? (
-          <div className="flex gap-1.5 ml-auto">
+        {editMode && (
+          <div className="flex gap-1.5 shrink-0">
             <button
               onClick={cancelEdit}
               disabled={saving}
@@ -301,36 +309,19 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
               취소
             </button>
             <button
+              onClick={() => setLocalExpenses((prev) => prev.map((e) => ({ ...e, _deleted: true })))}
+              disabled={saving}
+              className="px-3 py-1 rounded-lg text-xs bg-red-500 hover:bg-red-600 text-white font-medium transition-colors disabled:opacity-60"
+            >
+              초기화
+            </button>
+            <button
               onClick={handleSave}
               disabled={saving}
               className="px-3 py-1 rounded-lg text-xs bg-green-500 hover:bg-green-600 text-white font-medium transition-colors disabled:opacity-60"
             >
               저장
             </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5 ml-auto">
-            {expenses.length > 0 ? (
-              <button
-                onClick={enterEditMode}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-              >
-                <Pencil size={11} />
-                수정
-              </button>
-            ) : (
-              <button
-                onClick={() => setShowAddForm((p) => !p)}
-                className={cn(
-                  'w-6 h-6 flex items-center justify-center rounded-full text-sm transition-colors',
-                  showAddForm
-                    ? 'bg-gray-200 dark:bg-gray-600 text-gray-500'
-                    : 'bg-green-500 hover:bg-green-600 text-white'
-                )}
-              >
-                {showAddForm ? <X size={12} /> : '+'}
-              </button>
-            )}
           </div>
         )}
       </div>
@@ -358,12 +349,6 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
                 }
               />
             ))}
-            <button
-              onClick={addBlankExpense}
-              className="w-full py-2.5 text-xs text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400 border-t border-dashed border-gray-100 dark:border-gray-700 transition-colors flex items-center justify-center gap-1"
-            >
-              + 지출 추가하기
-            </button>
           </>
         ) : (
           <>
@@ -388,6 +373,35 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
               setShowAddForm(false);
             }}
           />
+        </div>
+      )}
+
+      {/* 하단 버튼 */}
+      {!showAddForm && (
+        <div className="border-t border-gray-100 dark:border-gray-700">
+          {editMode ? (
+            <button
+              onClick={addBlankExpense}
+              className="w-full py-3 text-xs text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400 transition-colors flex items-center justify-center gap-1"
+            >
+              + 지출 추가하기
+            </button>
+          ) : expenses.length > 0 ? (
+            <button
+              onClick={enterEditMode}
+              className="w-full py-3 text-xs text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Pencil size={11} />
+              수정하기
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="w-full py-3 text-xs text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400 transition-colors flex items-center justify-center gap-1"
+            >
+              + 지출 추가하기
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -8,6 +8,7 @@ import { api, ApiError } from "@/lib/api";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,11 @@ type SettingsResponse = {
 };
 
 // ── 유틸 ────────────────────────────────────────────────────────
+function fmtNum(v: string) {
+  if (!v) return '';
+  return Number(v).toLocaleString('ko-KR');
+}
+
 function newItem(): ListItem {
   return { id: `${Date.now()}-${Math.random()}`, name: "", amount: "", day: "" };
 }
@@ -93,17 +99,19 @@ function toApiPayload(form: FormState) {
 // ── 공통 스타일 ──────────────────────────────────────────────────
 const INPUT_BASE = "flex-1 bg-transparent text-sm text-gray-900 dark:text-white outline-none placeholder:text-gray-300 dark:placeholder:text-gray-600 min-w-0";
 const INPUT_WRAP = "flex items-center bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-green-200 dark:focus-within:ring-green-800 focus-within:border-transparent transition-all";
-const DAY_SELECT = "h-[42px] bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-2 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 focus:border-transparent transition-all shrink-0 w-[72px]";
-
 // ── 컴포넌트 ────────────────────────────────────────────────────
 function DaySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className={DAY_SELECT}>
-      <option value="">날짜</option>
-      {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-        <option key={d} value={String(d)}>{d}일</option>
-      ))}
-    </select>
+    <Select value={value} onValueChange={(v) => onChange(v ?? '')}>
+      <SelectTrigger className="w-[80px] shrink-0">
+        <SelectValue placeholder="날짜" />
+      </SelectTrigger>
+      <SelectContent>
+        {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+          <SelectItem key={d} value={String(d)} className="py-2">{d}일</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -124,9 +132,10 @@ function NumberField({
       <div className="flex gap-2">
         <div className={`${INPUT_WRAP} flex-1`}>
           <input
-            type="number"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
+            type="text"
+            inputMode="numeric"
+            value={fmtNum(value)}
+            onChange={(e) => onChange(e.target.value.replace(/[^0-9]/g, ''))}
             placeholder="0"
             className={INPUT_BASE}
           />
@@ -191,9 +200,10 @@ function DynamicList({
             <div className="flex items-center gap-2">
               <div className={`${INPUT_WRAP} flex-1`}>
                 <input
-                  type="number"
-                  value={item.amount}
-                  onChange={(e) => update(item.id, "amount", e.target.value)}
+                  type="text"
+                  inputMode="numeric"
+                  value={fmtNum(item.amount)}
+                  onChange={(e) => update(item.id, "amount", e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="0"
                   className={INPUT_BASE}
                 />
