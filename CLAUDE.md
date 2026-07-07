@@ -74,15 +74,24 @@
 
 ## UI 개발 워크플로우
 
-1. **Claude** — 화면 기획 및 목업
-2. **Claude Code** — UI 코드 작성 및 BE 연결
+1. **Google AI Studio** — 페이지별 디자인 목업 생성
+2. **Claude Code** — 목업 기반 UI 코드 작성 및 BE 연결
+3. **Cursor AI** — QA / 코드 리뷰 / 코드 분석
 
 ## AI 역할 분담
 
-| AI | 역할 |
-|----|------|
-| Claude (Code) | 기능 구현, UI 코드 작성, API 연동 |
-| Cursor AI | 구현된 코드 리팩토링 및 코드 분석 |
+| 역할 | 담당 |
+|------|------|
+| 기능 구현 / UI 코드 작성 / API 연동 | Claude Code |
+| 페이지별 디자인 목업 | Google AI Studio |
+| QA / 코드 리뷰 / 코드 분석 | Cursor AI |
+| 기획·UX 판단 | 사람이 직접 결정 |
+
+## Claude Code 작업 원칙
+
+- 기획·UX 판단이 필요한 순간에는 임의로 결정하지 않고 먼저 질문한다
+- 디자인은 Google AI Studio 결과물을 기준으로 구현한다
+- QA·코드 리뷰·코드 분석은 Cursor AI에게 넘기고 직접 수행하지 않는다
 
 ## 레포 구조
 
