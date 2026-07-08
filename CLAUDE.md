@@ -190,6 +190,9 @@ inote-money/
 - [ ] **금융 지식 화면 구현** (`/demo/financial-knowledge`) — 기획 먼저
 - [ ] **미니게임 화면 구현** (`/demo/mini-game`) — 기획 먼저
 
+#### 🔵 지침 개선
+- [ ] **Claude AI 지침 전략 강화** — CLAUDE_EXAMPLE.md 기반으로 CLAUDE.md 지침 개선 (CoT, 토큰 효율, 작업별 접근 방식 등)
+
 ### Claude Code 바로 전달 가능 (기획 완료)
 
 - [x] 가계부 화면 — 달력 / 주차별 / 전체 로그 뷰 (구현 완료)
