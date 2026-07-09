@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Pencil, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
 import LoadingScreen from "@/components/LoadingScreen";
 
@@ -21,7 +21,25 @@ type Settings = {
   memo: string | null;
 };
 
-type Review = { stars: number; text: string };
+type Expense = {
+  id: string;
+  date: string;
+  amount: number;
+  description: string;
+  category: string;
+  isWaste: boolean;
+};
+
+type ReviewData = { id: string; rating: number; text: string | null };
+type Draft = { stars: number; text: string };
+
+function getISOWeekYear(date: Date): { year: number; week: number } {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return { year: d.getUTCFullYear(), week };
+}
 
 function getWeekMonday(offset: number): Date {
   const now = new Date();
@@ -45,6 +63,32 @@ function fmtDate(d: Date): string {
 
 function fmt(n: number): string {
   return n.toLocaleString("ko-KR") + "원";
+}
+
+function dateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function filterByWeek(expenses: Expense[], monday: Date, sunday: Date): Expense[] {
+  const start = dateStr(monday);
+  const end = dateStr(sunday);
+  return expenses.filter((e) => {
+    const d = e.date.slice(0, 10);
+    return d >= start && d <= end;
+  });
+}
+
+function filterByMonth(expenses: Expense[], year: number, month: number): Expense[] {
+  const prefix = `${year}-${String(month).padStart(2, "0")}`;
+  return expenses.filter((e) => e.date.startsWith(prefix));
+}
+
+function sumAmount(expenses: Expense[]): number {
+  return expenses.reduce((s, e) => s + e.amount, 0);
+}
+
+function sumWaste(expenses: Expense[]): number {
+  return expenses.filter((e) => e.isWaste).reduce((s, e) => s + e.amount, 0);
 }
 
 function StarRating({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
@@ -76,13 +120,12 @@ const SUBCARD_ORANGE = "bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3";
 const LABEL = "text-[11px] text-gray-400 dark:text-gray-500";
 
 export default function DashboardPage() {
+  const queryClient = useQueryClient();
   const [infoExpanded, setInfoExpanded] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0);
   const [monthOffset, setMonthOffset] = useState(0);
-  const [weekReviews, setWeekReviews] = useState<Record<string, Review>>({});
-  const [monthReviews, setMonthReviews] = useState<Record<string, Review>>({});
-  const [weekDraft, setWeekDraft] = useState<Review>({ stars: 0, text: "" });
-  const [monthDraft, setMonthDraft] = useState<Review>({ stars: 0, text: "" });
+  const [weekDraft, setWeekDraft] = useState<Draft>({ stars: 0, text: "" });
+  const [monthDraft, setMonthDraft] = useState<Draft>({ stars: 0, text: "" });
 
   const { data: settings, isLoading } = useQuery<Settings | null>({
     queryKey: ["settings"],
@@ -96,45 +139,129 @@ export default function DashboardPage() {
     },
   });
 
-  useEffect(() => {
-    const wr = localStorage.getItem("inote-week-reviews");
-    if (wr) setWeekReviews(JSON.parse(wr));
-    const mr = localStorage.getItem("inote-month-reviews");
-    if (mr) setMonthReviews(JSON.parse(mr));
-  }, []);
-
+  // Week dates
   const monday = getWeekMonday(weekOffset);
   const sunday = getWeekSunday(monday);
-  const wKey = monday.toISOString().slice(0, 10);
+  const prevMonday = getWeekMonday(weekOffset - 1);
+  const prevSunday = getWeekSunday(prevMonday);
+  const { year: weekYear, week: weekPeriod } = getISOWeekYear(monday);
   const weekLabel = `${fmtDate(monday)} ~ ${fmtDate(sunday)}`;
 
+  // Month dates
   const now = new Date();
   const rawMonth = now.getMonth() + 1 + monthOffset;
   const normalizedDate = new Date(now.getFullYear(), rawMonth - 1, 1);
   const mYear = normalizedDate.getFullYear();
   const mMonth = normalizedDate.getMonth() + 1;
-  const mKey = `${mYear}-${String(mMonth).padStart(2, "0")}`;
   const monthLabel = `${mYear}년 ${mMonth}월`;
+  const prevMonthDate = new Date(mYear, mMonth - 2, 1);
+  const prevMYear = prevMonthDate.getFullYear();
+  const prevMMonth = prevMonthDate.getMonth() + 1;
+
+  // Deduplicated list of year/month combos needed
+  const neededMonths = useMemo(() => {
+    const map = new Map<string, { year: number; month: number }>();
+    const add = (y: number, m: number) => {
+      const key = `${y}-${m}`;
+      if (!map.has(key)) map.set(key, { year: y, month: m });
+    };
+    const mon = getWeekMonday(weekOffset);
+    const sun = getWeekSunday(mon);
+    const pMon = getWeekMonday(weekOffset - 1);
+    const pSun = getWeekSunday(pMon);
+    add(mon.getFullYear(), mon.getMonth() + 1);
+    add(sun.getFullYear(), sun.getMonth() + 1);
+    add(pMon.getFullYear(), pMon.getMonth() + 1);
+    add(pSun.getFullYear(), pSun.getMonth() + 1);
+
+    const norm = new Date(new Date().getFullYear(), new Date().getMonth() + monthOffset, 1);
+    const cy = norm.getFullYear();
+    const cm = norm.getMonth() + 1;
+    const prev = new Date(cy, cm - 2, 1);
+    add(cy, cm);
+    add(prev.getFullYear(), prev.getMonth() + 1);
+
+    return [...map.values()];
+  }, [weekOffset, monthOffset]);
+
+  const expenseQueries = useQueries({
+    queries: neededMonths.map(({ year, month }) => ({
+      queryKey: ["expenses", year, month],
+      queryFn: () => api.get<Expense[]>(`/money/expenses?year=${year}&month=${month}`),
+    })),
+  });
+
+  const allExpenses = useMemo(
+    () => expenseQueries.flatMap((q) => q.data ?? []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [expenseQueries.map((q) => q.dataUpdatedAt).join(",")]
+  );
+
+  // Weekly stats
+  const thisWeekItems = filterByWeek(allExpenses, monday, sunday);
+  const prevWeekItems = filterByWeek(allExpenses, prevMonday, prevSunday);
+  const thisWeekTotal = sumAmount(thisWeekItems);
+  const prevWeekTotal = sumAmount(prevWeekItems);
+  const thisWeekWaste = sumWaste(thisWeekItems);
+  const weekBarMax = Math.max(thisWeekTotal, prevWeekTotal, 1);
+
+  // Monthly stats
+  const thisMonthItems = filterByMonth(allExpenses, mYear, mMonth);
+  const prevMonthItems = filterByMonth(allExpenses, prevMYear, prevMMonth);
+  const thisMonthTotal = sumAmount(thisMonthItems);
+  const prevMonthTotal = sumAmount(prevMonthItems);
+  const thisMonthWaste = sumWaste(thisMonthItems);
+  const monthBarMax = Math.max(thisMonthTotal, prevMonthTotal, 1);
+
+  // Review 조회
+  const { data: weekReviewData } = useQuery<ReviewData | null>({
+    queryKey: ["review", "WEEKLY", weekYear, weekPeriod],
+    queryFn: async () => {
+      try {
+        return await api.get<ReviewData>(`/money/reviews?type=WEEKLY&year=${weekYear}&period=${weekPeriod}`);
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 404) return null;
+        throw e;
+      }
+    },
+  });
+
+  const { data: monthReviewData } = useQuery<ReviewData | null>({
+    queryKey: ["review", "MONTHLY", mYear, mMonth],
+    queryFn: async () => {
+      try {
+        return await api.get<ReviewData>(`/money/reviews?type=MONTHLY&year=${mYear}&period=${mMonth}`);
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 404) return null;
+        throw e;
+      }
+    },
+  });
+
+  // 주/월 변경 시 draft 초기화
+  useEffect(() => {
+    setWeekDraft({ stars: weekReviewData?.rating ?? 0, text: weekReviewData?.text ?? "" });
+  }, [weekReviewData]);
 
   useEffect(() => {
-    setWeekDraft(weekReviews[wKey] ?? { stars: 0, text: "" });
-  }, [wKey, weekReviews]);
+    setMonthDraft({ stars: monthReviewData?.rating ?? 0, text: monthReviewData?.text ?? "" });
+  }, [monthReviewData]);
 
-  useEffect(() => {
-    setMonthDraft(monthReviews[mKey] ?? { stars: 0, text: "" });
-  }, [mKey, monthReviews]);
+  // Review 저장 mutation
+  const weekMutation = useMutation({
+    mutationFn: (draft: Draft) =>
+      api.put("/money/reviews", { type: "WEEKLY", year: weekYear, period: weekPeriod, rating: draft.stars, text: draft.text }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["review", "WEEKLY", weekYear, weekPeriod] }),
+  });
 
-  const saveWeekReview = () => {
-    const updated = { ...weekReviews, [wKey]: weekDraft };
-    setWeekReviews(updated);
-    localStorage.setItem("inote-week-reviews", JSON.stringify(updated));
-  };
+  const monthMutation = useMutation({
+    mutationFn: (draft: Draft) =>
+      api.put("/money/reviews", { type: "MONTHLY", year: mYear, period: mMonth, rating: draft.stars, text: draft.text }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["review", "MONTHLY", mYear, mMonth] }),
+  });
 
-  const saveMonthReview = () => {
-    const updated = { ...monthReviews, [mKey]: monthDraft };
-    setMonthReviews(updated);
-    localStorage.setItem("inote-month-reviews", JSON.stringify(updated));
-  };
+  const saveWeekReview = () => weekMutation.mutate(weekDraft);
+  const saveMonthReview = () => monthMutation.mutate(monthDraft);
 
   if (isLoading) return <LoadingScreen />;
 
@@ -261,12 +388,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className={SUBCARD_GRAY}>
               <p className={`text-[11px] mb-1 ${LABEL}`}>이번 주 지출</p>
-              <p className="text-base font-bold text-gray-900 dark:text-white">0원</p>
-              <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-1">가계부 연결 예정</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{fmt(thisWeekTotal)}</p>
             </div>
             <div className={SUBCARD_ORANGE}>
               <p className={`text-[11px] mb-1 ${LABEL}`}>낭비 금액</p>
-              <p className="text-base font-bold text-orange-500 dark:text-orange-400">0원</p>
+              <p className="text-base font-bold text-orange-500 dark:text-orange-400">{fmt(thisWeekWaste)}</p>
               {settings && <p className={`text-[10px] mt-1 ${LABEL}`}>일 한도 {fmt(settings.dailyLimit)}</p>}
             </div>
           </div>
@@ -274,13 +400,16 @@ export default function DashboardPage() {
           <div>
             <p className={`text-[11px] mb-2 ${LABEL}`}>지난주 비교</p>
             <div className="flex flex-col gap-2">
-              {[{ label: "이번 주", color: "bg-green-400" }, { label: "지난 주", color: "bg-gray-200 dark:bg-gray-600" }].map(({ label, color }) => (
+              {[
+                { label: "이번 주", color: "bg-green-400", value: thisWeekTotal, width: (thisWeekTotal / weekBarMax) * 100 },
+                { label: "지난 주", color: "bg-gray-200 dark:bg-gray-600", value: prevWeekTotal, width: (prevWeekTotal / weekBarMax) * 100 },
+              ].map(({ label, color, value, width }) => (
                 <div key={label} className="flex items-center gap-2">
                   <span className={`text-[11px] w-14 shrink-0 ${LABEL}`}>{label}</span>
                   <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${color}`} style={{ width: "0%" }} />
+                    <div className={`h-full rounded-full ${color} transition-all duration-500`} style={{ width: `${width}%` }} />
                   </div>
-                  <span className={`text-[11px] w-14 text-right shrink-0 ${LABEL}`}>0원</span>
+                  <span className={`text-[11px] w-14 text-right shrink-0 ${LABEL}`}>{fmt(value)}</span>
                 </div>
               ))}
             </div>
@@ -301,8 +430,8 @@ export default function DashboardPage() {
             />
           </div>
 
-          <button onClick={saveWeekReview} className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-colors mt-auto">
-            저장
+          <button onClick={saveWeekReview} disabled={weekMutation.isPending} className="w-full py-2 bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white text-sm font-medium rounded-xl transition-colors mt-auto">
+            {weekMutation.isPending ? "저장 중..." : "저장"}
           </button>
         </div>
 
@@ -324,12 +453,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className={SUBCARD_GRAY}>
               <p className={`text-[11px] mb-1 ${LABEL}`}>총 지출</p>
-              <p className="text-base font-bold text-gray-900 dark:text-white">0원</p>
-              <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-1">가계부 연결 예정</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{fmt(thisMonthTotal)}</p>
             </div>
             <div className={SUBCARD_ORANGE}>
               <p className={`text-[11px] mb-1 ${LABEL}`}>낭비 금액</p>
-              <p className="text-base font-bold text-orange-500 dark:text-orange-400">0원</p>
+              <p className="text-base font-bold text-orange-500 dark:text-orange-400">{fmt(thisMonthWaste)}</p>
               {settings && <p className={`text-[10px] mt-1 ${LABEL}`}>저축 목표 {fmt(settings.monthlySavingGoal)}</p>}
             </div>
           </div>
@@ -337,13 +465,16 @@ export default function DashboardPage() {
           <div>
             <p className={`text-[11px] mb-2 ${LABEL}`}>지난달 비교</p>
             <div className="flex flex-col gap-2">
-              {[{ label: "이번 달", color: "bg-green-400" }, { label: "지난 달", color: "bg-gray-200 dark:bg-gray-600" }].map(({ label, color }) => (
+              {[
+                { label: "이번 달", color: "bg-green-400", value: thisMonthTotal, width: (thisMonthTotal / monthBarMax) * 100 },
+                { label: "지난 달", color: "bg-gray-200 dark:bg-gray-600", value: prevMonthTotal, width: (prevMonthTotal / monthBarMax) * 100 },
+              ].map(({ label, color, value, width }) => (
                 <div key={label} className="flex items-center gap-2">
                   <span className={`text-[11px] w-14 shrink-0 ${LABEL}`}>{label}</span>
                   <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${color}`} style={{ width: "0%" }} />
+                    <div className={`h-full rounded-full ${color} transition-all duration-500`} style={{ width: `${width}%` }} />
                   </div>
-                  <span className={`text-[11px] w-14 text-right shrink-0 ${LABEL}`}>0원</span>
+                  <span className={`text-[11px] w-14 text-right shrink-0 ${LABEL}`}>{fmt(value)}</span>
                 </div>
               ))}
             </div>
@@ -364,8 +495,8 @@ export default function DashboardPage() {
             />
           </div>
 
-          <button onClick={saveMonthReview} className="w-full py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-colors">
-            저장
+          <button onClick={saveMonthReview} disabled={monthMutation.isPending} className="w-full py-2 bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white text-sm font-medium rounded-xl transition-colors">
+            {monthMutation.isPending ? "저장 중..." : "저장"}
           </button>
         </div>
       </div>
