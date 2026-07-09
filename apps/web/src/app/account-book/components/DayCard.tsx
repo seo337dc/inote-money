@@ -32,9 +32,10 @@ function CategorySelect({ value, onChange }: { value: Category; onChange: (v: Ca
 
 type AddFormProps = {
   onAdd: (expense: Omit<Expense, 'id'>) => Promise<void>;
+  onCancel: () => void;
 };
 
-export function AddExpenseForm({ onAdd }: AddFormProps) {
+export function AddExpenseForm({ onAdd, onCancel }: AddFormProps) {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<Category>('FOOD');
@@ -67,6 +68,12 @@ export function AddExpenseForm({ onAdd }: AddFormProps) {
           placeholder="내용 (선택)"
           className="flex-1 min-w-0 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 text-gray-900 dark:text-white placeholder:text-gray-400"
         />
+        <button
+          onClick={onCancel}
+          className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-300 hover:text-gray-500 transition-colors shrink-0"
+        >
+          <X size={13} />
+        </button>
       </div>
       <div className="flex items-center gap-2">
         <div className="flex-1 flex items-center bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 focus-within:ring-2 focus-within:ring-green-200 dark:focus-within:ring-green-800">
@@ -372,6 +379,7 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
               await onAdd(dateKey, expense);
               setShowAddForm(false);
             }}
+            onCancel={() => setShowAddForm(false)}
           />
         </div>
       )}
