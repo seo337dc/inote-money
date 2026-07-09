@@ -57,30 +57,30 @@ export function AddExpenseForm({ onAdd }: AddFormProps) {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 flex flex-col gap-2.5 border border-dashed border-gray-200 dark:border-gray-600">
-      <input
-        type="text"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="내용 (선택)"
-        className="w-full text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 text-gray-900 dark:text-white placeholder:text-gray-400"
-      />
-      <div className="flex gap-2">
-        <div className="flex-1 flex items-center bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-200 dark:focus-within:ring-green-800">
+    <div className="flex flex-col gap-2 border-b border-gray-100 dark:border-gray-700/50 py-3.5">
+      <div className="flex items-center gap-2">
+        <CategorySelect value={category} onChange={setCategory} />
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="내용 (선택)"
+          className="flex-1 min-w-0 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 text-gray-900 dark:text-white placeholder:text-gray-400"
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 flex items-center bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 focus-within:ring-2 focus-within:ring-green-200 dark:focus-within:ring-green-800">
           <input
             type="text"
             inputMode="numeric"
             value={fmtNum(amount)}
             onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
             placeholder="금액"
-            className="flex-1 bg-transparent text-sm outline-none text-gray-900 dark:text-white min-w-0"
+            className="flex-1 bg-transparent text-xs outline-none text-gray-900 dark:text-white min-w-0"
           />
           <span className="text-xs text-gray-400 ml-1 shrink-0">원</span>
         </div>
-        <CategorySelect value={category} onChange={setCategory} />
-      </div>
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 cursor-pointer select-none">
+        <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
           <div
             onClick={() => setIsWaste((p) => !p)}
             className={cn(
@@ -90,22 +90,22 @@ export function AddExpenseForm({ onAdd }: AddFormProps) {
           >
             {isWaste && <Check className="w-2.5 h-2.5 text-white" />}
           </div>
-          <span className="text-xs text-gray-500 dark:text-gray-400">낭비 지출</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">낭비</span>
         </label>
-        <button
-          onClick={handleAdd}
-          disabled={loading}
-          className="px-4 py-1.5 rounded-lg text-xs bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-medium transition-colors flex items-center gap-1.5"
-        >
-          {loading && (
-            <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-            </svg>
-          )}
-          {loading ? '추가 중...' : '추가'}
-        </button>
       </div>
+      <button
+        onClick={handleAdd}
+        disabled={loading}
+        className="w-full py-1.5 rounded-lg text-xs bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-medium transition-colors flex items-center justify-center gap-1.5"
+      >
+        {loading && (
+          <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+          </svg>
+        )}
+        {loading ? '추가 중...' : '+ 추가'}
+      </button>
     </div>
   );
 }
