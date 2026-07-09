@@ -70,7 +70,7 @@ export function AddExpenseForm({ onAdd, onCancel }: AddFormProps) {
         />
         <button
           onClick={onCancel}
-          className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-300 hover:text-gray-500 transition-colors shrink-0"
+          className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 dark:text-gray-500 hover:text-red-400 transition-colors shrink-0"
         >
           <X size={13} />
         </button>
