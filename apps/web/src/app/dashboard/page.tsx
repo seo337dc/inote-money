@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
 import LoadingScreen from "@/components/LoadingScreen";
+import { toast } from "sonner";
 
 type ListItem = { id: string; name: string; amount: number; day?: number };
 
@@ -251,13 +252,21 @@ export default function DashboardPage() {
   const weekMutation = useMutation({
     mutationFn: (draft: Draft) =>
       api.put("/money/reviews", { type: "WEEKLY", year: weekYear, period: weekPeriod, rating: draft.stars, text: draft.text }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["review", "WEEKLY", weekYear, weekPeriod] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["review", "WEEKLY", weekYear, weekPeriod] });
+      toast.success("주간 리뷰가 저장됐어요");
+    },
+    onError: () => toast.error("저장에 실패했어요. 다시 시도해주세요."),
   });
 
   const monthMutation = useMutation({
     mutationFn: (draft: Draft) =>
       api.put("/money/reviews", { type: "MONTHLY", year: mYear, period: mMonth, rating: draft.stars, text: draft.text }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["review", "MONTHLY", mYear, mMonth] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["review", "MONTHLY", mYear, mMonth] });
+      toast.success("월간 리뷰가 저장됐어요");
+    },
+    onError: () => toast.error("저장에 실패했어요. 다시 시도해주세요."),
   });
 
   const saveWeekReview = () => weekMutation.mutate(weekDraft);
