@@ -221,17 +221,17 @@ function formatDateLabel(dateKey: string) {
 }
 
 export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, showDate = true }: DayCardProps) {
-  const [showAddForm, setShowAddForm] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [localExpenses, setLocalExpenses] = useState<EditableExpense[]>([]);
   const [saving, setSaving] = useState(false);
 
   const total = expenses.reduce((sum, e) => sum + e.amount, 0);
 
-  const enterEditMode = () => {
-    setLocalExpenses(expenses.map((e) => ({ ...e })));
+  const enterEditMode = (withBlankRow = false) => {
+    const initial = expenses.map((e) => ({ ...e }));
+    const blank: EditableExpense = { id: `_new_${Date.now()}`, description: null, amount: 0, category: 'ETC' as Category, isWaste: false, _new: true };
+    setLocalExpenses(withBlankRow ? [...initial, blank] : initial);
     setEditMode(true);
-    setShowAddForm(false);
   };
 
   const cancelEdit = () => {
@@ -362,7 +362,7 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
             {expenses.map((e) => (
               <ReadModeRow key={e.id} expense={e} />
             ))}
-            {expenses.length === 0 && !showAddForm && (
+            {expenses.length === 0 && (
               <p className="py-4 text-center text-xs text-gray-300 dark:text-gray-600">
                 지출 내역이 없습니다
               </p>
@@ -371,22 +371,8 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
         )}
       </div>
 
-      {/* Add form */}
-      {showAddForm && !editMode && (
-        <div className="px-4 pb-3">
-          <AddExpenseForm
-            onAdd={async (expense) => {
-              await onAdd(dateKey, expense);
-              setShowAddForm(false);
-            }}
-            onCancel={() => setShowAddForm(false)}
-          />
-        </div>
-      )}
-
       {/* 하단 버튼 */}
-      {!showAddForm && (
-        <div className="border-t border-gray-100 dark:border-gray-700">
+      <div className="border-t border-gray-100 dark:border-gray-700">
           {editMode ? (
             <button
               onClick={addBlankExpense}
@@ -396,7 +382,7 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
             </button>
           ) : expenses.length > 0 ? (
             <button
-              onClick={enterEditMode}
+              onClick={() => enterEditMode()}
               className="w-full py-3 text-xs text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400 transition-colors flex items-center justify-center gap-1.5"
             >
               <Pencil size={11} />
@@ -404,14 +390,13 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
             </button>
           ) : (
             <button
-              onClick={() => setShowAddForm(true)}
+              onClick={() => enterEditMode(true)}
               className="w-full py-3 text-xs text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400 transition-colors flex items-center justify-center gap-1"
             >
               + 지출 추가하기
             </button>
           )}
         </div>
-      )}
     </div>
   );
 }
