@@ -192,11 +192,7 @@ export default function DashboardPage() {
     })),
   });
 
-  const allExpenses = useMemo(
-    () => expenseQueries.flatMap((q) => q.data ?? []),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [expenseQueries.map((q) => q.dataUpdatedAt).join(",")]
-  );
+  const allExpenses = expenseQueries.flatMap((q) => q.data ?? []);
 
   // Weekly stats
   const thisWeekItems = filterByWeek(allExpenses, monday, sunday);
