@@ -180,11 +180,9 @@ inote-money/
 
 #### 🔴 실서비스 API 연동
 - [x] **대시보드 내 자산 카드 API 연동** — 가계부 데이터 연동 (주간/월간 지출 합계, 낭비 금액, 비교 바)
+- [x] **주간/월간 리뷰 저장 API 연동** — BE reviews 모듈 구현 (GET/PUT /money/reviews), FE useMutation + toast
+- [x] **가계부 메모 기능** — Expense.memo 필드 추가 (DB/DTO/Service), 읽기 모드 독립 저장 (캐시 직접 업데이트), 수정 모드 인라인 확장
 - [ ] **주식 페이지 API 연동** — 보유 종목 CRUD
-- [ ] **주간 리뷰 저장 API 연동** — 리뷰 텍스트 저장 (현재 localStorage)
-- [ ] **주간 리뷰 평가 점수 API 연동** — 별점 저장 (현재 localStorage)
-- [ ] **월간 리뷰 저장 API 연동** — 리뷰 텍스트 저장 (현재 localStorage)
-- [ ] **월간 리뷰 평가 점수 API 연동** — 별점 저장 (현재 localStorage)
 
 #### 🟡 UI 개선
 - [ ] **화면에 사용자 이름 노출** — UI 수정 작업 필요
@@ -272,7 +270,7 @@ src/app/demo/
 
 ## 현재 단계
 
-로그인 + Google OAuth 인증 구현 완료. Vercel(FE) + Render(BE) + Neon(DB) 프로덕션 배포 완료. 크로스 도메인 쿠키 이슈 해결 (middleware 제거, 각 layout에서 `useSession()` 클라이언트 훅으로 세션 체크). ServerWakeProvider CORS 버그 수정 (Next.js API Route 프록시 경유). FE API 클라이언트(`src/lib/api.ts`) + @tanstack/react-query v5 설치 완료. `/dashboard/setup` 내 자산 설정 실서비스 API 연동 완료. 로딩 UI 전체 Minimal Memo 스타일로 통일 완료 + 페이지별 커스텀 메시지 지원 (`messages` prop). shadcn/ui `Input` + `Textarea` + `Dialog` + `Select` 컴포넌트 설치 및 전체 파일에 적용 완료. 자산 설정 히스토리 기능 구현 완료 (저장 후 기록 모달 → 목록 → 상세 / 제목 수정 · 삭제 · 메모). 모든 원시 모달을 shadcn Dialog로 교체 완료 (5개). `/account-book` 가계부 페이지 구현 완료 (달력/주차별/전체 뷰, CRUD API 연동, 수정 모드 일괄 저장 UX). AppBrand 공통 컴포넌트 추가 (로그인/홈/로딩 화면 공통 적용). 가계부 · 자산 설정 UX 개선 완료 (DayDetailModal 모바일 바텀시트 전환, 숫자 입력 콤마 포맷팅, 비숫자 입력 차단, shadcn Select 전면 교체, 카드 헤더 레이아웃 개선, 초기화 버튼 추가) — 실서비스 + 데모 동일하게 적용. 다음 단계: 주식 페이지 API 연동, 대시보드 내 자산 카드 API 연동.
+로그인 + Google OAuth 인증 구현 완료. Vercel(FE) + Render(BE) + Neon(DB) 프로덕션 배포 완료. 크로스 도메인 쿠키 이슈 해결 (middleware 제거, 각 layout에서 `useSession()` 클라이언트 훅으로 세션 체크). ServerWakeProvider CORS 버그 수정 (Next.js API Route 프록시 경유). FE API 클라이언트(`src/lib/api.ts`) + @tanstack/react-query v5 설치 완료. `/dashboard/setup` 내 자산 설정 실서비스 API 연동 완료. 로딩 UI 전체 Minimal Memo 스타일로 통일 완료 + 페이지별 커스텀 메시지 지원 (`messages` prop). shadcn/ui `Input` + `Textarea` + `Dialog` + `Select` 컴포넌트 설치 및 전체 파일에 적용 완료. 자산 설정 히스토리 기능 구현 완료 (저장 후 기록 모달 → 목록 → 상세 / 제목 수정 · 삭제 · 메모). 모든 원시 모달을 shadcn Dialog로 교체 완료 (5개). `/account-book` 가계부 페이지 구현 완료 (달력/주차별/전체 뷰, CRUD API 연동, 수정 모드 일괄 저장 UX). AppBrand 공통 컴포넌트 추가 (로그인/홈/로딩 화면 공통 적용). 가계부 · 자산 설정 UX 개선 완료 (DayDetailModal 모바일 바텀시트 전환, 숫자 입력 콤마 포맷팅, 비숫자 입력 차단, shadcn Select 전면 교체, 카드 헤더 레이아웃 개선, 초기화 버튼 추가). 대시보드 실서비스 API 연동 완료 (주간/월간 지출 합계, 낭비 금액, 비교 바). 주간/월간 리뷰 API 연동 완료 (BE reviews 모듈 신규 구현, FE useMutation + toast). 가계부 메모 기능 구현 완료 (Expense.memo DB 추가, 읽기 모드 독립 저장, 수정 모드 인라인). 가계부 네비게이션 UI 개선 (ChevronLeft/Right 아이콘, 중앙 정렬, 이번 달 이후 비활성화). 쿼리 키 충돌 수정 (expense-map / expenses 분리). 다음 단계: 주식 페이지 API 연동.
 
 ---
 
