@@ -10,31 +10,27 @@ const MESSAGES_DEFAULT = [
   '부자는 습관에서 시작됩니다.',
 ];
 
-const MESSAGES_WAKING = [
-  '서버를 깨우는 중이에요...',
-  '잠든 서버에 신호를 보내는 중...',
-  '곧 연결될 거예요, 조금만 기다려주세요...',
-];
-
-export default function LoadingScreen({
-  waking = false,
-  messages,
-}: {
-  waking?: boolean;
+type Props = {
   messages?: string[];
-}) {
+  status?: 'connecting' | 'waking' | 'failed';
+  attempt?: number;
+  elapsed?: number;
+  onRetry?: () => void;
+};
+
+export default function LoadingScreen({ messages, status, attempt, elapsed = 0, onRetry }: Props) {
   const [msgIdx, setMsgIdx] = useState(0);
-  const resolvedMessages = waking ? MESSAGES_WAKING : (messages ?? MESSAGES_DEFAULT);
+  const displayMessages = messages ?? MESSAGES_DEFAULT;
 
   useEffect(() => {
+    if (status === 'failed' || status === 'waking') return;
     setMsgIdx(0);
-    const t = setInterval(() => setMsgIdx((i) => (i + 1) % resolvedMessages.length), 2200);
+    const t = setInterval(() => setMsgIdx((i) => (i + 1) % displayMessages.length), 2200);
     return () => clearInterval(t);
-  }, [waking, resolvedMessages.length]);
+  }, [status, displayMessages.length]);
 
   return (
     <div className="relative w-full h-full min-h-screen flex flex-col items-center justify-center bg-stone-50 text-stone-800 font-sans">
-      {/* Grid paper background */}
       <div className="absolute inset-0 bg-[radial-gradient(#e5e5e0_1px,transparent_1px)] [background-size:16px_16px] opacity-70 pointer-events-none" />
 
       <motion.div
@@ -46,30 +42,59 @@ export default function LoadingScreen({
           <AppBrand />
         </div>
 
-        {/* Rotating messages */}
-        <div className="h-6 overflow-hidden mb-6 relative w-full flex items-center justify-center">
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={msgIdx}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.25 }}
-              className="text-xs text-stone-500 font-mono tracking-wide"
-            >
-              ✏️ {resolvedMessages[msgIdx]}
-            </motion.p>
-          </AnimatePresence>
-        </div>
-
-        {/* Shimmer progress bar */}
-        <div className="relative w-full h-1 bg-stone-200 rounded-full overflow-hidden">
-          <motion.div
-            className="absolute top-0 h-full w-2/5 rounded-full bg-emerald-500"
-            animate={{ x: ['-100%', '250%'] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </div>
+        {status === 'failed' ? (
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-sm font-medium text-stone-700">서버에 연결할 수 없어요</p>
+            <p className="text-xs text-stone-400">잠시 후 다시 시도해주세요</p>
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="mt-2 px-5 py-2 rounded-full bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 transition-colors"
+              >
+                다시 시도
+              </button>
+            )}
+          </div>
+        ) : status === 'waking' ? (
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-sm font-medium text-stone-700">서버가 잠들어 있어요</p>
+            <p className="text-xs text-stone-500">깨우는 중이에요. 보통 30~60초 걸려요.</p>
+            <p className="text-xs text-stone-400 font-mono mt-1">
+              {elapsed}초 경과 · {attempt}번째 시도
+            </p>
+            <div className="relative w-full h-1 bg-stone-200 rounded-full overflow-hidden mt-4">
+              <motion.div
+                className="absolute top-0 h-full w-2/5 rounded-full bg-emerald-500"
+                animate={{ x: ['-100%', '250%'] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="h-6 overflow-hidden mb-6 relative w-full flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={status === 'connecting' ? 'connecting' : msgIdx}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.25 }}
+                  className="text-xs text-stone-500 font-mono tracking-wide"
+                >
+                  ✏️ {status === 'connecting' ? '서버에 연결하는 중...' : displayMessages[msgIdx]}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+            <div className="relative w-full h-1 bg-stone-200 rounded-full overflow-hidden">
+              <motion.div
+                className="absolute top-0 h-full w-2/5 rounded-full bg-emerald-500"
+                animate={{ x: ['-100%', '250%'] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            </div>
+          </>
+        )}
       </motion.div>
     </div>
   );

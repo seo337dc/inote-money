@@ -1,53 +1,71 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import LoadingScreen from './LoadingScreen';
+import { waitForServer, type WakeState } from '@/lib/waitForServer';
 
 export default function ServerWakeProvider({ children }: { children: React.ReactNode }) {
-  const [ready, setReady] = useState(false);
-  const [waking, setWaking] = useState(false);
+  const [wakeState, setWakeState] = useState<WakeState>({ status: 'connecting' });
+  const [elapsed, setElapsed] = useState(0);
+
+  const controllerRef = useRef<AbortController | null>(null);
+  const elapsedTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimeRef = useRef<number>(0);
+
+  const stopElapsedTimer = useCallback(() => {
+    if (elapsedTimerRef.current) {
+      clearInterval(elapsedTimerRef.current);
+      elapsedTimerRef.current = null;
+    }
+  }, []);
+
+  const run = useCallback(() => {
+    controllerRef.current?.abort();
+    stopElapsedTimer();
+
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    startTimeRef.current = Date.now();
+    setElapsed(0);
+    setWakeState({ status: 'connecting' });
+
+    waitForServer((state) => {
+      setWakeState(state);
+
+      if (state.status === 'waking' && !elapsedTimerRef.current) {
+        elapsedTimerRef.current = setInterval(() => {
+          setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+        }, 1000);
+      }
+
+      if (state.status === 'ready' || state.status === 'failed') {
+        stopElapsedTimer();
+      }
+    }, controller.signal);
+  }, [stopElapsedTimer]);
 
   useEffect(() => {
-    // 로컬 개발 환경에서는 서버 웜업 불필요
     if (window.location.hostname === 'localhost') {
-      setReady(true);
+      setWakeState({ status: 'ready' });
       return;
     }
 
-    let cancelled = false;
-
-    const ping = async (): Promise<void> => {
-      try {
-        const res = await fetch('/api/health-check', {
-          signal: AbortSignal.timeout(10000),
-          cache: 'no-store',
-        });
-        if (res.ok && !cancelled) {
-          setReady(true);
-          return;
-        }
-      } catch {}
-
-      if (!cancelled) {
-        await new Promise((r) => setTimeout(r, 3000));
-        return ping();
-      }
-    };
-
-    // 1초 후에도 응답 없으면 "서버를 깨우는 중" 문구로 전환
-    const wakingTimer = setTimeout(() => {
-      if (!cancelled) setWaking(true);
-    }, 1000);
-
-    ping().then(() => clearTimeout(wakingTimer));
+    run();
 
     return () => {
-      cancelled = true;
-      clearTimeout(wakingTimer);
+      controllerRef.current?.abort();
+      stopElapsedTimer();
     };
-  }, []);
+  }, [run, stopElapsedTimer]);
 
-  if (!ready) return <LoadingScreen waking={waking} />;
+  if (wakeState.status === 'ready') return <>{children}</>;
 
-  return <>{children}</>;
+  return (
+    <LoadingScreen
+      status={wakeState.status}
+      attempt={wakeState.status === 'waking' ? wakeState.attempt : undefined}
+      elapsed={elapsed}
+      onRetry={run}
+    />
+  );
 }

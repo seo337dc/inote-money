@@ -170,7 +170,7 @@ export default function AccountBookPage() {
             </div>
 
             {/* View toggle */}
-            <div className="flex gap-1 p-1 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm mb-4 w-fit">
+            <div className="flex gap-1 p-1 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm mb-4 w-fit mx-auto">
               {VIEW_LABELS.map(({ key, label }) => (
                 <button
                   key={key}
