@@ -1,5 +1,6 @@
 'use client';
 
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type ExpenseMap } from '../types';
 
@@ -39,21 +40,21 @@ export default function LedgerCalendar({ year, month, expenses, onDayClick, onPr
   return (
     <div className="bg-white dark:bg-gray-800 lg:rounded-2xl lg:shadow-sm border-y lg:border border-gray-100 dark:border-gray-700 overflow-hidden">
       {/* Month navigation */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+      <div className="flex items-center justify-center gap-8 px-5 py-4 border-b border-gray-100 dark:border-gray-700">
         <button
           onClick={onPrev}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors text-lg"
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
         >
-          ‹
+          <ChevronLeft size={22} strokeWidth={2.5} />
         </button>
-        <h2 className="text-base font-bold text-gray-900 dark:text-white">
+        <span className="text-base font-bold text-gray-900 dark:text-white">
           {year}년 {month}월
-        </h2>
+        </span>
         <button
           onClick={onNext}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors text-lg"
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
         >
-          ›
+          <ChevronRight size={22} strokeWidth={2.5} />
         </button>
       </div>
 

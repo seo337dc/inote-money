@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { X, Check, Pencil } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { X, Check, Pencil, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { type Expense, type Category, CATEGORIES, CATEGORY_KO, CATEGORY_BADGE } from '../types';
@@ -47,7 +47,7 @@ export function AddExpenseForm({ onAdd, onCancel }: AddFormProps) {
     if (!parsed || parsed <= 0) return;
     setLoading(true);
     try {
-      await onAdd({ description: description.trim() || null, amount: parsed, category, isWaste });
+      await onAdd({ description: description.trim() || null, memo: null, amount: parsed, category, isWaste });
       setDescription('');
       setAmount('');
       setCategory('FOOD');
@@ -130,6 +130,14 @@ function EditModeRow({
   onChange: (updated: EditableExpense) => void;
   onMarkDelete: () => void;
 }) {
+  const [showMemo, setShowMemo] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const hasMemo = !!(expense.memo ?? '').trim();
+
+  useEffect(() => {
+    if (showMemo) textareaRef.current?.focus();
+  }, [showMemo]);
+
   if (expense._deleted) return null;
 
   return (
@@ -176,28 +184,133 @@ function EditModeRow({
           </div>
           <span className="text-xs text-gray-500 dark:text-gray-400">낭비</span>
         </label>
+        <button
+          onClick={() => setShowMemo((v) => !v)}
+          className={cn(
+            'w-6 h-6 flex items-center justify-center rounded-full transition-colors shrink-0',
+            hasMemo
+              ? 'text-green-500 bg-green-50 dark:bg-green-900/20'
+              : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+          )}
+        >
+          <MessageSquare size={13} />
+        </button>
       </div>
+      {showMemo && (
+        <div className="flex flex-col gap-1.5 pt-0.5">
+          <textarea
+            ref={textareaRef}
+            value={expense.memo ?? ''}
+            onChange={(e) => onChange({ ...expense, memo: e.target.value || null })}
+            placeholder="이 항목에 대한 메모를 남겨보세요"
+            rows={3}
+            className="w-full text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 text-gray-900 dark:text-white placeholder:text-gray-400 resize-none leading-relaxed"
+          />
+          <div className="flex gap-1.5 self-end">
+            <button
+              onClick={() => setShowMemo(false)}
+              className="px-3 py-1 rounded-lg text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              취소
+            </button>
+            <button
+              onClick={() => setShowMemo(false)}
+              className="px-3 py-1 rounded-lg text-xs bg-green-500 hover:bg-green-600 text-white font-medium transition-colors"
+            >
+              저장
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ─────────────────── ReadModeRow ───────────────────
 
-function ReadModeRow({ expense }: { expense: Expense }) {
+function ReadModeRow({ expense, onMemoSave }: { expense: Expense; onMemoSave: (id: string, memo: string | null) => Promise<void> }) {
+  const [showMemo, setShowMemo] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [saving, setSaving] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const hasMemo = !!(expense.memo ?? '').trim();
+
+  const openMemo = () => {
+    setDraft(expense.memo ?? '');
+    setShowMemo(true);
+  };
+
+  useEffect(() => {
+    if (showMemo) textareaRef.current?.focus();
+  }, [showMemo]);
+
+  const handleSaveMemo = async () => {
+    setSaving(true);
+    try {
+      await onMemoSave(expense.id, draft.trim() || null);
+      setShowMemo(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <div className="flex items-center gap-2 py-2.5 border-b border-gray-50 dark:border-gray-700/50 last:border-0">
-      <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-semibold shrink-0', CATEGORY_BADGE[expense.category])}>
-        {CATEGORY_KO[expense.category]}
-      </span>
-      <span className="flex-1 text-xs text-gray-600 dark:text-gray-400 truncate min-w-0">
-        {expense.description ?? '—'}
-        {expense.isWaste && (
-          <span className="ml-1 text-[10px] text-orange-400 font-medium">낭비</span>
-        )}
-      </span>
-      <span className="text-sm font-semibold text-gray-900 dark:text-white shrink-0">
-        {expense.amount.toLocaleString('ko-KR')}원
-      </span>
+    <div className="flex flex-col border-b border-gray-50 dark:border-gray-700/50 last:border-0">
+      <div className="flex items-center gap-2 py-2.5">
+        <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-semibold shrink-0', CATEGORY_BADGE[expense.category])}>
+          {CATEGORY_KO[expense.category]}
+        </span>
+        <span className="flex-1 text-xs text-gray-600 dark:text-gray-400 truncate min-w-0">
+          {expense.description ?? '—'}
+          {expense.isWaste && (
+            <span className="ml-1 text-[10px] text-orange-400 font-medium">낭비</span>
+          )}
+        </span>
+        <button
+          onClick={() => (showMemo ? setShowMemo(false) : openMemo())}
+          className={cn(
+            'w-5 h-5 flex items-center justify-center rounded-full transition-colors shrink-0',
+            hasMemo || showMemo
+              ? showMemo
+                ? 'text-green-600 bg-green-100 dark:bg-green-900/30'
+                : 'text-green-500 bg-green-50 dark:bg-green-900/20'
+              : 'text-gray-300 dark:text-gray-600 hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+          )}
+        >
+          <MessageSquare size={11} />
+        </button>
+        <span className="text-sm font-semibold text-gray-900 dark:text-white shrink-0">
+          {expense.amount.toLocaleString('ko-KR')}원
+        </span>
+      </div>
+      {showMemo && (
+        <div className="flex flex-col gap-1.5 pb-3">
+          <textarea
+            ref={textareaRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="이 항목에 대한 메모를 남겨보세요"
+            rows={3}
+            className="w-full text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800 text-gray-900 dark:text-white placeholder:text-gray-400 resize-none leading-relaxed"
+          />
+          <div className="flex gap-1.5 self-end">
+            <button
+              onClick={() => setShowMemo(false)}
+              disabled={saving}
+              className="px-3 py-1 rounded-lg text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={handleSaveMemo}
+              disabled={saving}
+              className="px-3 py-1 rounded-lg text-xs bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-medium transition-colors"
+            >
+              {saving ? '저장 중...' : '저장'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -210,6 +323,7 @@ type DayCardProps = {
   onAdd: (dateKey: string, expense: Omit<Expense, 'id'>) => Promise<void>;
   onEdit: (dateKey: string, updated: Expense) => Promise<void>;
   onDelete: (dateKey: string, id: string) => Promise<void>;
+  onMemoSave: (id: string, memo: string | null) => Promise<void>;
   showDate?: boolean;
 };
 
@@ -220,7 +334,7 @@ function formatDateLabel(dateKey: string) {
   return `${m}월 ${d}일 (${dayOfWeek})`;
 }
 
-export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, showDate = true }: DayCardProps) {
+export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, onMemoSave, showDate = true }: DayCardProps) {
   const [editMode, setEditMode] = useState(false);
   const [localExpenses, setLocalExpenses] = useState<EditableExpense[]>([]);
   const [saving, setSaving] = useState(false);
@@ -229,7 +343,7 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
 
   const enterEditMode = (withBlankRow = false) => {
     const initial = expenses.map((e) => ({ ...e }));
-    const blank: EditableExpense = { id: `_new_${Date.now()}`, description: null, amount: 0, category: 'ETC' as Category, isWaste: false, _new: true };
+    const blank: EditableExpense = { id: `_new_${Date.now()}`, description: null, memo: null, amount: 0, category: 'ETC' as Category, isWaste: false, _new: true };
     setLocalExpenses(withBlankRow ? [...initial, blank] : initial);
     setEditMode(true);
   };
@@ -245,6 +359,7 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
       {
         id: `_new_${Date.now()}`,
         description: null,
+        memo: null,
         amount: 0,
         category: 'ETC' as Category,
         isWaste: false,
@@ -263,6 +378,7 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
         if (!orig) return false;
         return (
           orig.description !== e.description ||
+          orig.memo !== e.memo ||
           orig.amount !== e.amount ||
           orig.category !== e.category ||
           orig.isWaste !== e.isWaste
@@ -360,7 +476,7 @@ export default function DayCard({ dateKey, expenses, onAdd, onEdit, onDelete, sh
         ) : (
           <>
             {expenses.map((e) => (
-              <ReadModeRow key={e.id} expense={e} />
+              <ReadModeRow key={e.id} expense={e} onMemoSave={onMemoSave} />
             ))}
             {expenses.length === 0 && (
               <p className="py-4 text-center text-xs text-gray-300 dark:text-gray-600">

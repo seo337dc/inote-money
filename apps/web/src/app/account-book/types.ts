@@ -32,6 +32,7 @@ export const CATEGORY_COLORS: Record<Category, string> = {
 export type Expense = {
   id: string;
   description: string | null;
+  memo: string | null;
   amount: number;
   category: Category;
   isWaste: boolean;

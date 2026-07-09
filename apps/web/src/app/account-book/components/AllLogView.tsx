@@ -11,6 +11,7 @@ type Props = {
   onAdd: (dateKey: string, expense: Omit<Expense, 'id'>) => Promise<void>;
   onEdit: (dateKey: string, updated: Expense) => Promise<void>;
   onDelete: (dateKey: string, id: string) => Promise<void>;
+  onMemoSave: (id: string, memo: string | null) => Promise<void>;
   onLoadMore?: () => void;
   hasMore?: boolean;
 };
@@ -23,7 +24,7 @@ function getMonthDateKeys(year: number, month: number): string[] {
   }).reverse();
 }
 
-export default function AllLogView({ year, month, expenses, onAdd, onEdit, onDelete, onLoadMore, hasMore }: Props) {
+export default function AllLogView({ year, month, expenses, onAdd, onEdit, onDelete, onMemoSave, onLoadMore, hasMore }: Props) {
   const observer = useRef<IntersectionObserver | null>(null);
 
   const sentinelRef = useCallback(
@@ -70,6 +71,7 @@ export default function AllLogView({ year, month, expenses, onAdd, onEdit, onDel
           onAdd={onAdd}
           onEdit={onEdit}
           onDelete={onDelete}
+          onMemoSave={onMemoSave}
           showDate
         />
       ))}

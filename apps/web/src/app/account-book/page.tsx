@@ -2,6 +2,7 @@
 
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '@/lib/api';
 import LoadingScreen from '@/components/LoadingScreen';
 import { type Expense, type ExpenseMap, type Category } from './types';
@@ -39,7 +40,7 @@ function toExpenseMap(records: ExpenseRecord[]): ExpenseMap {
 }
 
 function queryKey(year: number, month: number) {
-  return ['expenses', year, month] as const;
+  return ['expense-map', year, month] as const;
 }
 
 export default function AccountBookPage() {
@@ -81,6 +82,21 @@ export default function AccountBookPage() {
     onSuccess: invalidate,
   });
 
+  const memoMutation = useMutation({
+    mutationFn: ({ id, memo }: { id: string; memo: string | null }) =>
+      api.patch<ExpenseRecord>(`/money/expenses/${id}`, { memo }),
+    onSuccess: (_, { id, memo }) => {
+      qc.setQueryData<ExpenseMap>(queryKey(year, month), (old) => {
+        if (!old) return old;
+        const next: ExpenseMap = {};
+        for (const [dateKey, list] of Object.entries(old)) {
+          next[dateKey] = list.map((e) => (e.id === id ? { ...e, memo } : e));
+        }
+        return next;
+      });
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete<void>(`/money/expenses/${id}`),
     onSuccess: invalidate,
@@ -120,6 +136,10 @@ export default function AccountBookPage() {
   const handleDelete = useCallback(async (_dateKey: string, id: string) => {
     await deleteMutation.mutateAsync(id);
   }, [deleteMutation]);
+
+  const handleMemoSave = useCallback(async (id: string, memo: string | null) => {
+    await memoMutation.mutateAsync({ id, memo });
+  }, [memoMutation]);
 
   if (isLoading) return <LoadingScreen messages={['가계부 정보를 불러오고 있습니다.']} />;
 
@@ -179,15 +199,22 @@ export default function AccountBookPage() {
             )}
 
             {(view === 'weekly' || view === 'all') && (
-              <div className="flex items-center justify-between px-1 mb-4">
-                <button onClick={handlePrev} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-gray-800 text-gray-400 transition-colors">
-                  ‹
+              <div className="flex items-center justify-center gap-8 px-1 mb-4">
+                <button
+                  onClick={handlePrev}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                >
+                  <ChevronLeft size={22} strokeWidth={2.5} />
                 </button>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span className="text-xl font-bold text-gray-800 dark:text-gray-200">
                   {year}년 {month}월
                 </span>
-                <button onClick={handleNext} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-gray-800 text-gray-400 transition-colors">
-                  ›
+                <button
+                  onClick={handleNext}
+                  disabled={year === today.getFullYear() && month === today.getMonth() + 1}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight size={22} strokeWidth={2.5} />
                 </button>
               </div>
             )}
@@ -200,6 +227,7 @@ export default function AccountBookPage() {
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onMemoSave={handleMemoSave}
               />
             )}
 
@@ -211,6 +239,7 @@ export default function AccountBookPage() {
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onMemoSave={handleMemoSave}
               />
             )}
           </div>
@@ -225,6 +254,7 @@ export default function AccountBookPage() {
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onMemoSave={handleMemoSave}
       />
     </div>
   );

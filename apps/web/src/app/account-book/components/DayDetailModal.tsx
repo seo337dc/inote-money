@@ -12,6 +12,7 @@ type Props = {
   onAdd: (dateKey: string, expense: Omit<Expense, 'id'>) => Promise<void>;
   onEdit: (dateKey: string, updated: Expense) => Promise<void>;
   onDelete: (dateKey: string, id: string) => Promise<void>;
+  onMemoSave: (id: string, memo: string | null) => Promise<void>;
 };
 
 function formatTitle(dateKey: string) {
@@ -21,7 +22,7 @@ function formatTitle(dateKey: string) {
   return `${m}월 ${d}일 (${dayOfWeek})`;
 }
 
-export default function DayDetailModal({ dateKey, expenses, onClose, onAdd, onEdit, onDelete }: Props) {
+export default function DayDetailModal({ dateKey, expenses, onClose, onAdd, onEdit, onDelete, onMemoSave }: Props) {
   return (
     <Dialog open={!!dateKey} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogPortal>
@@ -69,6 +70,7 @@ export default function DayDetailModal({ dateKey, expenses, onClose, onAdd, onEd
                 onAdd={onAdd}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onMemoSave={onMemoSave}
                 showDate={false}
               />
             </div>

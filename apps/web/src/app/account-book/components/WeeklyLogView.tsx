@@ -10,6 +10,7 @@ type Props = {
   onAdd: (dateKey: string, expense: Omit<Expense, 'id'>) => Promise<void>;
   onEdit: (dateKey: string, updated: Expense) => Promise<void>;
   onDelete: (dateKey: string, id: string) => Promise<void>;
+  onMemoSave: (id: string, memo: string | null) => Promise<void>;
 };
 
 function getWeeksInMonth(year: number, month: number): string[][] {
@@ -41,7 +42,7 @@ function getWeeksInMonth(year: number, month: number): string[][] {
   return weeks;
 }
 
-export default function WeeklyLogView({ year, month, expenses, onAdd, onEdit, onDelete }: Props) {
+export default function WeeklyLogView({ year, month, expenses, onAdd, onEdit, onDelete, onMemoSave }: Props) {
   const weeks = getWeeksInMonth(year, month);
 
   return (
@@ -73,6 +74,7 @@ export default function WeeklyLogView({ year, month, expenses, onAdd, onEdit, on
                   onAdd={onAdd}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onMemoSave={onMemoSave}
                   showDate
                 />
               ))}
