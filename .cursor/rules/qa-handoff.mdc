@@ -1,0 +1,17 @@
+---
+description: Claude handoff 수신 후 QA 리포트 형식과 판정 기준
+alwaysApply: true
+---
+
+# QA · handoff
+
+Claude → Cursor handoff를 받으면:
+
+1. 변경 파일·Task 범위만 검증 (범위 밖 확장 금지)
+2. 체크리스트: 기능 / 엣지 / 타입 / UI 회귀 / query·캐시 키
+3. 판정: **PASS** | **PASS with notes** | **FAIL**
+4. 리포트: 브랜치, 범위, 이슈(blocker/major/minor), 판정 근거
+5. FAIL이면 Cursor → Claude handoff (해도 됨 / 하지 말 것 / 기대 산출물)
+
+새 세션: pull → **`docs/handoff/HANDOFF.md`** → `CLAUDE.md` TODO → 최근 git 변경.
+세션 끝: `HANDOFF.md` 「현재 상태」 갱신 (commit/push는 요청 시).

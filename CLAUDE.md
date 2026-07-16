@@ -2,6 +2,9 @@
 
 > Claude Code 작업 시 이 파일을 기준으로 맥락을 유지합니다.
 > 기능/스키마 확정될 때마다 업데이트합니다.
+>
+> **새 세션 시작 시 필수:** `docs/handoff/HANDOFF.md`를 이 파일보다 먼저 읽는다.
+> (순서: `git pull` → `HANDOFF.md` → 이 파일 TODO/현재 단계)
 
 ---
 
@@ -76,22 +79,72 @@
 
 1. **Google AI Studio** — 페이지별 디자인 목업 생성
 2. **Claude Code** — 목업 기반 UI 코드 작성 및 BE 연결
-3. **Cursor AI** — QA / 코드 리뷰 / 코드 분석
+3. **Cursor** — QA / 리뷰·리팩토링 / 문서·devlog 정리
 
-## AI 역할 분담
+## AI 협업 규칙 (Claude Code ↔ Cursor)
 
-| 역할 | 담당 |
+### 역할
+
+| 도구 | 담당 |
 |------|------|
-| 기능 구현 / UI 코드 작성 / API 연동 | Claude Code |
-| 페이지별 디자인 목업 | Google AI Studio |
-| QA / 코드 리뷰 / 코드 분석 | Cursor AI |
-| 기획·UX 판단 | 사람이 직접 결정 |
+| **Claude Code** | 설계·구현 — 세팅, API, 페이지, 도메인 로직 |
+| **Cursor** | Task 완료 후 QA, 리뷰·리팩토링, 문서·devlog·PR 정리, handoff |
+| **Google AI Studio** | 페이지별 디자인 목업 |
+| **사람** | 기획·UX·아키텍처 판단 및 승인 |
 
-## Claude Code 작업 원칙
+- 기획·UX·아키텍처는 AI가 임의로 결정하지 않는다. 대안 제시 → **사람이 승인** 후 반영.
+- Claude Code가 Cursor에 넘기는 것: QA 검증·리포트 / devlog 정리·축약 / PR 본문 다듬기 / 구현 후 리뷰·에러 분석
 
-- 기획·UX 판단이 필요한 순간에는 임의로 결정하지 않고 먼저 질문한다
-- 디자인은 Google AI Studio 결과물을 기준으로 구현한다
-- QA·코드 리뷰·코드 분석은 Cursor AI에게 넘기고 직접 수행하지 않는다
+### 작업 흐름 (한 Task 사이클)
+
+1. 사람이 TODO에서 Task 범위 확정
+2. Claude Code가 구현
+3. Claude → Cursor handoff (변경 파일 / 범위 / 알려진 이슈 / Cursor가 보강할 것)
+4. Cursor가 QA → **PASS** / **PASS with notes** / **FAIL**
+5. FAIL이면 Cursor → Claude handoff (범위·해도 됨·하지 말 것·기대 산출물)
+6. PASS면 문서·PR 정리 → **커밋/PR은 사람이 요청할 때만**
+
+### handoff 형식
+
+프롬프트 첫 줄에 반드시 표시:
+- Cursor → Claude: `> **[Cursor → Claude Code]** handoff 프롬프트`
+- Claude → Cursor: `> **[Claude Code → Cursor]** handoff`
+
+포함할 것: 현재 브랜치, 완료된 단계, 이번 세션 범위, 해도 됨 / 하지 말 것, 참고 파일, 기대 산출물.
+
+### 세션 전환 (PC·채팅 메모리 초기화 대응)
+
+채팅 메모리는 PC·세션마다 초기화된다. 맥락은 **`docs/handoff/HANDOFF.md` + git**으로 이어간다.
+
+**새 세션 시작 순서 (필수 — 건너뛰지 말 것)**
+
+1. `git pull`
+2. **`docs/handoff/HANDOFF.md` 필독** (규칙 + 「현재 상태」)
+3. 이 파일(`CLAUDE.md`)의 TODO / 현재 단계
+4. 필요 시 `git log` · 최근 변경 파일
+
+**세션 종료 / Task 경계**
+
+1. `docs/handoff/HANDOFF.md` 「현재 상태」 갱신
+2. 이 파일 TODO / 현재 단계 동기화
+3. commit → push (**사람 요청 시에만**)
+
+상세 규칙·템플릿: [`docs/handoff/HANDOFF.md`](docs/handoff/HANDOFF.md)  
+Cursor 역할: [`CURSOR.md`](CURSOR.md)
+
+### 원칙
+
+- Task 단위로 끊어서 구현하고, Task마다 QA한다. 한 번에 전부 만들고 나중에 검증하지 않는다.
+- Cursor는 Claude 구현 범위 밖으로 기능을 임의 확장하지 않는다.
+- QA FAIL 항목을 Cursor가 임의로 크게 구현하지 않는다. (작은 UI/문서 픽스는 예외로 직접 가능)
+- 커밋·PR·push는 사용자 요청 시에만.
+- **handoff 없이** 이전 채팅 기억에 의존해 작업하지 않는다.
+
+### Notion 업데이트
+
+- Claude 작업 결과는 Claude가 직접 해당 Notion 페이지에 업데이트한다.
+- 레포 문서(`CLAUDE.md`, `HANDOFF.md`)는 레포 수정 → Notion 동기화 순서.
+- Notion 업데이트용 프롬프트를 사람에게 전달하지 않는다.
 
 ## 이슈·에러 대응 원칙 (CoT)
 

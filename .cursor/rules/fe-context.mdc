@@ -1,0 +1,14 @@
+---
+description: FE(apps/web) 컨텍스트 — 스택, 경로, 데모/실서비스 분리
+globs: apps/web/**/*
+alwaysApply: false
+---
+
+# FE 컨텍스트
+
+- 스택: Next.js 16 + shadcn/ui + Tailwind + react-query v5
+- API: `apps/web/src/lib/api.ts` · 인증: `auth-client.ts` (Better Auth)
+- 실서비스: `/dashboard`, `/account-book`, `/settings`
+- 데모: `/demo/*` — 하드코딩, 실데이터 로직 혼입 금지
+- UI 분리: `lg` 기준 `desktop/` · `mobile/` (window 훅 분기 금지)
+- Next 문서: `apps/web/AGENTS.md`, `node_modules/next/dist/docs/` 우선

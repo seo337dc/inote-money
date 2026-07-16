@@ -1,0 +1,22 @@
+---
+description: 새 세션·PC 전환 시 docs/handoff/HANDOFF.md 필독
+alwaysApply: true
+---
+
+# Handoff 필독
+
+채팅 메모리는 PC·세션마다 초기화된다. 맥락은 git + `docs/handoff/HANDOFF.md`다.
+
+## 새 세션 시작 (필수)
+
+1. `git pull`
+2. **`docs/handoff/HANDOFF.md` 읽기** (규칙 + 「현재 상태」)
+3. `CLAUDE.md` TODO / 현재 단계
+4. `CURSOR.md` 역할 확인
+
+추측으로 이전 작업을 이어받지 않는다.
+
+## 세션 종료 / Task 경계
+
+- `HANDOFF.md` 「현재 상태」를 최신화한다
+- commit/push는 사람 요청 시에만

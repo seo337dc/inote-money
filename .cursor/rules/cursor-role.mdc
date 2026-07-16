@@ -1,0 +1,28 @@
+---
+description: Cursor 역할·경계 — Claude Code와 역할 분리, 구현 범위 밖 확장 금지
+alwaysApply: true
+---
+
+# Cursor 역할 (inote-money)
+
+상세: `CURSOR.md`. 세션 맥락: **`docs/handoff/HANDOFF.md` 필독**. TODO: `CLAUDE.md`.
+
+## 담당
+
+- Task 완료 후 **QA** (PASS / PASS with notes / FAIL)
+- **코드 리뷰** · 작은 리팩토링 · 문서/devlog/PR 초안
+- FAIL 시 **Claude Code handoff** 작성
+
+## 하지 말 것
+
+- 기획·UX·아키텍처 임의 결정 (대안 → 사람 승인)
+- Claude 구현 범위 밖 **기능 확장**
+- FAIL 항목의 **큰 구현** (작은 UI/문서 픽스만 예외)
+- **커밋·PR·push** — 사람 요청 시에만
+
+## handoff 첫 줄
+
+- → Claude: `> **[Cursor → Claude Code]** handoff 프롬프트`
+- ← Claude: `> **[Claude Code → Cursor]** handoff`
+
+필수: 브랜치, 완료 단계, 범위, 해도 됨/하지 말 것, 참고 파일, 기대 산출물.
