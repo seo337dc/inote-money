@@ -31,7 +31,7 @@ export async function GET(
     if (!res.ok) throw new Error(`upstream ${res.status}`);
 
     const text = await res.text();
-    const rows: string[][] = JSON.parse(text);
+    const rows: string[][] = JSON.parse(text.replace(/'/g, '"'));
 
     const candles = rows
       .filter((row) => /^\d{8}$/.test(row[0] ?? ""))

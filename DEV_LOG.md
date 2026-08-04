@@ -1059,6 +1059,21 @@ ServerWakeProvider 제거로 페이지가 실제로 서버에서 렌더링되기
 
 ---
 
+### 2026-08-04 (세션 11)
+
+#### 🐛 버그 픽스 — `/demo/stocks` 네이버 금융 API 연결 실패 (500)
+
+사람이 `/demo/stocks`에서 국내 주식 차트 로딩 시 콘솔에 `GET /api/stock/005930 500 (Internal Server Error)` 발견, 화면엔 "데이터를 불러올 수 없어요 · 네이버 금융 API 연결 실패" 표시.
+
+**원인**
+`apps/web/src/app/api/stock/[ticker]/route.ts`가 네이버 증권 차트 API(`fchart.stock.naver.com/siseJson.nhn`) 응답을 `JSON.parse()`로 직접 파싱하는데, 이 응답이 순수 JSON이 아니라 JS 배열 리터럴 형식 — 헤더 행만 작은따옴표(`'날짜', '시가', ...`)를 쓰고 데이터 행은 큰따옴표를 씀. `JSON.parse`는 작은따옴표 문자열을 허용하지 않아 헤더 행에서 `SyntaxError` 발생 → catch에서 500 응답. 오늘 세션 작업(서버 웨이크업 제거)과 무관한 기존 버그.
+
+**수정**
+- `route.ts` — `JSON.parse(text)` → `JSON.parse(text.replace(/'/g, '"'))` (데이터 값은 숫자/날짜뿐이라 따옴표 치환이 안전함)
+- 브라우저에서 `/api/stock/005930` 직접 호출로 검증 — `200 OK`, 244개 캔들 정상 반환 확인
+
+---
+
 ## UI 인사이트 / 기획 메모
 
 ### 리스트·테이블 뷰 필요 (2026-05-08)
