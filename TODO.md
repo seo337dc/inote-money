@@ -28,6 +28,15 @@
   - 로그인 구현 완료 반영
   - `/demo` 페이지 제거 반영
 
+## 아키텍처 학습 (외부 과제 피드백 반영)
+
+> 상세: [`docs/retrospective/fsd-architecture-feedback.md`](docs/retrospective/fsd-architecture-feedback.md)
+> `langdy-fe-assignment` 과제 탈락 피드백 — 레이어형 아키텍처 도입 시 반복 방지용 체크리스트
+
+- [ ] 레이어(계층) 구조 도입 시 의존성 방향을 lint 룰로 강제하는 방법 검토
+- [ ] `packages/` ↔ `apps/web` 의존성 방향 기준 정하기 (문서화)
+- [ ] 새 모듈 추가 시 "왜 이 레이어/폴더에 두는지" 그때그때 커밋/PR에 기록 (사후 총정리 X)
+
 ## 완료
 
 - [x] Google OAuth 로그인 페이지 구현
