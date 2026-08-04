@@ -83,63 +83,56 @@
 | 날짜 | 2026-08-04 |
 | 작성자 | Claude Code |
 | 브랜치 | `main` |
-| 다음 수신자 | Cursor (QA) → Claude Code (주식 API 연동) |
+| 다음 수신자 | 사람 (Task #5 confetti 또는 주식 API 연동 중 선택) |
 
 ### 완료된 단계
 
-- `/demo/mini-game` 캐시플로우 보드게임 데모 구현 완료
-  - 이전 카드 기반 구현 → 보드 기반으로 전면 교체
-  - AI Studio Vite/React → Next.js App Router 이식
-  - dark slate 테마 → light stone/emerald 테마 전환
-  - 12칸 보드 / 6개 직업 / 4종 카드 덱 / 게임 로직 / 7개 컴포넌트
-- `error.tsx`, `not-found.tsx` 페이지 추가 (`/`, `/account-book`, `/dashboard`)
-- DEV_LOG.md 세션 8 기록 추가
-- 커밋·푸시 완료 (`abc829e`)
+- `/demo/mini-game` 캐시플로우 보드게임 데모 구현 완료 (이전 세션)
+- **애니메이션 3종 추가:**
+  - **Task #2: 토큰 이동 애니메이션** — 주사위 굴리면 말(말)이 한 칸씩 200ms/step으로 이동. 이동 중 파란색 `→` 뱃지, 착지 후 황금색 `MY TOKEN` bounce 뱃지. `tokenPosition` 시각 상태와 `player.currentSpaceIndex` 게임 상태 분리.
+  - **Task #3: 부유 금액 텍스트 애니메이션** — 현금 변동 시(월급날 통과·소비·매수·매각·대출·상환) `+N만원` / `-N만원` 텍스트가 보드 중앙에서 위로 떠오르며 페이드아웃. 녹색(수입) / 빨간색(지출). 1.6s, 랜덤 좌우 오프셋.
+  - **Task #4: 카드 플립 애니메이션** — 카드 모달 등장 시 `rotateY(90deg → 0deg)` 0.42s flip. `CardModal` 마운트마다 자동 실행.
+- Turbopack 스테일 캐시 이슈 확인: `.next` 전체 삭제로 해결, 게임 동작 정상
+- **사람(사용자) 브라우저 QA 진행** — 직업 선택, 토큰 이동, 카드 플립, 부유 텍스트, 자녀 출산 카드, 은행 대출 플로우 확인
+- **버그 픽스:** 카드 모달 안에서 "은행 대출 열기" 클릭 시 `BankModal`이 `CardModal`에 가려지던 문제 — 둘 다 `z-50`이라 DOM상 나중에 그려지는 `CardModal`이 위로 덮음 → `BankModal.tsx` 오버레이 `z-[60]`으로 수정, 사람이 재확인 후 정상 동작 확인
 
 ### 진행 중 / 다음 Task
 
-1. **Cursor:** `/demo/mini-game` QA — 직업 선택 → 보드 이동 → 카드 모달 → 재무제표 → 승리 화면
-2. QA PASS 후: **주식 페이지 API 연동** (다음 Claude Code Task)
+QA PASS. 다음 둘 중 선택 필요 (사람 결정 대기):
+- **Task #5: 폭죽 파티클 (confetti)** — 쥐경주 탈출 승리 시 폭죽 이펙트
+- **주식 페이지 API 연동** — 보유 종목 CRUD
 
 ### 이번 범위
 
-**해도 됨 (Cursor)**
-- `/demo/mini-game` 기능 QA (골든 패스 + 엣지케이스)
-- 소소한 UI 버그 픽스
-- devlog/Notion 정리
+**해도 됨**
+- `/demo/mini-game` 기능 QA + 애니메이션 3종 동작 확인 (사람이 직접 수행)
+- 발견된 버그 즉시 픽스 (은행 모달 z-index)
 
 **하지 말 것**
-- 주식 API 구현 (다음 Task)
+- 주식 API 구현 (다음 Task, 미착수)
 - 보드게임 규칙 임의 변경
-- 커밋/push (사람 요청 전)
+- Task #5 confetti 임의 구현 (다음 Task, 미착수)
 
 ### 변경·참고 파일
 
 ```
 apps/web/src/app/demo/mini-game/
-├── types.ts
-├── page.tsx
-├── data/board.ts, cards.ts, professions.ts
-├── lib/gameLogic.ts
-└── components/ (7개)
-
-apps/web/src/app/
-├── error.tsx
-├── not-found.tsx
-├── account-book/error.tsx
-└── dashboard/error.tsx
+├── page.tsx                    ← FloatItem 타입, addFloat 훅, 토큰 이동 로직, float 트리거
+└── components/
+    ├── BoardView.tsx           ← tokenPosition/isMoving props, 파란/황금 뱃지, step 이동 표시
+    ├── CardModal.tsx           ← card-flip-in CSS keyframe, perspective 오버레이
+    └── BankModal.tsx           ← 오버레이 z-index z-50 → z-[60] (카드 모달에 가려지던 버그 픽스)
 ```
 
 ### 알려진 이슈
 
-- 없음 (타입 에러 0, 브라우저 동작 확인 완료)
+- Turbopack 콘솔에 `hasCharityBoost is defined multiple times` 에러 메시지 반복 표시됨 — **브라우저 캐시된 과거 이벤트 재생(phantom)**. 실제 파일·서버 로그 에러 없음. `.next` 삭제 후 재시작하면 신규 컴파일 에러 없음. 게임 동작 정상.
 
 ### 다음 수신자에게 기대하는 것
 
-**Cursor:**
-- QA 체크리스트: 직업 선택 6종, 주사위 롤 → 각 칸 카드 모달, 소액/대형 매수, 지출 지불, 시장 매각, 자선/실직/자녀 특수 칸, 재무제표 3탭, 은행 대출/상환, 승리 모달
-- PASS 후 Notion devlog 갱신
+**다음 세션 (Claude Code):**
+- 사람이 Task #5(confetti) / 주식 API 연동 중 하나를 정하면 그 Task로 착수
 
 ### QA 판정
 
-미수행 (Claude Code → Cursor handoff)
+**PASS** — 사람이 직접 브라우저로 확인 (직업 선택, 토큰 이동, 카드 플립, 부유 텍스트, 자녀 출산 카드, 은행 대출 플로우). 버그 1건 발견 즉시 픽스 완료(은행 모달 z-index).

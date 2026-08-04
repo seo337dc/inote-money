@@ -40,7 +40,7 @@ export function BankModal({ player, onClose, onBorrow, onRepayBankLoan, onRepayL
     }`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4 overflow-y-auto">
       <div className="bg-white border border-stone-200 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden">
         <div className="bg-stone-50 px-6 py-4 border-b border-stone-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
