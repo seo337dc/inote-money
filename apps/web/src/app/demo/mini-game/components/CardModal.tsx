@@ -58,9 +58,9 @@ export function CardModal({
       case 'payday':
         return { title: '월급날 (Payday!)', badge: '정기 수입 지급', gradient: 'from-emerald-500 to-teal-600', icon: <DollarSign className="w-6 h-6" /> };
       case 'small_deal':
-        return { title: '소액 투자 기회 (Small Deal)', badge: '$6,000 이하 투자', gradient: 'from-blue-500 to-indigo-600', icon: <TrendingUp className="w-6 h-6" /> };
+        return { title: '소액 투자 기회 (Small Deal)', badge: '600만원 이하 투자', gradient: 'from-blue-500 to-indigo-600', icon: <TrendingUp className="w-6 h-6" /> };
       case 'big_deal':
-        return { title: '대형 투자 기회 (Big Deal)', badge: '$6,000 초과 투자', gradient: 'from-purple-500 to-indigo-700', icon: <Building className="w-6 h-6" /> };
+        return { title: '대형 투자 기회 (Big Deal)', badge: '600만원 초과 투자', gradient: 'from-purple-500 to-indigo-700', icon: <Building className="w-6 h-6" /> };
       case 'doodad':
         return { title: '생활 소비/사치 (Doodad)', badge: '예기치 못한 지출', gradient: 'from-rose-500 to-pink-600', icon: <ShoppingBag className="w-6 h-6" /> };
       case 'market':
@@ -80,8 +80,16 @@ export function CardModal({
   const monthlyCashflow = calculateMonthlyCashflow(player);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white border border-stone-200 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4 overflow-y-auto" style={{ perspective: '1200px' }}>
+      <style>{`
+        @keyframes card-flip-in {
+          0%   { transform: rotateY(90deg) scale(0.92); opacity: 0; }
+          45%  { opacity: 1; }
+          100% { transform: rotateY(0deg) scale(1); opacity: 1; }
+        }
+        .card-flip-in { animation: card-flip-in 0.42s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+      `}</style>
+      <div className="card-flip-in bg-white border border-stone-200 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
         <div className={`bg-gradient-to-r ${headerInfo.gradient} px-6 py-4 text-white flex items-center justify-between`}>
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-black/20 flex items-center justify-center">
@@ -149,7 +157,7 @@ export function CardModal({
                 <>
                   <p className="text-xs text-stone-600 leading-relaxed">
                     새로운 가족이 생겼습니다! 자녀 1명당 매월{' '}
-                    <strong>${player.profession.childCostPerChild.toLocaleString()}</strong>의 고정 양육비가 영구적으로 추가됩니다.
+                    <strong>{formatCurrency(player.profession.childCostPerChild)}</strong>의 고정 양육비가 영구적으로 추가됩니다.
                   </p>
                   <div className="bg-stone-50 rounded-xl p-4 border border-stone-200 text-xs flex justify-between items-center">
                     <span className="text-stone-500">현재 자녀 수</span>
@@ -175,13 +183,13 @@ export function CardModal({
               </div>
               <h4 className="text-xl font-extrabold text-stone-900">자선 기부 기회</h4>
               <p className="text-xs text-stone-600 leading-relaxed">
-                총 수입의 10%(<strong>${Math.round(calculateTotalIncome(player) * 0.1).toLocaleString()}</strong>)를 기부하면
+                총 수입의 10%(<strong>{formatCurrency(Math.round(calculateTotalIncome(player) * 0.1))}</strong>)를 기부하면
                 향후 <strong>3턴 동안 주사위를 2개씩 굴려</strong> 더 빠르게 투자 기회를 잡을 수 있습니다!
               </p>
               <div className="bg-stone-50 rounded-xl p-4 border border-stone-200 text-xs flex justify-between items-center">
                 <span className="text-stone-500">기부 필요 금액 (총 수입의 10%)</span>
                 <span className="text-indigo-600 font-bold text-sm">
-                  ${Math.round(calculateTotalIncome(player) * 0.1).toLocaleString()}
+                  {formatCurrency(Math.round(calculateTotalIncome(player) * 0.1))}
                 </span>
               </div>
               <div className="flex gap-3 mt-4">
@@ -276,11 +284,11 @@ export function CardModal({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-stone-400">1주당 매수가</span>
-                      <span className="font-bold text-emerald-600">${(cardData as DealCard).cost}</span>
+                      <span className="font-bold text-emerald-600">{formatCurrency((cardData as DealCard).cost)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-stone-400">1주당 월 배당금</span>
-                      <span className="font-bold text-blue-600">${(cardData as DealCard).cashflow || 0}/월</span>
+                      <span className="font-bold text-blue-600">{formatCurrency((cardData as DealCard).cashflow || 0)}/월</span>
                     </div>
                     <div className="border-t border-stone-200 pt-3 flex items-center justify-between gap-3">
                       <span className="text-stone-600 font-semibold">매수할 수량(주)</span>
@@ -296,28 +304,28 @@ export function CardModal({
                     </div>
                     <div className="flex justify-between text-stone-600 font-semibold">
                       <span>총 필요 투자금</span>
-                      <span className="text-emerald-600">${(stockShares * (cardData as DealCard).cost).toLocaleString()}</span>
+                      <span className="text-emerald-600">{formatCurrency(stockShares * (cardData as DealCard).cost)}</span>
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="flex justify-between">
                       <span className="text-stone-400">총 가격 (Total Cost)</span>
-                      <span className="font-bold text-stone-800">${(cardData as DealCard).cost.toLocaleString()}</span>
+                      <span className="font-bold text-stone-800">{formatCurrency((cardData as DealCard).cost)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-stone-400">필요 초기 투자금 (Down Payment)</span>
-                      <span className="font-bold text-emerald-600">${(cardData as DealCard).downPayment.toLocaleString()}</span>
+                      <span className="font-bold text-emerald-600">{formatCurrency((cardData as DealCard).downPayment)}</span>
                     </div>
                     {(cardData as DealCard).mortgage > 0 && (
                       <div className="flex justify-between">
                         <span className="text-stone-400">담보 대출금 (Mortgage)</span>
-                        <span className="font-semibold text-stone-600">${(cardData as DealCard).mortgage.toLocaleString()}</span>
+                        <span className="font-semibold text-stone-600">{formatCurrency((cardData as DealCard).mortgage)}</span>
                       </div>
                     )}
                     <div className="flex justify-between border-t border-stone-200 pt-2">
                       <span className="text-stone-700 font-bold">월 패시브 인컴 증가 (Cashflow)</span>
-                      <span className="font-extrabold text-blue-600 text-sm">+${(cardData as DealCard).cashflow.toLocaleString()}/월</span>
+                      <span className="font-extrabold text-blue-600 text-sm">+{formatCurrency((cardData as DealCard).cashflow)}/월</span>
                     </div>
                     {(cardData as DealCard).roi && (
                       <div className="flex justify-between">
@@ -355,7 +363,7 @@ export function CardModal({
                     className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-stone-200 disabled:text-stone-400 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
                   >
                     {player.cash >= (cardData as DealCard).downPayment
-                      ? `매수하기 ($${(cardData as DealCard).downPayment.toLocaleString()})`
+                      ? `매수하기 (${formatCurrency((cardData as DealCard).downPayment)})`
                       : '초기 자금 부족'}
                   </button>
                 )}
@@ -383,8 +391,8 @@ export function CardModal({
                     return (
                       <div className="space-y-2">
                         <div className="flex justify-between text-stone-600"><span>보유 수량</span><span className="font-bold text-stone-800">{owned.shares}주</span></div>
-                        <div className="flex justify-between text-stone-600"><span>시장 매각가</span><span className="font-bold text-emerald-600">${offerPrice}/주 (총 ${totalValue.toLocaleString()})</span></div>
-                        <div className="flex justify-between border-t border-stone-200 pt-1.5 text-sm font-bold"><span className="text-stone-800">예상 차익(수익)</span><span className="text-amber-600">+${totalProfit.toLocaleString()}</span></div>
+                        <div className="flex justify-between text-stone-600"><span>시장 매각가</span><span className="font-bold text-emerald-600">{formatCurrency(offerPrice)}/주 (총 {formatCurrency(totalValue)})</span></div>
+                        <div className="flex justify-between border-t border-stone-200 pt-1.5 text-sm font-bold"><span className="text-stone-800">예상 차익(수익)</span><span className="text-amber-600">+{formatCurrency(totalProfit)}</span></div>
                       </div>
                     );
                   })()
@@ -403,7 +411,7 @@ export function CardModal({
                             <span className="text-stone-700">{re.name}</span>
                             <span className="text-amber-600 font-bold">
                               {(cardData as MarketCard).offerFixedPrice
-                                ? `$${(cardData as MarketCard).offerFixedPrice?.toLocaleString()}`
+                                ? formatCurrency((cardData as MarketCard).offerFixedPrice!)
                                 : `원가 x${(cardData as MarketCard).offerMultiplier}`}
                             </span>
                           </div>

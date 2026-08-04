@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Profession } from '../types';
 import { PROFESSIONS } from '../data/professions';
+import { formatCurrency } from '../lib/gameLogic';
 import {
   Stethoscope,
   Cpu,
@@ -96,15 +97,15 @@ export function ProfessionSelectModal({ onSelectProfession }: ProfessionSelectMo
                         <span className="text-xs text-stone-400 font-medium">({prof.name})</span>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-stone-400 mt-1">
-                        <span>월급 <strong className="text-stone-700">${prof.salary.toLocaleString()}</strong></span>
+                        <span>월급 <strong className="text-stone-700">{formatCurrency(prof.salary)}</strong></span>
                         <span>•</span>
-                        <span>초기저축 <strong className="text-emerald-600">${prof.savings.toLocaleString()}</strong></span>
+                        <span>초기저축 <strong className="text-emerald-600">{formatCurrency(prof.savings)}</strong></span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-[11px] text-stone-400">월 잉여현금</div>
-                    <div className="text-emerald-600 font-bold text-sm">+${profCashflow.toLocaleString()}</div>
+                    <div className="text-emerald-600 font-bold text-sm">+{formatCurrency(profCashflow)}</div>
                   </div>
                 </button>
               );
@@ -124,13 +125,13 @@ export function ProfessionSelectModal({ onSelectProfession }: ProfessionSelectMo
                       <span className="text-sm font-normal text-stone-400">({selectedProfession.name})</span>
                     </h3>
                     <p className="text-xs text-stone-400">
-                      초기 저축액: <span className="text-emerald-600 font-bold">${selectedProfession.savings.toLocaleString()}</span>
+                      초기 저축액: <span className="text-emerald-600 font-bold">{formatCurrency(selectedProfession.savings)}</span>
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-xs text-stone-400">목표 패시브 인컴</div>
-                  <div className="text-sm font-bold text-blue-600">${totalExpenses.toLocaleString()}/월</div>
+                  <div className="text-sm font-bold text-blue-600">{formatCurrency(totalExpenses)}/월</div>
                 </div>
               </div>
 
@@ -142,23 +143,23 @@ export function ProfessionSelectModal({ onSelectProfession }: ProfessionSelectMo
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="bg-white p-2.5 rounded-lg border border-stone-200">
                     <div className="text-stone-400 mb-0.5">월급 (Salary)</div>
-                    <div className="text-stone-900 font-bold text-sm">${selectedProfession.salary.toLocaleString()}</div>
+                    <div className="text-stone-900 font-bold text-sm">{formatCurrency(selectedProfession.salary)}</div>
                   </div>
                   <div className="bg-white p-2.5 rounded-lg border border-stone-200">
                     <div className="text-stone-400 mb-0.5">월 총지출 (Total Expenses)</div>
-                    <div className="text-rose-500 font-bold text-sm">${totalExpenses.toLocaleString()}</div>
+                    <div className="text-rose-500 font-bold text-sm">{formatCurrency(totalExpenses)}</div>
                   </div>
                 </div>
 
                 <div className="bg-white rounded-lg p-3 border border-stone-200">
                   <div className="text-xs font-semibold text-stone-600 mb-2">지출 및 부채 세부 내역</div>
                   <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between text-stone-500"><span>세금 (Taxes)</span><span className="text-stone-700">${selectedProfession.taxes.toLocaleString()}</span></div>
-                    <div className="flex justify-between text-stone-500"><span>주택담보대출 (총 ${selectedProfession.homeMortgage.total.toLocaleString()})</span><span className="text-stone-700">${selectedProfession.homeMortgage.expense.toLocaleString()}</span></div>
-                    <div className="flex justify-between text-stone-500"><span>학자금 대출 (총 ${selectedProfession.schoolLoans.total.toLocaleString()})</span><span className="text-stone-700">${selectedProfession.schoolLoans.expense.toLocaleString()}</span></div>
-                    <div className="flex justify-between text-stone-500"><span>자동차 대출 (총 ${selectedProfession.carLoans.total.toLocaleString()})</span><span className="text-stone-700">${selectedProfession.carLoans.expense.toLocaleString()}</span></div>
-                    <div className="flex justify-between text-stone-500"><span>신용카드 빚 (총 ${selectedProfession.creditCard.total.toLocaleString()})</span><span className="text-stone-700">${selectedProfession.creditCard.expense.toLocaleString()}</span></div>
-                    <div className="flex justify-between text-stone-600 font-semibold border-t border-stone-100 pt-1.5"><span>기타 생활비 (Other)</span><span>${selectedProfession.otherExpenses.toLocaleString()}</span></div>
+                    <div className="flex justify-between text-stone-500"><span>세금 (Taxes)</span><span className="text-stone-700">{formatCurrency(selectedProfession.taxes)}</span></div>
+                    <div className="flex justify-between text-stone-500"><span>주택담보대출 (총 {formatCurrency(selectedProfession.homeMortgage.total)})</span><span className="text-stone-700">{formatCurrency(selectedProfession.homeMortgage.expense)}</span></div>
+                    <div className="flex justify-between text-stone-500"><span>학자금 대출 (총 {formatCurrency(selectedProfession.schoolLoans.total)})</span><span className="text-stone-700">{formatCurrency(selectedProfession.schoolLoans.expense)}</span></div>
+                    <div className="flex justify-between text-stone-500"><span>자동차 대출 (총 {formatCurrency(selectedProfession.carLoans.total)})</span><span className="text-stone-700">{formatCurrency(selectedProfession.carLoans.expense)}</span></div>
+                    <div className="flex justify-between text-stone-500"><span>신용카드 빚 (총 {formatCurrency(selectedProfession.creditCard.total)})</span><span className="text-stone-700">{formatCurrency(selectedProfession.creditCard.expense)}</span></div>
+                    <div className="flex justify-between text-stone-600 font-semibold border-t border-stone-100 pt-1.5"><span>기타 생활비 (Other)</span><span>{formatCurrency(selectedProfession.otherExpenses)}</span></div>
                   </div>
                 </div>
               </div>
@@ -166,7 +167,7 @@ export function ProfessionSelectModal({ onSelectProfession }: ProfessionSelectMo
 
             <div className="mt-5 pt-4 border-t border-stone-200 flex items-center justify-between">
               <div className="text-xs text-stone-400">
-                월급날 수입: <strong className="text-emerald-600 text-sm">${monthlyPayday.toLocaleString()}</strong>
+                월급날 수입: <strong className="text-emerald-600 text-sm">{formatCurrency(monthlyPayday)}</strong>
               </div>
               <button
                 onClick={() => onSelectProfession(selectedProfession)}

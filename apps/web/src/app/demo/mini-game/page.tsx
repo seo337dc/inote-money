@@ -1,6 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+
+type FloatItem = { id: string; amount: number; offsetX: number };
+
+function FloatingMoneyItem({ item, fmt }: { item: FloatItem; fmt: (n: number) => string }) {
+  const isPos = item.amount > 0;
+  return (
+    <div
+      className={`float-money pointer-events-none select-none text-base font-black drop-shadow-md ${
+        isPos ? 'text-emerald-500' : 'text-rose-500'
+      }`}
+      style={{ '--fx': `${item.offsetX}px` } as React.CSSProperties}
+    >
+      {isPos ? '+' : '-'}{fmt(Math.abs(item.amount))}
+    </div>
+  );
+}
 import { PlayerState, DealCard, DoodadCard, MarketCard, Profession } from './types';
 import { PROFESSIONS } from './data/professions';
 import { BOARD_SPACES } from './data/board';
@@ -36,6 +52,17 @@ export default function MiniGamePage() {
   const [currentCardData, setCurrentCardData] = useState<DealCard | DoodadCard | MarketCard | null>(null);
   const [lastDiceRoll, setLastDiceRoll] = useState<number | null>(null);
   const [isRolling, setIsRolling] = useState<boolean>(false);
+  const [tokenPosition, setTokenPosition] = useState<number>(0);
+  const [isMoving, setIsMoving] = useState<boolean>(false);
+  const [floatingAmounts, setFloatingAmounts] = useState<FloatItem[]>([]);
+
+  const addFloat = useCallback((amount: number) => {
+    if (amount === 0) return;
+    const id = `float_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const offsetX = Math.floor(Math.random() * 80 - 40);
+    setFloatingAmounts((prev) => [...prev, { id, amount, offsetX }]);
+    setTimeout(() => setFloatingAmounts((prev) => prev.filter((f) => f.id !== id)), 1800);
+  }, []);
 
   const handleSelectProfession = (profession: Profession) => {
     setPlayer(createInitialPlayerState(profession));
@@ -43,10 +70,12 @@ export default function MiniGamePage() {
     setShowVictoryModal(false);
     setShowCardModal(false);
     setLastDiceRoll(null);
+    setTokenPosition(0);
+    setIsMoving(false);
   };
 
   const handleRollDice = (diceCount: 1 | 2 = 1) => {
-    if (isRolling) return;
+    if (isRolling || isMoving) return;
     setIsRolling(true);
 
     if (player.downsizedTurnsLeft > 0) {
@@ -71,6 +100,8 @@ export default function MiniGamePage() {
       return;
     }
 
+    const capturedOldIdx = player.currentSpaceIndex;
+
     setTimeout(() => {
       let roll = Math.floor(Math.random() * 6) + 1;
       if (diceCount === 2) {
@@ -79,53 +110,83 @@ export default function MiniGamePage() {
       setLastDiceRoll(roll);
       setIsRolling(false);
 
-      setPlayer((prev) => {
-        const oldIdx = prev.currentSpaceIndex;
-        const newIdx = (oldIdx + roll) % BOARD_SPACES.length;
+      // Animate token moving step by step (200ms per space)
+      setIsMoving(true);
+      let step = 0;
+      const totalRoll = roll;
 
-        let paydayCount = 0;
-        for (let step = 1; step <= roll; step++) {
-          const checkIdx = (oldIdx + step) % BOARD_SPACES.length;
-          if (checkIdx === 0 || checkIdx === 6) paydayCount++;
-        }
+      const moveTimer = setInterval(() => {
+        step++;
+        const stepIdx = (capturedOldIdx + step) % BOARD_SPACES.length;
+        setTokenPosition(stepIdx);
 
-        const monthlyCashflow = calculateMonthlyCashflow(prev);
-        const paydayEarned = monthlyCashflow * paydayCount;
-        const newCash = prev.cash + paydayEarned;
+        if (step >= totalRoll) {
+          clearInterval(moveTimer);
+          const newIdx = stepIdx;
 
-        const updatedLogs = [...prev.gameLogs];
-        if (paydayCount > 0) {
-          updatedLogs.push({
-            id: `payday_pass_${Date.now()}`,
-            turn: prev.turnCount + 1,
-            message: `월급날(Payday) ${paydayCount}회 통과! 월 잉여현금 ${formatCurrency(paydayEarned)}가 지급되었습니다.`,
-            type: 'payday',
-            amount: paydayEarned,
-            timestamp: new Date().toLocaleTimeString()
+          // Pre-calculate payday for float trigger (uses player captured at roll time)
+          let paydayCountForFloat = 0;
+          for (let s = 1; s <= totalRoll; s++) {
+            const checkIdx = (capturedOldIdx + s) % BOARD_SPACES.length;
+            if (checkIdx === 0 || checkIdx === 6) paydayCountForFloat++;
+          }
+          if (paydayCountForFloat > 0) {
+            const floatEarned = calculateMonthlyCashflow(player) * paydayCountForFloat;
+            setTimeout(() => addFloat(floatEarned), 50);
+          }
+
+          setPlayer((prev) => {
+            let paydayCount = 0;
+            for (let s = 1; s <= totalRoll; s++) {
+              const checkIdx = (capturedOldIdx + s) % BOARD_SPACES.length;
+              if (checkIdx === 0 || checkIdx === 6) paydayCount++;
+            }
+
+            const monthlyCashflow = calculateMonthlyCashflow(prev);
+            const paydayEarned = monthlyCashflow * paydayCount;
+            const newCash = prev.cash + paydayEarned;
+
+            const updatedLogs = [...prev.gameLogs];
+            if (paydayCount > 0) {
+              updatedLogs.push({
+                id: `payday_pass_${Date.now()}`,
+                turn: prev.turnCount + 1,
+                message: `월급날(Payday) ${paydayCount}회 통과! 월 잉여현금 ${formatCurrency(paydayEarned)}가 지급되었습니다.`,
+                type: 'payday',
+                amount: paydayEarned,
+                timestamp: new Date().toLocaleTimeString()
+              });
+            }
+
+            const newCharityTurns = Math.max(0, prev.charityTurnsLeft - 1);
+            const newSpace = BOARD_SPACES[newIdx];
+            updatedLogs.push({
+              id: `move_${Date.now()}`,
+              turn: prev.turnCount + 1,
+              message: `주사위 ${totalRoll}이(가) 나와 '${newSpace.name}' 칸으로 이동했습니다.`,
+              type: 'info',
+              timestamp: new Date().toLocaleTimeString()
+            });
+
+            return {
+              ...prev,
+              cash: newCash,
+              currentSpaceIndex: newIdx,
+              charityTurnsLeft: newCharityTurns,
+              turnCount: prev.turnCount + 1,
+              gameLogs: updatedLogs
+            };
           });
+
+          // Brief pause at destination, then trigger card
+          setTimeout(() => {
+            setIsMoving(false);
+            setTimeout(() => {
+              triggerSpaceEvent(BOARD_SPACES[newIdx].type);
+            }, 400);
+          }, 300);
         }
-
-        const newCharityTurns = Math.max(0, prev.charityTurnsLeft - 1);
-        const newSpace = BOARD_SPACES[newIdx];
-        updatedLogs.push({
-          id: `move_${Date.now()}`,
-          turn: prev.turnCount + 1,
-          message: `주사위 ${roll}이(가) 나와 '${newSpace.name}' 칸으로 이동했습니다.`,
-          type: 'info',
-          timestamp: new Date().toLocaleTimeString()
-        });
-
-        setTimeout(() => { triggerSpaceEvent(newSpace.type); }, 150);
-
-        return {
-          ...prev,
-          cash: newCash,
-          currentSpaceIndex: newIdx,
-          charityTurnsLeft: newCharityTurns,
-          turnCount: prev.turnCount + 1,
-          gameLogs: updatedLogs
-        };
-      });
+      }, 200);
     }, 450);
   };
 
@@ -169,7 +230,7 @@ export default function MiniGamePage() {
             dividendPerShare: card.cashflow
           });
         }
-        logMessage = `${card.symbol} 주식 ${shares}주를 총 $${(shares * card.cost).toLocaleString()}에 매수했습니다.`;
+        logMessage = `${card.symbol} 주식 ${shares}주를 총 ${formatCurrency(shares * card.cost)}에 매수했습니다.`;
       } else {
         const downPayment = card.downPayment;
         if (newCash < downPayment) { alert('초기 투자금이 부족합니다.'); return prev; }
@@ -194,7 +255,7 @@ export default function MiniGamePage() {
           roi: card.roi || 30
         });
 
-        logMessage = `'${card.title}' 자산을 매수했습니다! (월 패시브 인컴 +$${card.cashflow.toLocaleString()})`;
+        logMessage = `'${card.title}' 자산을 매수했습니다! (월 패시브 인컴 +${formatCurrency(card.cashflow)})`;
       }
 
       const newState: PlayerState = {
@@ -216,10 +277,16 @@ export default function MiniGamePage() {
       return newState;
     });
 
+    // Float for buy: negative (stock total cost or real-estate downpayment)
+    const floatCost = card.assetType === 'stock'
+      ? -(shares * card.cost)
+      : -card.downPayment;
+    addFloat(floatCost);
     setShowCardModal(false);
   };
 
   const handlePayDoodad = (card: DoodadCard) => {
+    addFloat(-card.cost);
     setPlayer((prev) => ({
       ...prev,
       cash: prev.cash - card.cost,
@@ -254,7 +321,7 @@ export default function MiniGamePage() {
 
         newCash += totalSellValue;
         updatedStocks = prev.stocks.filter((s) => s.symbol !== symbol);
-        profitMessage = `보유 중이던 ${symbol} 주식 ${targetStock.shares}주를 총 $${totalSellValue.toLocaleString()}(차익 +$${profit.toLocaleString()})에 전량 매각했습니다!`;
+        profitMessage = `보유 중이던 ${symbol} 주식 ${targetStock.shares}주를 총 ${formatCurrency(totalSellValue)}(차익 +${formatCurrency(profit)})에 전량 매각했습니다!`;
       } else {
         const targetTypes = card.targetPropertyType || [];
         const matchingProps = prev.realEstates.filter((re) => targetTypes.includes(re.type));
@@ -271,7 +338,7 @@ export default function MiniGamePage() {
 
         newCash += totalReceived;
         updatedRealEstates = prev.realEstates.filter((re) => !targetTypes.includes(re.type));
-        profitMessage = `${matchingProps.length}건의 부동산을 시장 호가에 매각하여 순 현금 $${totalReceived.toLocaleString()}를 수취했습니다!`;
+        profitMessage = `${matchingProps.length}건의 부동산을 시장 호가에 매각하여 순 현금 ${formatCurrency(totalReceived)}를 수취했습니다!`;
       }
 
       return {
@@ -285,6 +352,19 @@ export default function MiniGamePage() {
         ]
       };
     });
+    // Float for sell market: pre-calculate from current player state
+    if (card.targetType === 'stock') {
+      const targetStock = player.stocks.find((s) => s.symbol === card.targetSymbol);
+      if (targetStock) addFloat(targetStock.shares * (card.offerPricePerShare || 0));
+    } else {
+      const targetTypes = card.targetPropertyType || [];
+      const matching = player.realEstates.filter((re) => targetTypes.includes(re.type));
+      const totalNet = matching.reduce((sum, re) => {
+        const price = card.offerFixedPrice ?? Math.round(re.cost * (card.offerMultiplier ?? 1.3));
+        return sum + (price - re.mortgage);
+      }, 0);
+      if (totalNet > 0) addFloat(totalNet);
+    }
     setShowCardModal(false);
   };
 
@@ -310,6 +390,7 @@ export default function MiniGamePage() {
   };
 
   const handleBorrow = (amount: number) => {
+    addFloat(amount);
     setPlayer((prev) => ({
       ...prev,
       cash: prev.cash + amount,
@@ -318,7 +399,7 @@ export default function MiniGamePage() {
         ...prev.gameLogs,
         {
           id: `borrow_${Date.now()}`, turn: prev.turnCount,
-          message: `은행에서 $${amount.toLocaleString()}를 대출받았습니다. (월 이자 +$${(amount / 10).toLocaleString()}/월 증가)`,
+          message: `은행에서 ${formatCurrency(amount)}를 대출받았습니다. (월 이자 +${formatCurrency(amount / 10)}/월 증가)`,
           type: 'info', timestamp: new Date().toLocaleTimeString()
         }
       ]
@@ -326,6 +407,7 @@ export default function MiniGamePage() {
   };
 
   const handleRepayBankLoan = (amount: number) => {
+    addFloat(-amount);
     setPlayer((prev) => {
       const newState: PlayerState = {
         ...prev,
@@ -335,7 +417,7 @@ export default function MiniGamePage() {
           ...prev.gameLogs,
           {
             id: `repay_bank_${Date.now()}`, turn: prev.turnCount,
-            message: `은행 대출금 $${amount.toLocaleString()}를 상환했습니다! (월 이자 -$${(amount / 10).toLocaleString()}/월 감소)`,
+            message: `은행 대출금 ${formatCurrency(amount)}를 상환했습니다! (월 이자 -${formatCurrency(amount / 10)}/월 감소)`,
             type: 'repay', timestamp: new Date().toLocaleTimeString()
           }
         ]
@@ -349,6 +431,8 @@ export default function MiniGamePage() {
   };
 
   const handleRepayLiability = (liabilityId: string) => {
+    const liab = player.liabilities[liabilityId];
+    if (liab && player.cash >= liab.totalAmount) addFloat(-liab.totalAmount);
     setPlayer((prev) => {
       const liab = prev.liabilities[liabilityId];
       if (!liab || prev.cash < liab.totalAmount) return prev;
@@ -386,6 +470,23 @@ export default function MiniGamePage() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-800 flex flex-col font-sans">
+      <style>{`
+        @keyframes float-money {
+          0%   { transform: translateX(var(--fx,0px)) translateY(0) scale(0.7); opacity: 0; }
+          12%  { transform: translateX(var(--fx,0px)) translateY(-8px) scale(1.25); opacity: 1; }
+          75%  { transform: translateX(var(--fx,0px)) translateY(-64px) scale(1.05); opacity: 1; }
+          100% { transform: translateX(var(--fx,0px)) translateY(-90px) scale(0.9); opacity: 0; }
+        }
+        .float-money { animation: float-money 1.6s ease-out forwards; }
+      `}</style>
+
+      {/* Floating money overlay */}
+      <div className="fixed top-[42%] left-[38%] z-[200] pointer-events-none flex flex-col items-center gap-1">
+        {floatingAmounts.map((item) => (
+          <FloatingMoneyItem key={item.id} item={item} fmt={formatCurrency} />
+        ))}
+      </div>
+
       <GameHeader
         player={player}
         onOpenBank={() => setShowBankModal(true)}
@@ -399,6 +500,8 @@ export default function MiniGamePage() {
             player={player}
             onRollDice={handleRollDice}
             isRolling={isRolling}
+            isMoving={isMoving}
+            tokenPosition={tokenPosition}
             lastDiceRoll={lastDiceRoll}
             onOpenCurrentSpaceCard={() => setShowCardModal(true)}
           />

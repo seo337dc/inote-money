@@ -88,7 +88,7 @@ export function BankModal({ player, onClose, onBorrow, onRepayBankLoan, onRepayL
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-bold text-stone-800 flex items-center gap-2">
                     <PlusCircle className="w-4 h-4 text-emerald-500" />
-                    <span>새로 대출받기 ($1,000 단위)</span>
+                    <span>새로 대출받기 (100만원 단위)</span>
                   </h4>
                   <span className="text-xs text-amber-700 bg-amber-100 px-2 py-0.5 rounded font-medium">
                     월 이자: 대출금의 10%
@@ -99,7 +99,6 @@ export function BankModal({ player, onClose, onBorrow, onRepayBankLoan, onRepayL
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 flex items-center gap-2 bg-white border border-stone-200 rounded-lg px-3 py-2">
-                    <span className="text-stone-400 font-semibold">$</span>
                     <input
                       type="number"
                       step={1000}
@@ -108,6 +107,7 @@ export function BankModal({ player, onClose, onBorrow, onRepayBankLoan, onRepayL
                       onChange={(e) => setBorrowAmount(Number(e.target.value))}
                       className="bg-transparent text-stone-800 font-bold text-sm w-full outline-none"
                     />
+                    <span className="text-stone-500 text-xs whitespace-nowrap">{formatCurrency(borrowAmount)}</span>
                   </div>
                   <button
                     onClick={handleBorrow}
@@ -117,7 +117,7 @@ export function BankModal({ player, onClose, onBorrow, onRepayBankLoan, onRepayL
                   </button>
                 </div>
                 <div className="mt-2 text-right text-xs text-stone-400">
-                  예상 월 이자 추가: <span className="text-rose-500 font-semibold">+${(borrowAmount / 10).toLocaleString()} /월</span>
+                  예상 월 이자 추가: <span className="text-rose-500 font-semibold">+{formatCurrency(borrowAmount / 10)} /월</span>
                 </div>
               </div>
 
@@ -127,12 +127,11 @@ export function BankModal({ player, onClose, onBorrow, onRepayBankLoan, onRepayL
                     <MinusCircle className="w-4 h-4 text-blue-500" />
                     <span>은행 대출금 상환</span>
                   </h4>
-                  <span className="text-xs text-stone-400">현재 대출: ${player.bankLoan.toLocaleString()}</span>
+                  <span className="text-xs text-stone-400">현재 대출: {formatCurrency(player.bankLoan)}</span>
                 </div>
-                <p className="text-xs text-stone-400 mb-4">대출금을 $1,000 단위로 상환하면 월 이자 지출이 즉시 감소합니다.</p>
+                <p className="text-xs text-stone-400 mb-4">대출금을 100만원 단위로 상환하면 월 이자 지출이 즉시 감소합니다.</p>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 flex items-center gap-2 bg-white border border-stone-200 rounded-lg px-3 py-2">
-                    <span className="text-stone-400 font-semibold">$</span>
                     <input
                       type="number"
                       step={1000}
@@ -142,6 +141,7 @@ export function BankModal({ player, onClose, onBorrow, onRepayBankLoan, onRepayL
                       onChange={(e) => setRepayBankAmount(Number(e.target.value))}
                       className="bg-transparent text-stone-800 font-bold text-sm w-full outline-none"
                     />
+                    <span className="text-stone-500 text-xs whitespace-nowrap">{formatCurrency(repayBankAmount)}</span>
                   </div>
                   <button
                     onClick={handleRepayBank}
@@ -171,9 +171,9 @@ export function BankModal({ player, onClose, onBorrow, onRepayBankLoan, onRepayL
                         {isPaid && <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-semibold">상환 완료</span>}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-stone-400 mt-1">
-                        <span>원금: <strong className="text-stone-600">${item.totalAmount.toLocaleString()}</strong></span>
+                        <span>원금: <strong className="text-stone-600">{formatCurrency(item.totalAmount)}</strong></span>
                         <span>•</span>
-                        <span>월 지출: <strong className="text-rose-500">${item.monthlyExpense.toLocaleString()}</strong></span>
+                        <span>월 지출: <strong className="text-rose-500">{formatCurrency(item.monthlyExpense)}</strong></span>
                       </div>
                     </div>
                     {!isPaid ? (

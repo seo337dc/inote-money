@@ -7,12 +7,12 @@ export const SMALL_DEAL_CARDS: DealCard[] = [
     type: 'small',
     assetType: 'stock',
     symbol: 'MYT4U',
-    description: 'MYT4U 주식이 역사적 최저가인 $10에 하락했습니다! 배당은 없지만 추후 시장이 오를 때 시세차익을 노릴 수 있습니다.',
+    description: 'MYT4U 주식이 역사적 최저가인 1만원에 하락했습니다! 배당은 없지만 추후 시장이 오를 때 시세차익을 노릴 수 있습니다.',
     cost: 10,
     downPayment: 10,
     mortgage: 0,
     cashflow: 0,
-    ruleHint: '1주당 $10로 원하는 수량만큼 매수 가능 (배당 0)'
+    ruleHint: '1주당 1만원으로 원하는 수량만큼 매수 가능 (배당 0)'
   },
   {
     id: 'sd_stock_ok4u_div',
@@ -20,12 +20,12 @@ export const SMALL_DEAL_CARDS: DealCard[] = [
     type: 'small',
     assetType: 'stock',
     symbol: 'OK4U',
-    description: '안정적인 수익을 내는 OK4U 주식이 주당 $30에 나왔습니다. 100주 매수 시 매월 $20의 배당금이 지급됩니다.',
+    description: '안정적인 수익을 내는 OK4U 주식이 주당 3만원에 나왔습니다. 100주 매수 시 매월 2만원의 배당금이 지급됩니다.',
     cost: 30,
     downPayment: 30,
     mortgage: 0,
     cashflow: 0.2,
-    ruleHint: '1주당 월 $0.20 배당 지급 (예: 100주 = 월 $20)'
+    ruleHint: '1주당 월 200원 배당 지급 (예: 100주 = 월 2만원)'
   },
   {
     id: 'sd_stock_on2u_boom',
@@ -33,7 +33,7 @@ export const SMALL_DEAL_CARDS: DealCard[] = [
     type: 'small',
     assetType: 'stock',
     symbol: 'ON2U',
-    description: '신약 개발 소식으로 핫한 ON2U 주식! 주당 $5의 헐값입니다.',
+    description: '신약 개발 소식으로 핫한 ON2U 주식! 주당 5천원의 헐값입니다.',
     cost: 5,
     downPayment: 5,
     mortgage: 0,
@@ -45,7 +45,7 @@ export const SMALL_DEAL_CARDS: DealCard[] = [
     title: '소형 2방 아파트 (2BR/1BA Condo)',
     type: 'small',
     assetType: 'real_estate',
-    description: '교통이 편리한 지역의 2방 아파트 급매물입니다. 투자금 4천 달러로 매월 $140의 패시브 인컴을 창출합니다.',
+    description: '교통이 편리한 지역의 2방 아파트 급매물입니다. 투자금 400만원으로 매월 14만원의 패시브 인컴을 창출합니다.',
     cost: 40000,
     downPayment: 4000,
     mortgage: 36000,
@@ -64,7 +64,7 @@ export const SMALL_DEAL_CARDS: DealCard[] = [
     mortgage: 50000,
     cashflow: 160,
     roi: 38.4,
-    ruleHint: '추후 시장에서 최대 $85,000~135,000에 매각 가능'
+    ruleHint: '추후 시장에서 최대 8,500만원~1억3,500만원에 매각 가능'
   },
   {
     id: 'sd_duplex',
@@ -93,7 +93,7 @@ export const BIG_DEAL_CARDS: DealCard[] = [
     mortgage: 126000,
     cashflow: 580,
     roi: 49.7,
-    ruleHint: '매월 $580 패시브 인컴 증가'
+    ruleHint: '매월 58만원 패시브 인컴 증가'
   },
   {
     id: 'bd_8plex',
@@ -106,7 +106,7 @@ export const BIG_DEAL_CARDS: DealCard[] = [
     mortgage: 252000,
     cashflow: 1200,
     roi: 51.4,
-    ruleHint: '매월 $1,200 패시브 인컴 증가!'
+    ruleHint: '매월 120만원 패시브 인컴 증가!'
   },
   {
     id: 'bd_apartment_24',
@@ -119,7 +119,7 @@ export const BIG_DEAL_CARDS: DealCard[] = [
     mortgage: 500000,
     cashflow: 2800,
     roi: 67.2,
-    ruleHint: '매월 $2,800의 거대한 패시브 인컴'
+    ruleHint: '매월 280만원의 거대한 패시브 인컴'
   },
   {
     id: 'bd_car_wash',
@@ -132,7 +132,7 @@ export const BIG_DEAL_CARDS: DealCard[] = [
     mortgage: 285000,
     cashflow: 1500,
     roi: 51.4,
-    ruleHint: '매월 $1,500 현금흐름 증가'
+    ruleHint: '매월 150만원 현금흐름 증가'
   },
   {
     id: 'bd_laundromat',
@@ -145,7 +145,7 @@ export const BIG_DEAL_CARDS: DealCard[] = [
     mortgage: 160000,
     cashflow: 950,
     roi: 57,
-    ruleHint: '매월 $950 현금흐름 증가'
+    ruleHint: '매월 95만원 현금흐름 증가'
   }
 ];
 
@@ -191,24 +191,24 @@ export const DOODAD_CARDS: DoodadCard[] = [
 export const MARKET_CARDS: MarketCard[] = [
   {
     id: 'm_boom_myt4u',
-    title: '주식 붐! MYT4U 주가 급등 ($40)',
-    description: 'IT 주식 붐으로 MYT4U 주가가 주당 $40까지 치솟았습니다! 보유 중인 MYT4U 주식을 전량 매각할 수 있습니다.',
+    title: '주식 붐! MYT4U 주가 급등 (4만원)',
+    description: 'IT 주식 붐으로 MYT4U 주가가 주당 4만원까지 치솟았습니다! 보유 중인 MYT4U 주식을 전량 매각할 수 있습니다.',
     targetType: 'stock',
     targetSymbol: 'MYT4U',
     offerPricePerShare: 40
   },
   {
     id: 'm_boom_ok4u',
-    title: '우량 배당주 OK4U 상승 ($45)',
-    description: '안정적인 배당 실적으로 OK4U 주식이 주당 $45에 거래됩니다. 원할 경우 보유 주식을 매각해 시세차익을 실현할 수 있습니다.',
+    title: '우량 배당주 OK4U 상승 (4만5천원)',
+    description: '안정적인 배당 실적으로 OK4U 주식이 주당 4만5천원에 거래됩니다. 원할 경우 보유 주식을 매각해 시세차익을 실현할 수 있습니다.',
     targetType: 'stock',
     targetSymbol: 'OK4U',
     offerPricePerShare: 45
   },
   {
     id: 'm_boom_on2u',
-    title: '제약사 ON2U 신약 승인 ($35)',
-    description: 'ON2U 신약 승인 호재로 주가가 $35에 도달했습니다! 보유 중이라면 대박 수익을 낼 수 있습니다.',
+    title: '제약사 ON2U 신약 승인 (3만5천원)',
+    description: 'ON2U 신약 승인 호재로 주가가 3만5천원에 도달했습니다! 보유 중이라면 대박 수익을 낼 수 있습니다.',
     targetType: 'stock',
     targetSymbol: 'ON2U',
     offerPricePerShare: 35
@@ -216,7 +216,7 @@ export const MARKET_CARDS: MarketCard[] = [
   {
     id: 'm_buyer_condo',
     title: '부동산 투자자 등장! (2방 아파트 고가 매입)',
-    description: '타지역 투자자가 지역 2방 아파트(2BR Condo)를 매입 원합니다. 보유 중인 2방 아파트가 있다면 $65,000에 매각할 수 있습니다!',
+    description: '타지역 투자자가 지역 2방 아파트(2BR Condo)를 매입 원합니다. 보유 중인 2방 아파트가 있다면 6,500만원에 매각할 수 있습니다!',
     targetType: 'real_estate',
     targetPropertyType: ['condo'],
     offerFixedPrice: 65000
@@ -224,7 +224,7 @@ export const MARKET_CARDS: MarketCard[] = [
   {
     id: 'm_buyer_house',
     title: '교외 주택 수요 폭발! (3방 주택 매입)',
-    description: '실거주 가족이 3방 단독주택(3BR House)을 찾고 있습니다. 보유 중인 3방 주택을 $110,000에 매각하여 막대한 차익을 얻을 수 있습니다!',
+    description: '실거주 가족이 3방 단독주택(3BR House)을 찾고 있습니다. 보유 중인 3방 주택을 1억1,000만원에 매각하여 막대한 차익을 얻을 수 있습니다!',
     targetType: 'real_estate',
     targetPropertyType: ['house'],
     offerFixedPrice: 110000

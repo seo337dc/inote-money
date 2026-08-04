@@ -56,7 +56,7 @@ export function createInitialPlayerState(profession: Profession): PlayerState {
       {
         id: 'init_1',
         turn: 0,
-        message: `${profession.nameKo}(${profession.name}) 직업으로 쥐경주 보드게임을 시작했습니다. (초기 저축액: $${profession.savings.toLocaleString()})`,
+        message: `${profession.nameKo}(${profession.name}) 직업으로 쥐경주 보드게임을 시작했습니다. (초기 저축액: ${formatCurrency(profession.savings)})`,
         type: 'info',
         timestamp: new Date().toLocaleTimeString()
       }
@@ -105,6 +105,19 @@ export function checkHasEscapedRatRace(state: PlayerState): boolean {
 }
 
 export function formatCurrency(amount: number): string {
-  const prefix = amount < 0 ? '-$' : '$';
-  return `${prefix}${Math.abs(amount).toLocaleString()}`;
+  const won = Math.round(Math.abs(amount) * 1000);
+  const sign = amount < 0 ? '-' : '';
+  if (won === 0) return '0원';
+
+  const eok = Math.floor(won / 100_000_000);
+  const rem1 = won % 100_000_000;
+  const man = Math.floor(rem1 / 10_000);
+  const rem2 = rem1 % 10_000;
+
+  const parts: string[] = [];
+  if (eok > 0) parts.push(`${eok}억`);
+  if (man > 0) parts.push(`${man.toLocaleString()}만`);
+  if (rem2 > 0) parts.push(rem2.toLocaleString());
+
+  return `${sign}${parts.join(' ')}원`;
 }

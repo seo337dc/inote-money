@@ -84,7 +84,7 @@ export const PROFESSIONS: Profession[] = [
     retailDebt: { total: 1000, expense: 50 },
     otherExpenses: 570,
     childCostPerChild: 140,
-    description: '트럭 운전사와 지출은 같지만 초기 저축금($710)이 많아 초반 소액 투자를 잡기 좋습니다.'
+    description: '트럭 운전사와 지출은 같지만 초기 저축금(71만원)이 많아 초반 소액 투자를 잡기 좋습니다.'
   },
   {
     id: 'lawyer',

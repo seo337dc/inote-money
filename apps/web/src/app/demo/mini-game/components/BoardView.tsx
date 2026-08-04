@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BOARD_SPACES } from '../data/board';
 import { PlayerState, BoardSpace } from '../types';
 import {
@@ -18,10 +18,59 @@ import {
   BookOpen
 } from 'lucide-react';
 
+const PIP_POSITIONS: Record<number, [number, number][]> = {
+  1: [[50, 50]],
+  2: [[28, 28], [72, 72]],
+  3: [[28, 28], [50, 50], [72, 72]],
+  4: [[28, 28], [72, 28], [28, 72], [72, 72]],
+  5: [[28, 28], [72, 28], [50, 50], [28, 72], [72, 72]],
+  6: [[28, 25], [72, 25], [28, 50], [72, 50], [28, 75], [72, 75]],
+};
+
+function DiceFace({ value, state }: { value: number; state: 'idle' | 'rolling' | 'result' }) {
+  const pips = PIP_POSITIONS[Math.min(6, Math.max(1, value))] || PIP_POSITIONS[1];
+  const animClass =
+    state === 'rolling'
+      ? 'dice-shake'
+      : state === 'result'
+      ? 'dice-pop'
+      : '';
+
+  return (
+    <div
+      className={`relative w-14 h-14 bg-white rounded-xl border-2 shadow-lg select-none ${
+        state === 'rolling'
+          ? 'border-amber-400 shadow-amber-200'
+          : state === 'result'
+          ? 'border-emerald-400 shadow-emerald-100'
+          : 'border-stone-300'
+      } ${animClass}`}
+    >
+      {pips.map(([x, y], i) => (
+        <div
+          key={i}
+          className={`absolute rounded-full ${
+            state === 'rolling' ? 'bg-amber-600' : 'bg-stone-800'
+          }`}
+          style={{
+            width: '22%',
+            height: '22%',
+            left: `${x}%`,
+            top: `${y}%`,
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 interface BoardViewProps {
   player: PlayerState;
   onRollDice: (diceCount: 1 | 2) => void;
   isRolling: boolean;
+  isMoving: boolean;
+  tokenPosition: number;
   lastDiceRoll: number | null;
   onOpenCurrentSpaceCard: () => void;
 }
@@ -30,10 +79,52 @@ export function BoardView({
   player,
   onRollDice,
   isRolling,
+  isMoving,
+  tokenPosition,
   lastDiceRoll,
 }: BoardViewProps) {
   const [selectedDiceCount, setSelectedDiceCount] = useState<1 | 2>(1);
   const [showRuleTip, setShowRuleTip] = useState(false);
+  const [displayNumbers, setDisplayNumbers] = useState<number[]>([1]);
+  const [diceState, setDiceState] = useState<'idle' | 'rolling' | 'result'>('idle');
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const rollingCountRef = useRef<1 | 2>(1);
+
+  const hasCharityBoost = player.charityTurnsLeft > 0;
+
+  useEffect(() => {
+    if (isRolling) {
+      const count = hasCharityBoost ? selectedDiceCount : 1;
+      rollingCountRef.current = count;
+      setDiceState('rolling');
+      intervalRef.current = setInterval(() => {
+        setDisplayNumbers(
+          Array.from({ length: count }, () => Math.floor(Math.random() * 6) + 1)
+        );
+      }, 80);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (lastDiceRoll !== null) {
+        const count = rollingCountRef.current;
+        if (count === 2) {
+          const d1 = Math.min(6, Math.max(1, lastDiceRoll - 1));
+          const d2 = Math.min(6, Math.max(1, lastDiceRoll - d1));
+          setDisplayNumbers([d1, d2]);
+        } else {
+          setDisplayNumbers([Math.min(6, Math.max(1, lastDiceRoll))]);
+        }
+        setDiceState('result');
+        const t = setTimeout(() => setDiceState('idle'), 1200);
+        return () => clearTimeout(t);
+      }
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isRolling, lastDiceRoll]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getSpaceIcon = (iconName: string) => {
     switch (iconName) {
@@ -49,23 +140,24 @@ export function BoardView({
     }
   };
 
-  const currentSpace = BOARD_SPACES[player.currentSpaceIndex] || BOARD_SPACES[0];
-  const hasCharityBoost = player.charityTurnsLeft > 0;
+  const currentSpace = BOARD_SPACES[tokenPosition] || BOARD_SPACES[0];
 
   const topSpaces = [0, 1, 2, 3].map((idx) => BOARD_SPACES[idx]);
   const bottomSpaces = [6, 7, 8, 9].map((idx) => BOARD_SPACES[idx]).reverse();
 
   const renderSpaceCard = (space: BoardSpace, orientation: 'top' | 'bottom' | 'side') => {
-    const isCurrent = player.currentSpaceIndex === space.index;
+    const isCurrent = tokenPosition === space.index;
     const isPayday = space.type === 'payday';
 
     return (
       <div
         key={space.index}
-        className={`relative rounded-xl border-2 transition-all p-2.5 flex flex-col justify-between select-none ${
-          isCurrent
-            ? 'border-amber-400 bg-amber-50 shadow-lg ring-2 ring-amber-400 scale-[1.03] z-10'
-            : 'border-stone-200 bg-white hover:bg-stone-50'
+        className={`relative rounded-xl border-2 p-2.5 flex flex-col justify-between select-none ${
+          isCurrent && isMoving
+            ? 'border-blue-400 bg-blue-50 shadow-lg ring-2 ring-blue-400 scale-[1.03] z-10 transition-all duration-150'
+            : isCurrent
+            ? 'border-amber-400 bg-amber-50 shadow-lg ring-2 ring-amber-400 scale-[1.03] z-10 transition-all'
+            : 'border-stone-200 bg-white hover:bg-stone-50 transition-all'
         } ${orientation === 'side' ? 'min-h-[96px]' : 'min-h-[105px]'}`}
       >
         <div className="flex items-center justify-between gap-1">
@@ -101,8 +193,12 @@ export function BoardView({
         </div>
 
         {isCurrent && (
-          <div className="absolute -top-3 -right-2 bg-gradient-to-r from-amber-500 to-yellow-400 text-white px-2 py-0.5 rounded-full text-[10px] font-black shadow-lg flex items-center gap-1 animate-bounce">
-            <span>MY TOKEN</span>
+          <div className={`absolute -top-3 -right-2 text-white px-2 py-0.5 rounded-full text-[10px] font-black shadow-lg flex items-center gap-1 ${
+            isMoving
+              ? 'bg-gradient-to-r from-blue-500 to-cyan-400 token-move'
+              : 'bg-gradient-to-r from-amber-500 to-yellow-400 animate-bounce'
+          }`}>
+            <span>{isMoving ? '→' : 'MY TOKEN'}</span>
           </div>
         )}
       </div>
@@ -111,6 +207,43 @@ export function BoardView({
 
   return (
     <div className="w-full bg-white p-4 sm:p-6 rounded-3xl border border-stone-200 shadow-sm relative overflow-hidden">
+      <style>{`
+        @keyframes dice-shake {
+          0%   { transform: rotate(0deg) scale(1); }
+          10%  { transform: rotate(-12deg) scale(1.08); }
+          20%  { transform: rotate(12deg) scale(1.08); }
+          30%  { transform: rotate(-9deg) scale(1.05); }
+          40%  { transform: rotate(9deg) scale(1.05); }
+          50%  { transform: rotate(-6deg) scale(1.03); }
+          60%  { transform: rotate(6deg) scale(1.03); }
+          70%  { transform: rotate(-3deg) scale(1.01); }
+          80%  { transform: rotate(3deg) scale(1.01); }
+          90%  { transform: rotate(-1deg) scale(1); }
+          100% { transform: rotate(0deg) scale(1); }
+        }
+        @keyframes dice-pop {
+          0%   { transform: scale(0.6) rotate(-8deg); opacity: 0.4; }
+          50%  { transform: scale(1.2) rotate(4deg); opacity: 1; }
+          75%  { transform: scale(0.92) rotate(-2deg); }
+          90%  { transform: scale(1.04) rotate(1deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+        .dice-shake {
+          animation: dice-shake 0.12s ease-in-out infinite;
+        }
+        .dice-pop {
+          animation: dice-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes token-move {
+          0%   { transform: translateY(0) scale(1); }
+          30%  { transform: translateY(-4px) scale(1.15); }
+          60%  { transform: translateY(1px) scale(0.95); }
+          100% { transform: translateY(0) scale(1); }
+        }
+        .token-move {
+          animation: token-move 0.18s ease-out;
+        }
+      `}</style>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -145,18 +278,22 @@ export function BoardView({
               </p>
             </div>
 
-            <div className="my-4 flex flex-col items-center">
-              {lastDiceRoll ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-300 text-stone-900 font-black text-2xl flex items-center justify-center shadow-md">
-                    {lastDiceRoll}
+            <div className="my-4 flex flex-col items-center gap-2">
+              <div className="flex items-center gap-3">
+                {isRolling || lastDiceRoll ? (
+                  displayNumbers.map((num, i) => (
+                    <DiceFace key={i} value={num} state={diceState} />
+                  ))
+                ) : (
+                  <div className="w-14 h-14 rounded-xl bg-stone-100 border-2 border-stone-200 flex items-center justify-center text-stone-300">
+                    <Dices className="w-7 h-7" />
                   </div>
-                  <span className="text-xs text-stone-400">칸 이동 완료!</span>
-                </div>
-              ) : (
-                <div className="w-12 h-12 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400">
-                  <Dices className="w-6 h-6" />
-                </div>
+                )}
+              </div>
+              {!isRolling && lastDiceRoll && (
+                <span className="text-[11px] text-stone-400 font-medium">
+                  합계 <strong className="text-amber-600">{lastDiceRoll}</strong>칸 이동!
+                </span>
               )}
             </div>
 
@@ -187,11 +324,13 @@ export function BoardView({
 
             <button
               onClick={() => onRollDice(selectedDiceCount)}
-              disabled={isRolling}
+              disabled={isRolling || isMoving}
               className="w-full max-w-xs py-3.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
             >
               <Dices className={`w-5 h-5 ${isRolling ? 'animate-spin' : ''}`} />
-              <span>{isRolling ? '주사위 굴리는 중...' : '주사위 굴려 이동'}</span>
+              <span>
+                {isRolling ? '주사위 굴리는 중...' : isMoving ? '이동 중...' : '주사위 굴려 이동'}
+              </span>
             </button>
           </div>
 
