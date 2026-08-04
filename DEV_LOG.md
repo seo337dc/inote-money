@@ -1034,6 +1034,31 @@ apps/web/src/app/demo/mini-game/
 
 ---
 
+### 2026-08-04 (세션 10)
+
+#### ✅ Render 서버 웨이크업 기능 제거
+
+Render 콜드 스타트 문제가 해소되어 앱 진입 시마다 헬스체크로 서버를 깨우던 로직이 더 이상 필요 없어짐.
+
+**삭제한 파일**
+- `src/components/ServerWakeProvider.tsx` — 앱 전체를 감싸던 웨이크업 게이트 컴포넌트
+- `src/lib/waitForServer.ts` — 헬스체크 폴링 로직 (connecting → waking → ready/failed)
+- `src/app/api/health-check/route.ts` — BE `/api/v1/health` 프록시 Next.js API Route
+
+**수정**
+- `src/app/layout.tsx` — `ServerWakeProvider` 래퍼 제거, `ReactQueryProvider` 안에서 `children` 바로 렌더링
+- `src/components/LoadingScreen.tsx`는 다른 페이지(`/dashboard`, `/account-book` 등)에서 범용 로딩 UI로 계속 쓰여서 유지
+
+#### 🐛 버그 픽스 — `/demo/mini-game` 하이드레이션 에러
+
+ServerWakeProvider 제거로 페이지가 실제로 서버에서 렌더링되기 시작하면서, 그동안 가려져 있던 잠재 버그가 드러남.
+`createInitialPlayerState`가 `useState` lazy initializer 안에서 `new Date().toLocaleTimeString()`으로 초기 로그 타임스탬프를 생성 → 서버 렌더링 시각과 클라이언트 하이드레이션 시각이 달라 텍스트 불일치 에러 발생.
+직업 선택 전 미리보기용 로그라 정확한 시각이 중요하지 않으므로 해당 `<span>`에 `suppressHydrationWarning` 추가로 해결 — `page.tsx`.
+
+#### ✅ 사람(사용자) 브라우저 QA 진행 — 하이드레이션 에러 해소, 다른 페이지 정상 동작 확인
+
+---
+
 ## UI 인사이트 / 기획 메모
 
 ### 리스트·테이블 뷰 필요 (2026-05-08)

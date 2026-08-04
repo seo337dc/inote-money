@@ -592,7 +592,7 @@ export default function MiniGamePage() {
                   <div>
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className="text-[10px] bg-stone-200 text-stone-600 px-1.5 py-0.5 rounded font-bold">#턴{log.turn}</span>
-                      <span className="text-stone-400 text-[10px]">{log.timestamp}</span>
+                      <span className="text-stone-400 text-[10px]" suppressHydrationWarning>{log.timestamp}</span>
                     </div>
                     <div className="text-stone-700 leading-relaxed">{log.message}</div>
                   </div>

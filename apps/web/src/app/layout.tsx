@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
-import ServerWakeProvider from "@/components/ServerWakeProvider";
 import { ReactQueryProvider } from "@/lib/query-client";
 import "./globals.css";
 
@@ -32,9 +31,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ReactQueryProvider>
-          <ServerWakeProvider>
-            {children}
-          </ServerWakeProvider>
+          {children}
         </ReactQueryProvider>
         <Toaster position="top-center" richColors />
       </body>

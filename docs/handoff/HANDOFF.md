@@ -95,6 +95,8 @@
 - Turbopack 스테일 캐시 이슈 확인: `.next` 전체 삭제로 해결, 게임 동작 정상
 - **사람(사용자) 브라우저 QA 진행** — 직업 선택, 토큰 이동, 카드 플립, 부유 텍스트, 자녀 출산 카드, 은행 대출 플로우 확인
 - **버그 픽스:** 카드 모달 안에서 "은행 대출 열기" 클릭 시 `BankModal`이 `CardModal`에 가려지던 문제 — 둘 다 `z-50`이라 DOM상 나중에 그려지는 `CardModal`이 위로 덮음 → `BankModal.tsx` 오버레이 `z-[60]`으로 수정, 사람이 재확인 후 정상 동작 확인
+- **Render 서버 웨이크업 기능 제거** — 콜드 스타트 이슈 해소되어 `ServerWakeProvider`/`waitForServer.ts`/`/api/health-check` route 삭제, `layout.tsx`에서 래퍼 제거. `LoadingScreen.tsx`는 다른 페이지 범용 로딩 UI로 유지.
+- **버그 픽스:** 위 변경으로 페이지가 실제 서버 렌더링되며 드러난 `/demo/mini-game` 하이드레이션 에러(초기 로그 타임스탬프가 `new Date()` 기반이라 서버/클라이언트 값이 다름) — 해당 `<span>`에 `suppressHydrationWarning` 추가로 해결, 사람이 재확인 후 정상 동작 확인
 
 ### 진행 중 / 다음 Task
 
@@ -106,7 +108,8 @@ QA PASS. 다음 둘 중 선택 필요 (사람 결정 대기):
 
 **해도 됨**
 - `/demo/mini-game` 기능 QA + 애니메이션 3종 동작 확인 (사람이 직접 수행)
-- 발견된 버그 즉시 픽스 (은행 모달 z-index)
+- 발견된 버그 즉시 픽스 (은행 모달 z-index, 하이드레이션 에러)
+- Render 서버 웨이크업 기능 제거 (사람 확인 후 불필요 판단)
 
 **하지 말 것**
 - 주식 API 구현 (다음 Task, 미착수)
@@ -117,11 +120,18 @@ QA PASS. 다음 둘 중 선택 필요 (사람 결정 대기):
 
 ```
 apps/web/src/app/demo/mini-game/
-├── page.tsx                    ← FloatItem 타입, addFloat 훅, 토큰 이동 로직, float 트리거
+├── page.tsx                    ← FloatItem 타입, addFloat 훅, 토큰 이동 로직, float 트리거, timestamp suppressHydrationWarning
 └── components/
     ├── BoardView.tsx           ← tokenPosition/isMoving props, 파란/황금 뱃지, step 이동 표시
     ├── CardModal.tsx           ← card-flip-in CSS keyframe, perspective 오버레이
     └── BankModal.tsx           ← 오버레이 z-index z-50 → z-[60] (카드 모달에 가려지던 버그 픽스)
+
+apps/web/src/app/layout.tsx      ← ServerWakeProvider 래퍼 제거
+
+삭제:
+├── apps/web/src/components/ServerWakeProvider.tsx
+├── apps/web/src/lib/waitForServer.ts
+└── apps/web/src/app/api/health-check/route.ts
 ```
 
 ### 알려진 이슈
@@ -135,4 +145,4 @@ apps/web/src/app/demo/mini-game/
 
 ### QA 판정
 
-**PASS** — 사람이 직접 브라우저로 확인 (직업 선택, 토큰 이동, 카드 플립, 부유 텍스트, 자녀 출산 카드, 은행 대출 플로우). 버그 1건 발견 즉시 픽스 완료(은행 모달 z-index).
+**PASS** — 사람이 직접 브라우저로 확인 (직업 선택, 토큰 이동, 카드 플립, 부유 텍스트, 자녀 출산 카드, 은행 대출 플로우, 서버 웨이크업 제거 후 하이드레이션 에러 해소). 버그 2건 발견 즉시 픽스 완료(은행 모달 z-index, 미니게임 하이드레이션 에러).
