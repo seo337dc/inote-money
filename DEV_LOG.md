@@ -948,6 +948,67 @@ src/app/demo/
 
 ---
 
+### 2026-08-04 (세션 8)
+
+#### ✅ 캐시플로우 보드게임 데모 구현 (`/demo/mini-game`)
+
+Google AI Studio로 제작한 Vite/React 버전 보드게임을 Next.js App Router + 라이트 테마로 이식.
+AI Studio 할당량 초과로 Claude Code가 테마 전환 포함 전체 이식 직접 수행.
+
+**이전 구현 (카드 기반) → 신규 구현 (보드 기반) 전면 교체**
+
+삭제한 파일:
+- `data/jobs.ts`, `data/opportunity-cards.ts`, `data/doodad-cards.ts`, `data/market-cards.ts`
+- `lib/game-engine.ts`, `lib/ai-player.ts`
+- `components/SetupScreen.tsx`, `components/GameScreen.tsx`, `components/ResultScreen.tsx`, `components/AiTurnDisplay.tsx`
+
+**신규 파일 구조**
+```
+apps/web/src/app/demo/mini-game/
+├── types.ts              ← 전체 타입 (Profession, BoardSpace, DealCard 등)
+├── page.tsx              ← 게임 상태 관리 + 핸들러 전체
+├── data/
+│   ├── board.ts          ← 12칸 보드 정의
+│   ├── professions.ts    ← 6개 직업 (급여/부채/저축 데이터)
+│   └── cards.ts          ← 소액 6장, 대형 5장, 지출 6장, 시장 6장
+├── lib/
+│   └── gameLogic.ts      ← 패시브 인컴/총지출/잉여현금/승리조건 계산
+└── components/
+    ├── BoardView.tsx       ← 12칸 보드 레이아웃 + 주사위 패널
+    ├── GameHeader.tsx      ← 상단 현황바 (현금/패시브인컴/잉여현금)
+    ├── CardModal.tsx       ← 공간 도착 시 카드 모달 (7종 처리)
+    ├── ProfessionSelectModal.tsx ← 직업 선택 + 재무제표 미리보기
+    ├── FinancialStatement.tsx    ← 수입/지출/자산/부채/로그 3탭
+    ├── BankModal.tsx             ← 은행 대출·상환 + 부채 조기상환
+    └── VictoryModal.tsx          ← 쥐경주 탈출 성공 화면
+```
+
+**게임 규칙 구현**
+- 12칸 보드: Payday(0,6), 소액투자(1,7,11), 지출(2), 시장(3), 대형투자(4,9), 자녀(5), 자선(8), 실직(10)
+- 6개 직업: 의사($13,200) / 엔지니어($4,900) / 교사($3,300) / 트럭운전사($2,500) / 비서($2,500) / 변호사($7,500)
+- 승리 조건: 패시브 인컴 > 월 총지출 (쥐경주 탈출)
+- 자선 칸: 총수입 10% 기부 → 3턴 주사위 2개 선택 가능
+- 실직 칸: `downsizedTurnsLeft=1` 설정, 다음 턴 자동 스킵
+- 은행 대출: $1,000 단위, 월 이자 = 대출액 × 10%
+
+**테마 전환 (dark → light)**
+| 이전 (dark) | 신규 (light) |
+|---|---|
+| `bg-slate-900` | `bg-white` |
+| `bg-slate-800` | `bg-stone-100` |
+| `bg-slate-700` | `bg-stone-200` |
+| `text-white` | `text-stone-900` |
+| `text-slate-400` | `text-stone-400` |
+| 포인트 컬러 | emerald/amber/rose 유지 |
+
+**Next.js 적용 사항**
+- `'use client'` 디렉티브 추가
+- React import 제거 (불필요)
+- `export const Component: React.FC` → `export function Component()`
+- import 경로: `../types/game` → `../types`, `../utils/gameLogic` → `../lib/gameLogic`
+
+---
+
 ## UI 인사이트 / 기획 메모
 
 ### 리스트·테이블 뷰 필요 (2026-05-08)
@@ -991,7 +1052,7 @@ src/app/demo/
 - [x] 설정 — 프로필 + 다크모드
 - [x] 주식 — 국내(Naver API + Lightweight Charts) / 해외(TradingView) / 환율
 - [ ] **금융 지식 화면 구현** (`/demo/financial-knowledge`)
-- [ ] **미니게임 화면 구현** (`/demo/mini-game`)
+- [x] **미니게임 화면 구현** (`/demo/mini-game`) — 캐시플로우 보드게임 이식 완료
 
 ### 3단계 — FE + BE 연동 (BE Render 배포 완료)
 
