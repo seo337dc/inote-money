@@ -20,6 +20,23 @@ type Settings = {
 
 type Review = { stars: number; text: string };
 
+const DEFAULT_SETTINGS: Settings = {
+  monthlyIncome: 3_200_000,
+  incomeDay: 25,
+  dailyLimit: 30_000,
+  monthlyGoal: 500_000,
+  assetUpdateDay: 1,
+  savings: [
+    { id: "s1", name: "청년도약계좌", amount: 300_000, day: 25 },
+    { id: "s2", name: "주택청약", amount: 100_000, day: 5 },
+  ],
+  fixedExpenses: [
+    { id: "f1", name: "통신비", amount: 55_000, day: 20 },
+    { id: "f2", name: "넷플릭스", amount: 17_000, day: 3 },
+    { id: "f3", name: "실손보험료", amount: 82_000, day: 15 },
+  ],
+};
+
 function getWeekMonday(offset: number): Date {
   const now = new Date();
   const day = now.getDay();
@@ -109,7 +126,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const s = localStorage.getItem("inote-settings");
-    if (s) setSettings(JSON.parse(s));
+    if (s) {
+      setSettings(JSON.parse(s));
+    } else {
+      setSettings(DEFAULT_SETTINGS);
+      localStorage.setItem("inote-settings", JSON.stringify(DEFAULT_SETTINGS));
+    }
     const wr = localStorage.getItem("inote-week-reviews");
     if (wr) setWeekReviews(JSON.parse(wr));
     const mr = localStorage.getItem("inote-month-reviews");

@@ -99,6 +99,7 @@
 - **버그 픽스:** 위 변경으로 페이지가 실제 서버 렌더링되며 드러난 `/demo/mini-game` 하이드레이션 에러(초기 로그 타임스탬프가 `new Date()` 기반이라 서버/클라이언트 값이 다름) — 해당 `<span>`에 `suppressHydrationWarning` 추가로 해결, 사람이 재확인 후 정상 동작 확인
 - **버그 픽스:** `/demo/stocks` 네이버 금융 API 500 에러 — `api/stock/[ticker]/route.ts`가 네이버 응답(헤더 행만 작은따옴표인 JS 배열 리터럴)을 `JSON.parse`로 바로 파싱해 SyntaxError 발생 → `text.replace(/'/g, '"')` 후 파싱하도록 수정, 브라우저에서 `/api/stock/005930` 직접 호출로 200 + 244개 캔들 반환 확인
 - **`/demo/dashboard` 가계부 데이터 실제 연동** (포트폴리오 소개 페이지 캡처 준비 과정에서 발견) — 주간/월간 지출·낭비 금액이 하드코딩 "0원"이던 것을, 실제 `/dashboard`의 계산 로직을 이식해 `demo/account-book/data.ts`의 `INITIAL_EXPENSES`로 실제 계산하도록 구현. 7월(지난달 비교, 581,400원)/8월 1~5일(이번 달, 140,900원) 목데이터 추가. 브라우저 확인 완료.
+- **`/demo/dashboard` "내 정보" 카드 기본 목데이터 추가** — `localStorage`에 `inote-settings`가 없으면 `DEFAULT_SETTINGS`(월급 320만원 등)로 자동 초기화하도록 수정, 항상 "설정된 정보 없음"으로 보이던 문제 해결. 브라우저 확인 완료.
 
 ### 진행 중 / 다음 Task
 
@@ -137,7 +138,7 @@ apps/web/src/app/layout.tsx      ← ServerWakeProvider 래퍼 제거
 
 apps/web/src/app/api/stock/[ticker]/route.ts  ← 네이버 응답 JSON.parse 전 작은따옴표 치환
 
-apps/web/src/app/demo/dashboard/page.tsx      ← INITIAL_EXPENSES 기반 실제 주간/월간 계산 로직 이식
+apps/web/src/app/demo/dashboard/page.tsx      ← INITIAL_EXPENSES 기반 실제 주간/월간 계산 로직 이식, DEFAULT_SETTINGS 자동 초기화
 apps/web/src/app/demo/account-book/data.ts    ← 7월(지난달)/8월(이번달) 목데이터 추가
 ```
 
