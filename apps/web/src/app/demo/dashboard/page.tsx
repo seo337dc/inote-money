@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Pencil, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { INITIAL_EXPENSES, type Expense as AccountBookExpense, type ExpenseMap } from "../account-book/data";
 
 type ListItem = { id: string; name: string; amount: number; day?: number };
 
@@ -41,6 +42,31 @@ function fmtDate(d: Date): string {
 
 function fmt(n: number): string {
   return n.toLocaleString("ko-KR") + "원";
+}
+
+function dateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function itemsInRange(expenses: ExpenseMap, start: string, end: string): AccountBookExpense[] {
+  return Object.entries(expenses)
+    .filter(([date]) => date >= start && date <= end)
+    .flatMap(([, items]) => items);
+}
+
+function itemsInMonth(expenses: ExpenseMap, year: number, month: number): AccountBookExpense[] {
+  const prefix = `${year}-${String(month).padStart(2, "0")}`;
+  return Object.entries(expenses)
+    .filter(([date]) => date.startsWith(prefix))
+    .flatMap(([, items]) => items);
+}
+
+function sumAmount(items: AccountBookExpense[]): number {
+  return items.reduce((s, e) => s + e.amount, 0);
+}
+
+function sumWaste(items: AccountBookExpense[]): number {
+  return items.filter((e) => e.isWaste).reduce((s, e) => s + e.amount, 0);
 }
 
 function StarRating({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
@@ -92,6 +118,8 @@ export default function DashboardPage() {
 
   const monday = getWeekMonday(weekOffset);
   const sunday = getWeekSunday(monday);
+  const prevMonday = getWeekMonday(weekOffset - 1);
+  const prevSunday = getWeekSunday(prevMonday);
   const wKey = monday.toISOString().slice(0, 10);
   const weekLabel = `${fmtDate(monday)} ~ ${fmtDate(sunday)}`;
 
@@ -102,6 +130,23 @@ export default function DashboardPage() {
   const mMonth = normalizedDate.getMonth() + 1;
   const mKey = `${mYear}-${String(mMonth).padStart(2, "0")}`;
   const monthLabel = `${mYear}년 ${mMonth}월`;
+  const prevMonthDate = new Date(mYear, mMonth - 2, 1);
+  const prevMYear = prevMonthDate.getFullYear();
+  const prevMMonth = prevMonthDate.getMonth() + 1;
+
+  const thisWeekItems = itemsInRange(INITIAL_EXPENSES, dateStr(monday), dateStr(sunday));
+  const prevWeekItems = itemsInRange(INITIAL_EXPENSES, dateStr(prevMonday), dateStr(prevSunday));
+  const thisWeekTotal = sumAmount(thisWeekItems);
+  const prevWeekTotal = sumAmount(prevWeekItems);
+  const thisWeekWaste = sumWaste(thisWeekItems);
+  const weekBarMax = Math.max(thisWeekTotal, prevWeekTotal, 1);
+
+  const thisMonthItems = itemsInMonth(INITIAL_EXPENSES, mYear, mMonth);
+  const prevMonthItems = itemsInMonth(INITIAL_EXPENSES, prevMYear, prevMMonth);
+  const thisMonthTotal = sumAmount(thisMonthItems);
+  const prevMonthTotal = sumAmount(prevMonthItems);
+  const thisMonthWaste = sumWaste(thisMonthItems);
+  const monthBarMax = Math.max(thisMonthTotal, prevMonthTotal, 1);
 
   useEffect(() => {
     setWeekDraft(weekReviews[wKey] ?? { stars: 0, text: "" });
@@ -246,12 +291,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className={SUBCARD_GRAY}>
               <p className={`text-[11px] mb-1 ${LABEL}`}>이번 주 지출</p>
-              <p className="text-base font-bold text-gray-900 dark:text-white">0원</p>
-              <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-1">가계부 연결 예정</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{fmt(thisWeekTotal)}</p>
             </div>
             <div className={SUBCARD_ORANGE}>
               <p className={`text-[11px] mb-1 ${LABEL}`}>낭비 금액</p>
-              <p className="text-base font-bold text-orange-500 dark:text-orange-400">0원</p>
+              <p className="text-base font-bold text-orange-500 dark:text-orange-400">{fmt(thisWeekWaste)}</p>
               {settings && <p className={`text-[10px] mt-1 ${LABEL}`}>일 한도 {fmt(settings.dailyLimit)}</p>}
             </div>
           </div>
@@ -259,13 +303,16 @@ export default function DashboardPage() {
           <div>
             <p className={`text-[11px] mb-2 ${LABEL}`}>지난주 비교</p>
             <div className="flex flex-col gap-2">
-              {[{ label: "이번 주", color: "bg-green-400" }, { label: "지난 주", color: "bg-gray-200 dark:bg-gray-600" }].map(({ label, color }) => (
+              {[
+                { label: "이번 주", color: "bg-green-400", value: thisWeekTotal, width: (thisWeekTotal / weekBarMax) * 100 },
+                { label: "지난 주", color: "bg-gray-200 dark:bg-gray-600", value: prevWeekTotal, width: (prevWeekTotal / weekBarMax) * 100 },
+              ].map(({ label, color, value, width }) => (
                 <div key={label} className="flex items-center gap-2">
                   <span className={`text-[11px] w-14 shrink-0 ${LABEL}`}>{label}</span>
                   <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${color}`} style={{ width: "0%" }} />
+                    <div className={`h-full rounded-full ${color} transition-all duration-500`} style={{ width: `${width}%` }} />
                   </div>
-                  <span className={`text-[11px] w-14 text-right shrink-0 ${LABEL}`}>0원</span>
+                  <span className={`text-[11px] w-14 text-right shrink-0 ${LABEL}`}>{fmt(value)}</span>
                 </div>
               ))}
             </div>
@@ -309,12 +356,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className={SUBCARD_GRAY}>
               <p className={`text-[11px] mb-1 ${LABEL}`}>총 지출</p>
-              <p className="text-base font-bold text-gray-900 dark:text-white">0원</p>
-              <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-1">가계부 연결 예정</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{fmt(thisMonthTotal)}</p>
             </div>
             <div className={SUBCARD_ORANGE}>
               <p className={`text-[11px] mb-1 ${LABEL}`}>낭비 금액</p>
-              <p className="text-base font-bold text-orange-500 dark:text-orange-400">0원</p>
+              <p className="text-base font-bold text-orange-500 dark:text-orange-400">{fmt(thisMonthWaste)}</p>
               {settings && <p className={`text-[10px] mt-1 ${LABEL}`}>저축 목표 {fmt(settings.monthlyGoal)}</p>}
             </div>
           </div>
@@ -322,13 +368,16 @@ export default function DashboardPage() {
           <div>
             <p className={`text-[11px] mb-2 ${LABEL}`}>지난달 비교</p>
             <div className="flex flex-col gap-2">
-              {[{ label: "이번 달", color: "bg-green-400" }, { label: "지난 달", color: "bg-gray-200 dark:bg-gray-600" }].map(({ label, color }) => (
+              {[
+                { label: "이번 달", color: "bg-green-400", value: thisMonthTotal, width: (thisMonthTotal / monthBarMax) * 100 },
+                { label: "지난 달", color: "bg-gray-200 dark:bg-gray-600", value: prevMonthTotal, width: (prevMonthTotal / monthBarMax) * 100 },
+              ].map(({ label, color, value, width }) => (
                 <div key={label} className="flex items-center gap-2">
                   <span className={`text-[11px] w-14 shrink-0 ${LABEL}`}>{label}</span>
                   <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${color}`} style={{ width: "0%" }} />
+                    <div className={`h-full rounded-full ${color} transition-all duration-500`} style={{ width: `${width}%` }} />
                   </div>
-                  <span className={`text-[11px] w-14 text-right shrink-0 ${LABEL}`}>0원</span>
+                  <span className={`text-[11px] w-14 text-right shrink-0 ${LABEL}`}>{fmt(value)}</span>
                 </div>
               ))}
             </div>
