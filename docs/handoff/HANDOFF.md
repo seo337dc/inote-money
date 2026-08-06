@@ -83,7 +83,7 @@
 | 날짜 | 2026-08-05 |
 | 작성자 | Claude Code |
 | 브랜치 | `main` |
-| 다음 수신자 | 사람 (Task #5 confetti 또는 주식 API 연동 중 선택) |
+| 다음 수신자 | 사람 (`/stocks` 로그인 후 CRUD·차트 동작 확인) |
 
 ### 완료된 단계
 
@@ -101,12 +101,12 @@
 - **`/demo/dashboard` 가계부 데이터 실제 연동** (포트폴리오 소개 페이지 캡처 준비 과정에서 발견) — 주간/월간 지출·낭비 금액이 하드코딩 "0원"이던 것을, 실제 `/dashboard`의 계산 로직을 이식해 `demo/account-book/data.ts`의 `INITIAL_EXPENSES`로 실제 계산하도록 구현. 7월(지난달 비교, 581,400원)/8월 1~5일(이번 달, 140,900원) 목데이터 추가. 브라우저 확인 완료.
 - **`/demo/dashboard` "내 정보" 카드 기본 목데이터 추가** — `localStorage`에 `inote-settings`가 없으면 `DEFAULT_SETTINGS`(월급 320만원 등)로 자동 초기화하도록 수정, 항상 "설정된 정보 없음"으로 보이던 문제 해결. 브라우저 확인 완료.
 - **`/demo/mini-game` 진입 시 직업 선택 모달 자동 표시 제거** — `showProfessionModal` 초기값을 `false`로 변경해 보드가 먼저 보이도록 하고, 기존 리셋 버튼으로 필요할 때 모달을 열도록 변경. 브라우저 확인 완료.
+- **`/stocks` 실서비스 페이지 구현 (주식 API 연동)** — `inote-server`에 이미 있던 `/money/stocks` CRUD(StockHolding)를 그대로 사용해 FE만 구현. `demo/stocks` UI를 실제 스키마(market/inputMode/averagePrice)에 맞게 포팅. 미인증 리다이렉트·타입체크 확인 완료, **실제 로그인 후 CRUD/차트 동작은 사람 확인 대기** (Google 로그인 필요해 AI가 직접 검증 불가).
 
 ### 진행 중 / 다음 Task
 
-QA PASS. 다음 둘 중 선택 필요 (사람 결정 대기):
-- **Task #5: 폭죽 파티클 (confetti)** — 쥐경주 탈출 승리 시 폭죽 이펙트
-- **주식 페이지 API 연동** — 보유 종목 CRUD
+1. **사람:** `/stocks` 로그인 후 실제 CRUD(추가/수정/삭제)·국내/해외 차트 표시 확인
+2. 확인 후 남은 선택지: **Task #5 폭죽 파티클 (confetti)** — 쥐경주 탈출 승리 시 폭죽 이펙트
 
 ### 이번 범위
 
@@ -141,6 +141,8 @@ apps/web/src/app/api/stock/[ticker]/route.ts  ← 네이버 응답 JSON.parse �
 
 apps/web/src/app/demo/dashboard/page.tsx      ← INITIAL_EXPENSES 기반 실제 주간/월간 계산 로직 이식, DEFAULT_SETTINGS 자동 초기화
 apps/web/src/app/demo/account-book/data.ts    ← 7월(지난달)/8월(이번달) 목데이터 추가
+
+apps/web/src/app/stocks/                      ← 신규: 실서비스 주식 페이지 (page.tsx, layout.tsx, components/KoreanStockChart.tsx)
 ```
 
 ### 알려진 이슈
@@ -149,9 +151,12 @@ apps/web/src/app/demo/account-book/data.ts    ← 7월(지난달)/8월(이번달
 
 ### 다음 수신자에게 기대하는 것
 
-**다음 세션 (Claude Code):**
-- 사람이 Task #5(confetti) / 주식 API 연동 중 하나를 정하면 그 Task로 착수
+**사람:**
+- `/stocks` 로그인 후 종목 추가/수정/삭제, 국내(네이버 차트)/해외(TradingView) 차트 표시 확인
+- 문제 있으면 바로 Claude Code에 전달, 정상이면 Task #5(confetti) 착수 여부 결정
 
 ### QA 판정
 
-**PASS** — 사람이 직접 브라우저로 확인 (직업 선택, 토큰 이동, 카드 플립, 부유 텍스트, 자녀 출산 카드, 은행 대출 플로우, 서버 웨이크업 제거 후 하이드레이션 에러 해소, 주식 페이지 네이버 API, 대시보드 가계부 연동). 버그 3건 발견 즉시 픽스 완료(은행 모달 z-index, 미니게임 하이드레이션 에러, 주식 네이버 API JSON 파싱) + 대시보드 데모 데이터 연동 1건.
+`/stocks` 실서비스 CRUD·차트 동작: **미수행 (사람 확인 대기)**
+
+그 외 이전 항목은 PASS — 사람이 직접 브라우저로 확인 (직업 선택, 토큰 이동, 카드 플립, 부유 텍스트, 자녀 출산 카드, 은행 대출 플로우, 서버 웨이크업 제거 후 하이드레이션 에러 해소, 주식 페이지 네이버 API, 대시보드 가계부 연동). 버그 3건 발견 즉시 픽스 완료(은행 모달 z-index, 미니게임 하이드레이션 에러, 주식 네이버 API JSON 파싱) + 대시보드 데모 데이터 연동 1건.

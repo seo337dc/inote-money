@@ -1109,6 +1109,30 @@ ServerWakeProvider 제거로 페이지가 실제로 서버에서 렌더링되기
 
 ---
 
+### 2026-08-05 (세션 13)
+
+#### ✅ `/stocks` 실서비스 페이지 구현 — 주식 API 연동 (FE)
+
+`inote-server`에 이미 `StockHolding` CRUD(`/money/stocks` GET/POST/PATCH/DELETE)가 구현·배포되어 있는 걸 확인 — BE 신규 개발 없이 FE만 구현.
+
+**필드 매핑 (데모 → 실제 BE 스키마)**
+- `currency`(KRW/USD) → `market`(KR/US)
+- `inputMode`("shares"/"amount") → `inputMode`("QUANTITY"/"AMOUNT")
+- `buyPrice` → `averagePrice`
+- `memo` — BE 스키마에 없어 이번 구현에서는 제외 (추후 스키마 확장 시 추가 검토)
+
+**신규 파일**
+- `apps/web/src/app/stocks/page.tsx` — 종목 목록/차트/CRUD, `@tanstack/react-query`로 `/money/stocks` 연동 (데모 UI를 실제 스키마에 맞게 포팅)
+- `apps/web/src/app/stocks/layout.tsx` — `../dashboard/layout` 재사용 (auth guard 포함)
+- `apps/web/src/app/stocks/components/KoreanStockChart.tsx` — 데모에서 그대로 포팅 (내부 `/api/stock/[ticker]` 라우트 재사용)
+
+**검증**
+- 타입체크 통과, 기존 데모와 동일한 pre-existing lint 경고(`set-state-in-effect`) 외 신규 이슈 없음
+- 미인증 상태 `/stocks` 접근 시 `/login` 리다이렉트 정상 확인, 콘솔 에러 없음
+- 실제 로그인 후 CRUD·차트 표시 흐름은 Google 로그인이 필요해 AI가 직접 검증하지 않음 — 사람 확인 대기
+
+---
+
 ## UI 인사이트 / 기획 메모
 
 ### 리스트·테이블 뷰 필요 (2026-05-08)
