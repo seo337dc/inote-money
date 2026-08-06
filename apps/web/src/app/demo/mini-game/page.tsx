@@ -43,7 +43,7 @@ export default function MiniGamePage() {
     createInitialPlayerState(PROFESSIONS[1])
   );
 
-  const [showProfessionModal, setShowProfessionModal] = useState<boolean>(true);
+  const [showProfessionModal, setShowProfessionModal] = useState<boolean>(false);
   const [showBankModal, setShowBankModal] = useState<boolean>(false);
   const [showStatementModal, setShowStatementModal] = useState<boolean>(false);
   const [showCardModal, setShowCardModal] = useState<boolean>(false);
