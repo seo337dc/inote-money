@@ -198,7 +198,7 @@ inote-money/
 - [x] 인증 방식 — Better Auth + Google OAuth (실서비스 배포 완료)
 - [ ] 수입/지출 관리 화면 정의
 - [ ] 금융 지식 화면 정의
-- [ ] 미니게임 (캐시플로우) 화면 정의
+- [x] 미니게임 (캐시플로우) 화면 정의 — 데모 + 실서비스 구현 완료
 - [ ] DB 스키마
 - [ ] 앱 배포 여부 (App Store / Play Store)
 
@@ -236,6 +236,7 @@ inote-money/
 - [x] **주간/월간 리뷰 저장 API 연동** — BE reviews 모듈 구현 (GET/PUT /money/reviews), FE useMutation + toast
 - [x] **가계부 메모 기능** — Expense.memo 필드 추가 (DB/DTO/Service), 읽기 모드 독립 저장 (캐시 직접 업데이트), 수정 모드 인라인 확장
 - [x] **주식 페이지 API 연동** — 보유 종목 CRUD (BE `/money/stocks`는 기존 구현 재사용, FE `/stocks` 페이지 신규 구현) — 사람 최종 확인 대기
+- [x] **미니게임 실서비스 페이지 + 결과 저장 API 연동** — BE `MiniGameResult` 모델/API 신규 구현, FE `/mini-game` 페이지 신규 구현 (승리/포기 시 자동 저장 + 플레이 기록 모달) — 사람 최종 확인 대기
 
 #### 🟡 UI 개선
 - [ ] **화면에 사용자 이름 노출** — UI 수정 작업 필요
@@ -243,7 +244,6 @@ inote-money/
 
 #### 🟢 데모 미완성 화면
 - [ ] **금융 지식 화면 구현** (`/demo/financial-knowledge`) — 기획 먼저
-- [ ] **미니게임 화면 구현** (`/demo/mini-game`) — 기획 먼저
 
 #### 🔵 지침 개선
 - [ ] **Claude AI 지침 전략 강화** — CLAUDE_EXAMPLE.md 기반으로 CLAUDE.md 지침 개선 (CoT, 토큰 효율, 작업별 접근 방식 등)
@@ -319,12 +319,17 @@ src/app/demo/
 | `/settings` | 설정 (프로필+로그아웃+자산설정 진입점) | ✅ 완료 |
 | `/account-book` | 가계부 (달력/주차별/전체, CRUD API 연동) | ✅ 완료 |
 | `/stocks` | 주식 (보유 종목 CRUD, 국내/해외 차트, 환율) | ✅ 완료 (사람 확인 대기) |
+| `/mini-game` | 미니게임 (캐시플로우 보드게임 + 결과 저장/기록) | ✅ 완료 (사람 확인 대기) |
 
 ---
 
 ## 현재 단계
 
-로그인 + Google OAuth 인증 구현 완료. Vercel(FE) + Render(BE) + Neon(DB) 프로덕션 배포 완료. 크로스 도메인 쿠키 이슈 해결 (middleware 제거, 각 layout에서 `useSession()` 클라이언트 훅으로 세션 체크). ServerWakeProvider CORS 버그 수정 (Next.js API Route 프록시 경유). FE API 클라이언트(`src/lib/api.ts`) + @tanstack/react-query v5 설치 완료. `/dashboard/setup` 내 자산 설정 실서비스 API 연동 완료. 로딩 UI 전체 Minimal Memo 스타일로 통일 완료 + 페이지별 커스텀 메시지 지원 (`messages` prop). shadcn/ui `Input` + `Textarea` + `Dialog` + `Select` 컴포넌트 설치 및 전체 파일에 적용 완료. 자산 설정 히스토리 기능 구현 완료 (저장 후 기록 모달 → 목록 → 상세 / 제목 수정 · 삭제 · 메모). 모든 원시 모달을 shadcn Dialog로 교체 완료 (5개). `/account-book` 가계부 페이지 구현 완료 (달력/주차별/전체 뷰, CRUD API 연동, 수정 모드 일괄 저장 UX). AppBrand 공통 컴포넌트 추가 (로그인/홈/로딩 화면 공통 적용). 가계부 · 자산 설정 UX 개선 완료 (DayDetailModal 모바일 바텀시트 전환, 숫자 입력 콤마 포맷팅, 비숫자 입력 차단, shadcn Select 전면 교체, 카드 헤더 레이아웃 개선, 초기화 버튼 추가). 대시보드 실서비스 API 연동 완료 (주간/월간 지출 합계, 낭비 금액, 비교 바). 주간/월간 리뷰 API 연동 완료 (BE reviews 모듈 신규 구현, FE useMutation + toast). 가계부 메모 기능 구현 완료 (Expense.memo DB 추가, 읽기 모드 독립 저장, 수정 모드 인라인). 가계부 네비게이션 UI 개선 (ChevronLeft/Right 아이콘, 중앙 정렬, 이번 달 이후 비활성화). 쿼리 키 충돌 수정 (expense-map / expenses 분리). `/demo/mini-game` 캐시플로우 보드게임 데모 구현 완료 (12칸 보드, 6개 직업, 4종 카드 덱, 7개 컴포넌트). 미니게임 애니메이션 3종 추가: 토큰 이동 (200ms/step step-by-step), 부유 금액 텍스트 (+/-만원 float-up, 1.6s), 카드 플립 (0.42s rotateY). 사람 브라우저 QA 완료(PASS) — 은행 대출 모달이 카드 모달에 가려지는 버그 발견 즉시 픽스 (BankModal z-index z-50 → z-[60]). Render 콜드 스타트 이슈 해소되어 서버 웨이크업 기능 제거 (ServerWakeProvider/waitForServer.ts/api/health-check 삭제, layout.tsx 래퍼 제거) — 이 과정에서 드러난 미니게임 하이드레이션 에러(초기 로그 timestamp)도 함께 픽스. `/demo/stocks` 네이버 금융 API 500 에러 픽스 (헤더 행만 작은따옴표인 JS 배열 리터럴을 JSON.parse 전 치환). 포트폴리오 소개 페이지 캡처 준비 중 `/demo/dashboard`가 주간/월간 지출을 하드코딩 "0원"으로만 보여주던 것을 발견 → 실제 `/dashboard` 계산 로직을 이식해 `demo/account-book/data.ts`(7월/8월 목데이터 추가)로 실제 계산하도록 구현 완료. `/stocks` 실서비스 페이지 신규 구현 — `inote-server`에 이미 있던 `/money/stocks` CRUD를 재사용해 FE만 구현(종목 CRUD + 국내/해외 차트 + 환율), 미인증 리다이렉트·타입체크 확인 완료. 다음 단계: 사람이 로그인 후 `/stocks` 실제 동작 확인 → 문제없으면 Task #5 confetti 착수.
+> 상세 세션별 이력은 `DEV_LOG.md` 참고. 여기는 현재 스냅샷만 유지.
+
+로그인(Google OAuth) + Vercel/Render/Neon 프로덕션 배포 완료. 실서비스 화면 6종(`/dashboard`, `/dashboard/setup`(+히스토리), `/settings`, `/account-book`, `/stocks`, `/mini-game`) 모두 API 연동까지 구현 완료 — `/stocks`, `/mini-game`은 사람 최종 확인 대기 중. 미니게임은 `/demo/mini-game`(순수 로컬 데모)과 `/mini-game`(로그인 필수, 결과 저장 + 플레이 기록 조회)로 분리 운영. 로컬 개발 시 크로스 오리진 로그인 이슈(쿠키 SameSite/Secure)를 inote-server에서 환경별로 분기 처리해 해결.
+
+다음 단계: 사람이 `/mini-game` 실제 플레이로 이번 세션 버그 픽스 3건(헤더 레이아웃, 자녀 출산 카운트, 보드 카드 높이) 재확인 → 문제없으면 Task #5 confetti 착수 여부 결정.
 
 ---
 

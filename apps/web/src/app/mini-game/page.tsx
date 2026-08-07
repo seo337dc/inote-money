@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { api } from '@/lib/api';
 
 type FloatItem = { id: string; amount: number; offsetX: number };
 
@@ -28,6 +29,7 @@ import {
   formatCurrency,
   calculatePassiveIncome,
   calculateTotalIncome,
+  calculateTotalExpenses,
 } from './lib/gameLogic';
 import { GameHeader } from './components/GameHeader';
 import { BoardView } from './components/BoardView';
@@ -36,18 +38,21 @@ import { BankModal } from './components/BankModal';
 import { FinancialStatement } from './components/FinancialStatement';
 import { CardModal } from './components/CardModal';
 import { VictoryModal } from './components/VictoryModal';
-import { TrendingUp, RotateCcw } from 'lucide-react';
+import { GameHistoryModal } from './components/GameHistoryModal';
+import { TrendingUp } from 'lucide-react';
 
 export default function MiniGamePage() {
   const [player, setPlayer] = useState<PlayerState>(() =>
     createInitialPlayerState(PROFESSIONS[1])
   );
+  const savedResultRef = useRef(false);
 
-  const [showProfessionModal, setShowProfessionModal] = useState<boolean>(false);
+  const [showProfessionModal, setShowProfessionModal] = useState<boolean>(true);
   const [showBankModal, setShowBankModal] = useState<boolean>(false);
   const [showStatementModal, setShowStatementModal] = useState<boolean>(false);
   const [showCardModal, setShowCardModal] = useState<boolean>(false);
   const [showVictoryModal, setShowVictoryModal] = useState<boolean>(false);
+  const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
 
   const [currentCardData, setCurrentCardData] = useState<DealCard | DoodadCard | MarketCard | null>(null);
   const [lastDiceRoll, setLastDiceRoll] = useState<number | null>(null);
@@ -64,7 +69,42 @@ export default function MiniGamePage() {
     setTimeout(() => setFloatingAmounts((prev) => prev.filter((f) => f.id !== id)), 1800);
   }, []);
 
+  const saveResult = useCallback((result: 'WON' | 'GAVE_UP', p: PlayerState) => {
+    const liabilityList = Object.values(p.liabilities);
+    api.post('/money/mini-game/results', {
+      profession: p.profession.id,
+      result,
+      turnCount: p.turnCount,
+      finalCash: Math.round(p.cash),
+      finalPassiveIncome: Math.round(calculatePassiveIncome(p)),
+      finalMonthlyExpenses: Math.round(calculateTotalExpenses(p)),
+      finalMonthlyCashflow: Math.round(calculateMonthlyCashflow(p)),
+      bankLoan: Math.round(p.bankLoan),
+      totalLiabilities: Math.round(liabilityList.reduce((sum, l) => sum + l.totalAmount, 0)),
+      stocksCount: p.stocks.length,
+      realEstatesCount: p.realEstates.length,
+      childrenCount: p.childrenCount,
+      finalStocks: p.stocks,
+      finalRealEstates: p.realEstates,
+      liabilitiesSnapshot: liabilityList,
+      gameLogs: p.gameLogs,
+    }).catch(() => {
+      // 결과 저장 실패는 게임 진행에 영향 주지 않음
+    });
+  }, []);
+
+  useEffect(() => {
+    if (player.hasWon && !savedResultRef.current) {
+      savedResultRef.current = true;
+      saveResult('WON', player);
+    }
+  }, [player, saveResult]);
+
   const handleSelectProfession = (profession: Profession) => {
+    if (player.turnCount > 0 && !player.hasWon) {
+      saveResult('GAVE_UP', player);
+    }
+    savedResultRef.current = false;
     setPlayer(createInitialPlayerState(profession));
     setShowProfessionModal(false);
     setShowVictoryModal(false);
@@ -512,6 +552,7 @@ export default function MiniGamePage() {
         onOpenBank={() => setShowBankModal(true)}
         onOpenStatement={() => setShowStatementModal(true)}
         onResetGame={() => setShowProfessionModal(true)}
+        onOpenHistory={() => setShowHistoryModal(true)}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -612,7 +653,7 @@ export default function MiniGamePage() {
                   <div>
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className="text-[10px] bg-stone-200 text-stone-600 px-1.5 py-0.5 rounded font-bold">#턴{log.turn}</span>
-                      <span className="text-stone-400 text-[10px]" suppressHydrationWarning>{log.timestamp}</span>
+                      <span className="text-stone-400 text-[10px]">{log.timestamp}</span>
                     </div>
                     <div className="text-stone-700 leading-relaxed">{log.message}</div>
                   </div>
@@ -671,6 +712,10 @@ export default function MiniGamePage() {
           onContinue={() => setShowVictoryModal(false)}
           onRestart={() => setShowProfessionModal(true)}
         />
+      )}
+
+      {showHistoryModal && (
+        <GameHistoryModal onClose={() => setShowHistoryModal(false)} />
       )}
     </div>
   );
