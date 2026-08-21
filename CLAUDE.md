@@ -20,7 +20,7 @@
 | 영역 | 기술 |
 |------|------|
 | FE (Web) | Next.js + shadcn/ui + Tailwind CSS |
-| FE (App) | React Native |
+| FE (App) | React Native (Expo) + WebView 기반 (`apps/app/README.md` 참고) |
 | BE | NestJS + Prisma |
 | 인증 | Better Auth |
 | DB | PostgreSQL |
@@ -161,7 +161,7 @@ inote-money/
 ├── CLAUDE.md
 ├── apps/
 │   ├── web/          ← Next.js (실제 서비스)
-│   └── app/          ← React Native
+│   └── app/          ← React Native (Expo) + WebView
 ├── backend/          ← NestJS
 └── packages/         ← 공통 모듈
 ```
@@ -192,6 +192,25 @@ inote-money/
 
 ---
 
+## 모바일 앱(React Native) 개발 방향
+
+> 아키텍처 개요는 [`apps/app/README.md`](apps/app/README.md), **진행 방식·실행 체크리스트는 [`apps/app/CLAUDE.md`](apps/app/CLAUDE.md)** 참고. 여기는 핵심 결정 사항만 요약.
+>
+> **`apps/app` 작업은 다른 협업 모드다** — 사람이 직접 코딩하고 Claude Code는 가이드 역할만 한다 (`inote-server-spring`과 동일한 페어 튜터 모드). `apps/web`/`inote-server`의 기존 "Claude가 구현" 방식과 다르니 혼동하지 말 것.
+
+**아키텍처 (2026-08-11 확정)**: 처음엔 Capacitor로 기존 웹앱을 감싸는 스파이크를 진행(BE `oneTimeToken` 플러그인까지 추가)했다가, 최종적으로 **React Native(Expo) + WebView(react-native-webview)** 방식으로 방향을 정했다. `apps/web` 화면 대부분은 웹뷰로 그대로 재사용하고, 네이티브 모듈이 꼭 필요한 기능만 RN으로 추가하는 하이브리드 구조.
+
+**핵심 기능 — AI 문자 인식 자동 가계부 입력 (Android 전용)**
+- 카드 결제 알림 문자를 앱이 감지해 가계부 지출 항목을 자동 생성
+- **Android만 지원** — iOS는 서드파티 앱의 SMS 접근이 OS 정책상 원천 차단되어 있어 불가능 (다음 단계에서 수동 입력 등 대체 방식 검토)
+- **은행 실시간 연동(오픈뱅킹)은 범위 밖** — 개인 프로젝트로는 사업자 등록·심사가 필요해 지금은 불가능. 문자 알림 파싱만으로도 은행 제휴 없이 "자동 기록" 목표 달성 가능
+- AI 역할: 문자 자체는 정규식으로 파싱, LLM은 가맹점명 → 지출 카테고리 자동 분류에 활용
+- 이 기능이 들어가면 Expo Go만으로는 테스트 불가 (커스텀 dev client 필요, EAS Build로 로컬 Android Studio 없이 빌드 가능)
+
+**로그인(구글 OAuth) — 쿠키 교환 방식**: 임베디드 웹뷰에서 구글 OAuth가 차단되는 문제 때문에, 로그인은 시스템 브라우저(`expo-web-browser`)로 열고 완료 후 better-auth `oneTimeToken` 플러그인으로 일회성 코드를 발급 → 커스텀 스킴 딥링크로 앱 복귀 → 앱의 WebView 자신이 코드를 검증해 세션 쿠키를 직접 심는 방식. BE(`inote-server`)의 `src/auth/auth.ts`에 `oneTimeToken` 플러그인 추가 완료(커밋 전 — RN 작업 재개 시 함께 커밋).
+
+---
+
 ## 미결정 항목
 
 - [x] 대시보드 화면 — 데모 구현 완료, 실서비스 스펙 미정
@@ -200,7 +219,7 @@ inote-money/
 - [ ] 금융 지식 화면 정의
 - [x] 미니게임 (캐시플로우) 화면 정의 — 데모 + 실서비스 구현 완료
 - [ ] DB 스키마
-- [ ] 앱 배포 여부 (App Store / Play Store)
+- [x] 앱 아키텍처 방향 — RN(Expo) + WebView 확정, 핵심 기능(문자 인식 자동 가계부)은 Android 전용. 실제 구현 착수 / 스토어 배포 시점은 미정
 
 ## 데모 구현 완료 화면 목록
 

@@ -80,54 +80,53 @@
 
 | 항목 | 값 |
 |------|-----|
-| 날짜 | 2026-08-07 |
+| 날짜 | 2026-08-19 |
 | 작성자 | Claude Code |
 | 브랜치 | `main` |
-| 다음 수신자 | 사람 (`/mini-game` 실서비스 플레이 테스트) |
+| 다음 수신자 | 사람 (다른 PC에서 이어서 작업 가능) |
 
-> 이전 세션들의 상세 이력은 이 섹션에 쌓지 않고 `DEV_LOG.md`(세션 8~14)에 기록되어 있음. 아래는 **가장 최근 세션(14) 기준 현재 상태**만 담음.
+> 이전 세션들의 상세 이력은 이 섹션에 쌓지 않고 `DEV_LOG.md`에 기록되어 있음. 아래는 **가장 최근 세션 기준 현재 상태**만 담음.
 
 ### 완료된 단계
 
-- **미니게임을 실서비스 `/mini-game` 페이지로 이전** — `/stocks`, `/account-book`과 동일하게 로그인 필수 실서비스 페이지 신규 구현 (직업 선택 → 플레이 → 승리/포기 시 자동 결과 저장 → "내 플레이 기록" 모달). `/demo/mini-game`은 API 호출 없는 순수 로컬 데모로 원복.
-- **버그 픽스 3건** (사람이 실제 플레이하며 발견):
-  1. 헤더가 현금 숫자 길이에 따라 레이아웃이 흔들림 → `GameHeader.tsx`를 2행 고정 구조로 변경
-  2. "자녀 출산" 카드가 실제로 `childrenCount`를 증가시키지 않던 버그 → `handleAcceptBaby` 핸들러 추가
-  3. 보드 중앙 카드가 칸 설명 길이에 따라 높이가 흔들림 → 설명 `<p>`에 `min-h-[2rem]` 고정
-- 로컬 로그인 이슈 대응 (inote-server 쪽, 별도 HANDOFF 참고): 쿠키 SameSite/Secure 환경별 분기, `.env.local`을 프로덕션 서버로 전환하는 방법 안내
+- **모바일 앱 아키텍처 확정**: React Native(Expo) + `react-native-webview`로 `apps/web` 배포 URL을 감싸는 하이브리드 구조. Capacitor 스파이크를 검토했다가 최종적으로 RN+WebView로 결정. 상세는 [`apps/app/README.md`](../../apps/app/README.md).
+- **`apps/app`에 협업 모드 + 실행 체크리스트 문서화** — [`apps/app/CLAUDE.md`](../../apps/app/CLAUDE.md) 신규 작성. **이 폴더는 "사람이 직접 코딩, Claude는 가이드"하는 페어 튜터 모드**로 진행 (`inote-server-spring`과 동일 패턴, `apps/web`/`inote-server`의 기존 "Claude 구현" 방식과 다름). 실행 체크리스트 6단계(환경 준비 → WebView 붙이기 → EAS Build로 첫 APK → 로그인 플로우 → AI 문자 인식 → 배포 결정) 정리 완료, **전부 미착수** 상태.
+- **로그인 설계(쿠키 교환 방식) 확정**: 시스템 브라우저에서 구글 로그인 → BE `oneTimeToken` 플러그인으로 일회성 코드 발급 → 커스텀 스킴 딥링크로 앱 복귀 → 앱 WebView 자신이 코드 검증해 세션 쿠키 직접 심음. BE(`inote-server`) `src/auth/auth.ts`에 `oneTimeToken` 플러그인 추가 완료 — **커밋 전** (`inote-server` 별도 HANDOFF 확인 필요할 수 있음).
+- (별도 트랙, `inote-money`와 직접 관련 없음) 이직 준비로 Java/Spring 학습 병행 결정 — `career-notes`(개인 노트, private), `inote-server-spring`(학습용 Spring 포팅 프로젝트, private) 레포 신규 생성. `inote-money`는 포트폴리오 공개 레포라 이 내용은 여기 들어있지 않음.
+- 이전 세션(미니게임 실서비스 이전 + 버그 픽스 3건, `/stocks`·`/mini-game` 확인 대기)은 **아직 사람 확인 여부 불명** — 이번 세션에서 다루지 않았음. 다음 수신자가 확인 후 상태 갱신 필요.
 
 ### 진행 중 / 다음 Task
 
-1. **사람:** `/mini-game`에서 실제 플레이 + 위 버그 3건 재확인, 승리/포기 시 결과 저장 및 "내 플레이 기록" 모달 확인
-2. 확인 후 남은 선택지: **Task #5 폭죽 파티클 (confetti)** — 쥐경주 탈출 승리 시 폭죽 이펙트
+1. **`apps/app` 단계 1**: Expo Go 설치 + `npx create-expo-app@latest . --template blank-typescript` 실행 (사람이 직접, 다음 세션에서 Claude와 같이 진행)
+2. 이전 세션의 `/stocks`, `/mini-game` 실서비스 확인이 아직 안 됐다면 그것도 병행 확인 필요 (미확인 상태로 방치되고 있음)
 
 ### 이번 범위
 
 **해도 됨**
-- 미니게임 실서비스 이전 + 발견된 버그 즉시 픽스
+- `apps/app` 전략/문서 정리, BE `oneTimeToken` 플러그인 추가(inote-server)
 
 **하지 말 것**
-- 보드게임 규칙 임의 변경
-- Task #5 confetti 임의 구현 (다음 Task, 미착수)
+- `apps/app`에서 Claude Code가 코드를 대신 완성해서 진행하기 — 반드시 사람이 직접 작성하고 Claude는 가이드만 (`apps/app/CLAUDE.md` 참고)
+- `prisma migrate reset` 등 데이터 삭제 동반 작업 (inote-server 쪽 원칙, 크로스 레포 공통 원칙)
 
 ### 변경·참고 파일
 
 ```
-apps/web/src/app/mini-game/           ← 신규: 실서비스 페이지 전체 (page.tsx, layout.tsx, types.ts, data/, lib/, components/)
-apps/web/src/app/demo/mini-game/      ← 순수 로컬 데모로 원복 (GameHistoryModal.tsx 삭제, useSession/api 제거)
-  components/GameHeader.tsx           ← 2행 고정 레이아웃
-  components/CardModal.tsx            ← onAcceptBaby prop 추가
-  components/BoardView.tsx            ← 설명 min-h-[2rem]
+apps/app/CLAUDE.md              ← 신규: 협업 모드(페어 튜터) + 실행 체크리스트 6단계
+apps/app/README.md              ← 아키텍처 개요 갱신 (Capacitor→RN+WebView 최종 결정 반영, 이전 세션)
+CLAUDE.md                       ← "모바일 앱(React Native) 개발 방향" 섹션에 apps/app/CLAUDE.md 링크 추가
+(inote-server, 별도 레포) src/auth/auth.ts  ← oneTimeToken 플러그인 추가, 커밋 전
 ```
 
 ### 알려진 이슈
 
-- Turbopack 콘솔에 `hasCharityBoost is defined multiple times` 에러 메시지가 뜰 수 있음 — 브라우저 캐시 phantom, `.next` 삭제 후 재시작하면 사라짐. 실제 동작엔 영향 없음.
+- `inote-server`의 `oneTimeToken` 플러그인 추가분이 아직 커밋되지 않음 — `apps/app` 로그인 플로우(단계 4) 작업 시작 전에 반드시 커밋 상태 확인할 것.
+- 이전 세션의 `/stocks`, `/mini-game` 사람 확인이 완료됐는지 이 세션에서 추적하지 못함 — 다음 세션에서 git 이력/사람에게 직접 확인 필요.
 
 ### 다음 수신자에게 기대하는 것
 
-**사람:** `/mini-game` 로그인 후 실제 플레이로 이번 세션 버그 픽스 3건 + 결과 저장/기록 모달 확인. 문제 있으면 Claude Code에 전달.
+**사람 (다른 PC 포함):** `git pull` 후 `apps/app/CLAUDE.md`의 체크리스트 "단계 1"부터 이어서 진행. Claude Code에게 페어 튜터 모드임을 상기시킬 필요는 없음 — 파일에 이미 명시돼 있어 자동 적용됨.
 
 ### QA 판정
 
-`/mini-game` 실서비스 + 이번 버그 픽스 3건: **미수행 (사람 확인 대기)**
+해당 없음 (이번 세션은 문서/전략 정리, 코드 변경 없음)
