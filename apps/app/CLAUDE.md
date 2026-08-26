@@ -28,6 +28,8 @@
 
 ## 실행 체크리스트
 
+> **진행 원칙 (2026-08-19 재확인)**: `apps/web`은 이미 기본 기능이 충분히 갖춰져 있으므로, **단계 2(WebView로 URL 붙이기)만 끝나도 "기본 기능 되는 앱"이 나온다.** 단계 3(EAS Build)에서 바로 진짜 설치되는 APK까지 뽑고, 단계 4~5는 그 위에 얹는 점진적 개선으로 취급한다. 현재 이 체크리스트가 `inote-money` 전체에서 **최우선 순위**다 (최상위 `CLAUDE.md`의 "다음 작업 순서" 참고).
+
 ### 단계 1 — 개발 환경 준비
 - [ ] Expo Go 앱 설치 (안드로이드폰, Play Store)
 - [ ] `apps/app`에서 `npx create-expo-app@latest . --template blank-typescript` 실행
