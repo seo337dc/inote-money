@@ -80,30 +80,31 @@
 
 | 항목 | 값 |
 |------|-----|
-| 날짜 | 2026-08-19 |
+| 날짜 | 2026-09-04 (금) — 다음 세션은 주말(09-05~06) 예정 |
 | 작성자 | Claude Code |
 | 브랜치 | `main` |
-| 다음 수신자 | 사람 (다른 PC에서 이어서 작업 가능) |
+| 다음 수신자 | 사람 (주말 작업, 다른 PC 가능) |
 
 > 이전 세션들의 상세 이력은 이 섹션에 쌓지 않고 `DEV_LOG.md`에 기록되어 있음. 아래는 **가장 최근 세션 기준 현재 상태**만 담음.
 
 ### 완료된 단계
 
-- **모바일 앱 아키텍처 확정**: React Native(Expo) + `react-native-webview`로 `apps/web` 배포 URL을 감싸는 하이브리드 구조. Capacitor 스파이크를 검토했다가 최종적으로 RN+WebView로 결정. 상세는 [`apps/app/README.md`](../../apps/app/README.md).
-- **`apps/app`에 협업 모드 + 실행 체크리스트 문서화** — [`apps/app/CLAUDE.md`](../../apps/app/CLAUDE.md) 신규 작성. **이 폴더는 "사람이 직접 코딩, Claude는 가이드"하는 페어 튜터 모드**로 진행 (`inote-server-spring`과 동일 패턴, `apps/web`/`inote-server`의 기존 "Claude 구현" 방식과 다름). 실행 체크리스트 6단계(환경 준비 → WebView 붙이기 → EAS Build로 첫 APK → 로그인 플로우 → AI 문자 인식 → 배포 결정) 정리 완료, **전부 미착수** 상태.
-- **로그인 설계(쿠키 교환 방식) 확정**: 시스템 브라우저에서 구글 로그인 → BE `oneTimeToken` 플러그인으로 일회성 코드 발급 → 커스텀 스킴 딥링크로 앱 복귀 → 앱 WebView 자신이 코드 검증해 세션 쿠키 직접 심음. BE(`inote-server`) `src/auth/auth.ts`에 `oneTimeToken` 플러그인 추가 완료 — **커밋 전** (`inote-server` 별도 HANDOFF 확인 필요할 수 있음).
-- (별도 트랙, `inote-money`와 직접 관련 없음) 이직 준비로 Java/Spring 학습 병행 결정 — `career-notes`(개인 노트, private), `inote-server-spring`(학습용 Spring 포팅 프로젝트, private) 레포 신규 생성. `inote-money`는 포트폴리오 공개 레포라 이 내용은 여기 들어있지 않음.
-- 이전 세션(미니게임 실서비스 이전 + 버그 픽스 3건, `/stocks`·`/mini-game` 확인 대기)은 **아직 사람 확인 여부 불명** — 이번 세션에서 다루지 않았음. 다음 수신자가 확인 후 상태 갱신 필요.
+- **모바일 앱이 최우선 작업으로 확정 및 문서화됨** (`CLAUDE.md` "🔥 모바일 앱" 섹션, 커밋 `ec9ec44`/`832e549`) — 아래 🔴🟡🟢🔵 항목보다 우선 순위.
+- **`/stocks`, `/mini-game` 실서비스 페이지 구현 완료** (커밋 `f1dd8c1`, `f8c54f3` + 버그 픽스 3건) — **사람 최종 확인 아직 대기 중** (헤더 레이아웃 / 자녀 출산 카운트 / 보드 카드 높이).
+- **(이슈 해소 확인)** `inote-server`의 `oneTimeToken` 플러그인 — 지난 HANDOFF에 "커밋 전"으로 남아있었는데, 이번에 직접 확인해보니 **이미 커밋 완료**(`inote-server` 커밋 `334dfe1`, `src/auth/auth.ts`에 정상 반영, working tree 깨끗함). 더 이상 블로커 아님.
+- `CLAUDE.md`의 "커밋·PR·push는 사람 요청 시에만" 규칙 문구를 더 명시적으로 강화(자동 이어가기 금지 사례 추가) — 이번 세션에서 같이 커밋.
 
-### 진행 중 / 다음 Task
+### 진행 중 / 다음 Task (주말에 이어서)
 
-1. **`apps/app` 단계 1**: Expo Go 설치 + `npx create-expo-app@latest . --template blank-typescript` 실행 (사람이 직접, 다음 세션에서 Claude와 같이 진행)
-2. 이전 세션의 `/stocks`, `/mini-game` 실서비스 확인이 아직 안 됐다면 그것도 병행 확인 필요 (미확인 상태로 방치되고 있음)
+1. **[최우선] `apps/app` 단계 1** — Expo Go 설치 + `npx create-expo-app@latest . --template blank-typescript` 실행. **사람이 직접 코딩, Claude Code는 가이드만** (페어 튜터 모드 — `apps/app/CLAUDE.md` 체크리스트 참고). `oneTimeToken` 커밋 이슈는 해소됐으니 이 단계 진행에 걸림돌 없음.
+2. **`/mini-game` 실제 플레이 재확인** — 이전 세션 버그 픽스 3건(헤더 레이아웃 / 자녀 출산 카운트 / 보드 카드 높이) 문제없는지 확인 → 괜찮으면 Task #5(confetti) 착수 여부 결정.
+3. (여유 되면) `/stocks` 페이지도 같이 최종 확인.
 
 ### 이번 범위
 
 **해도 됨**
-- `apps/app` 전략/문서 정리, BE `oneTimeToken` 플러그인 추가(inote-server)
+- `apps/app` 단계 1 진행 시 Claude Code의 가이드
+- `/mini-game`·`/stocks` 확인 결과에 따른 다음 Task 여부 판단
 
 **하지 말 것**
 - `apps/app`에서 Claude Code가 코드를 대신 완성해서 진행하기 — 반드시 사람이 직접 작성하고 Claude는 가이드만 (`apps/app/CLAUDE.md` 참고)
@@ -112,21 +113,19 @@
 ### 변경·참고 파일
 
 ```
-apps/app/CLAUDE.md              ← 신규: 협업 모드(페어 튜터) + 실행 체크리스트 6단계
-apps/app/README.md              ← 아키텍처 개요 갱신 (Capacitor→RN+WebView 최종 결정 반영, 이전 세션)
-CLAUDE.md                       ← "모바일 앱(React Native) 개발 방향" 섹션에 apps/app/CLAUDE.md 링크 추가
-(inote-server, 별도 레포) src/auth/auth.ts  ← oneTimeToken 플러그인 추가, 커밋 전
+CLAUDE.md                       ← 커밋·PR·push 규칙 문구 강화 (2026-09-04)
+apps/app/CLAUDE.md              ← 체크리스트 6단계 (단계 1부터 시작)
+(inote-server, 별도 레포) src/auth/auth.ts  ← oneTimeToken 플러그인, 커밋 334dfe1로 확인 완료
 ```
 
 ### 알려진 이슈
 
-- `inote-server`의 `oneTimeToken` 플러그인 추가분이 아직 커밋되지 않음 — `apps/app` 로그인 플로우(단계 4) 작업 시작 전에 반드시 커밋 상태 확인할 것.
-- 이전 세션의 `/stocks`, `/mini-game` 사람 확인이 완료됐는지 이 세션에서 추적하지 못함 — 다음 세션에서 git 이력/사람에게 직접 확인 필요.
+없음 — 지난 세션의 `oneTimeToken` 미커밋 이슈는 이번에 확인해서 해소됨.
 
 ### 다음 수신자에게 기대하는 것
 
-**사람 (다른 PC 포함):** `git pull` 후 `apps/app/CLAUDE.md`의 체크리스트 "단계 1"부터 이어서 진행. Claude Code에게 페어 튜터 모드임을 상기시킬 필요는 없음 — 파일에 이미 명시돼 있어 자동 적용됨.
+**사람 (다른 PC 포함):** `git pull` 후 `apps/app/CLAUDE.md`의 체크리스트 "단계 1"부터 시작 (Expo Go 설치, `create-expo-app` 실행). 시간 되면 `/mini-game` 실제 플레이로 버그 픽스 3건도 같이 확인. Claude Code에게 페어 튜터 모드임을 상기시킬 필요는 없음 — 파일에 이미 명시돼 있어 자동 적용됨.
 
 ### QA 판정
 
-해당 없음 (이번 세션은 문서/전략 정리, 코드 변경 없음)
+해당 없음 (이번 세션은 handoff 문서 갱신만, 코드 변경 없음)
