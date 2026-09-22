@@ -21,9 +21,9 @@
 |------|------|
 | FE (Web) | Next.js + shadcn/ui + Tailwind CSS |
 | FE (App) | React Native (Expo) + WebView 기반 (`apps/app/README.md` 참고) |
-| BE | NestJS + Prisma |
-| 인증 | Better Auth |
-| DB | PostgreSQL |
+| BE | 이 레포에 없음 — 공유 백엔드 [`inote-server`](https://github.com/seo337dc/inote-server)의 `money/` 모듈이 담당 (`backend/`는 미착수 플레이스홀더, `backend/README.md` 참고) |
+| 인증 | Better Auth (inote-server가 발급하는 세션 쿠키 공유) |
+| DB | PostgreSQL (inote-server와 동일 DB) |
 | DevOps | Vercel (FE) + Render (BE) + Neon (DB) |
 | 서버 상태 | @tanstack/react-query v5 |
 
@@ -126,7 +126,10 @@
 **세션 종료 / Task 경계**
 
 1. `docs/handoff/HANDOFF.md` 「현재 상태」 갱신
-2. 이 파일 TODO / 현재 단계 동기화
+2. **이 파일(`CLAUDE.md`) 문서 최신화** — TODO / 현재 단계뿐 아니라, 이번 작업으로 바뀐 레포
+   구조 / 기술 스택 / 배포 전략 등 사실 정보가 있으면 해당 섹션도 그 자리에서 갱신한다
+   (2026-09-22 추가 — 미루면 다음 세션에서 낡은 정보를 사실로 믿고 작업하게 됨. 빠뜨리기 쉬우니
+   커밋 직전 반드시 체크할 것)
 3. commit → push (**사람 요청 시에만**)
 
 상세 규칙·템플릿: [`docs/handoff/HANDOFF.md`](docs/handoff/HANDOFF.md)  
@@ -164,9 +167,10 @@ inote-money/
 ├── apps/
 │   ├── web/          ← Next.js (실제 서비스)
 │   └── app/          ← React Native (Expo) + WebView
-├── backend/          ← NestJS
-└── packages/         ← 공통 모듈
+└── backend/          ← README.md만 있는 미착수 플레이스홀더 (실제 API는 inote-server의 money/ 모듈)
 ```
+
+> `packages/` 폴더는 존재하지 않음 (예전 계획 문서에 있던 걸 그대로 옮겨적었던 흔적).
 
 ## 데모 페이지
 
@@ -184,8 +188,8 @@ inote-money/
 | 영역 | 서비스 | 비고 |
 |------|--------|------|
 | FE | Vercel | Next.js 무료 배포 |
-| BE | Render | NestJS 무료 플랜 |
-| DB | Neon | PostgreSQL 무료 플랜 |
+| BE | Render | 이 레포가 아니라 `inote-server` 배포 사용 — `money/` 모듈이 API 제공 |
+| DB | Neon | PostgreSQL 무료 플랜, `inote-server`와 동일 DB 공유 |
 | 도메인 | Vercel 서브도메인 | 추후 Cloudflare 도메인 연결 가능 |
 
 - AWS 사용 안 함 (프리티어 1년 후 과금)
